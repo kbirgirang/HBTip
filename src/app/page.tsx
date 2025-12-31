@@ -1,65 +1,262 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+type CreateResp =
+  | { roomCode: string; roomName: string; ownerPassword: string }
+  | { error: string };
+
+type JoinResp = { ok: true; roomCode: string } | { error: string };
+
+export default function HomePage() {
+  // Create form state
+  const [cRoomName, setCRoomName] = useState("");
+  const [cJoinPassword, setCJoinPassword] = useState("");
+  const [cDisplayName, setCDisplayName] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [created, setCreated] = useState<{ roomCode: string; ownerPassword: string } | null>(null);
+
+  // Join form state
+  const [jRoomCode, setJRoomCode] = useState("");
+  const [jJoinPassword, setJJoinPassword] = useState("");
+  const [jDisplayName, setJDisplayName] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateError(null);
+    setCreated(null);
+
+    if (cRoomName.trim().length < 2) return setCreateError("Room name þarf að vera amk 2 stafir.");
+    if (cDisplayName.trim().length < 2) return setCreateError("Nafn þarf að vera amk 2 stafir.");
+    if (cJoinPassword.trim().length < 6) return setCreateError("Join password þarf að vera amk 6 stafir.");
+
+    setCreateLoading(true);
+    try {
+      const res = await fetch("/api/room/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomName: cRoomName,
+          joinPassword: cJoinPassword,
+          displayName: cDisplayName,
+        }),
+      });
+
+      const data = (await res.json()) as CreateResp;
+
+      if (!res.ok || "error" in data) {
+        setCreateError("error" in data ? data.error : "Ekki tókst að búa til room.");
+        return;
+      }
+
+      setCreated({ roomCode: data.roomCode, ownerPassword: data.ownerPassword });
+      // Clear inputs (optional)
+      // setCRoomName(""); setCJoinPassword(""); setCDisplayName("");
+    } catch (err) {
+      setCreateError("Tenging klikkaði. Prófaðu aftur.");
+    } finally {
+      setCreateLoading(false);
+    }
+  }
+
+  async function handleJoin(e: React.FormEvent) {
+    e.preventDefault();
+    setJoinError(null);
+
+    if (jRoomCode.trim().length < 2) return setJoinError("Room code vantar.");
+    if (jDisplayName.trim().length < 2) return setJoinError("Nafn þarf að vera amk 2 stafir.");
+    if (jJoinPassword.trim().length < 1) return setJoinError("Join password vantar.");
+
+    setJoinLoading(true);
+    try {
+      const res = await fetch("/api/room/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomCode: jRoomCode,
+          joinPassword: jJoinPassword,
+          displayName: jDisplayName,
+        }),
+      });
+
+      const data = (await res.json()) as JoinResp;
+
+      if (!res.ok || "error" in data) {
+        setJoinError("error" in data ? data.error : "Ekki tókst að join-a room.");
+        return;
+      }
+
+      // redirect to room page
+      window.location.href = `/r/${encodeURIComponent(data.roomCode)}`;
+    } catch {
+      setJoinError("Tenging klikkaði. Prófaðu aftur.");
+    } finally {
+      setJoinLoading(false);
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+      <div className="mx-auto max-w-5xl px-4 py-10">
+        <header className="mb-10">
+          <h1 className="text-3xl font-bold tracking-tight">EHF EURO 2026 – Office Pool</h1>
+          <p className="mt-2 text-neutral-300">
+            Búðu til room fyrir vinnustaðinn eða join-aðu með room code + join password.
           </p>
+        </header>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Create */}
+          <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow">
+            <h2 className="text-xl font-semibold">Búa til room</h2>
+            <p className="mt-1 text-sm text-neutral-300">
+              Þú verður owner og færð owner password (geymdu það).
+            </p>
+
+            <form onSubmit={handleCreate} className="mt-6 space-y-4">
+              <div>
+                <label className="text-sm text-neutral-200">Room name</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  value={cRoomName}
+                  onChange={(e) => setCRoomName(e.target.value)}
+                  placeholder="t.d. Marel"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  value={cDisplayName}
+                  onChange={(e) => setCDisplayName(e.target.value)}
+                  placeholder="t.d. Kári"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-neutral-200">Join password (deilirðu með vinnustaðnum)</label>
+                <input
+                  type="password"
+                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  value={cJoinPassword}
+                  onChange={(e) => setCJoinPassword(e.target.value)}
+                  placeholder="minnst 6 stafir"
+                />
+              </div>
+
+              {createError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {createError}
+                </div>
+              )}
+
+              <button
+                disabled={createLoading}
+                className="w-full rounded-xl bg-neutral-100 px-4 py-2 font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+              >
+                {createLoading ? "Bý til..." : "Búa til room"}
+              </button>
+            </form>
+
+            {created && (
+              <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                <p className="text-sm text-emerald-100">
+                  <span className="font-semibold">Room code:</span> {created.roomCode}
+                </p>
+                <p className="mt-2 text-sm text-emerald-100">
+                  <span className="font-semibold">Owner password (geymdu):</span>{" "}
+                  <span className="font-mono">{created.ownerPassword}</span>
+                </p>
+                <div className="mt-4 flex gap-3">
+                  <button
+                    className="rounded-xl bg-emerald-300 px-4 py-2 font-semibold text-emerald-950 hover:bg-emerald-200"
+                    onClick={() => (window.location.href = `/r/${encodeURIComponent(created.roomCode)}`)}
+                  >
+                    Fara í room
+                  </button>
+                  <button
+                    className="rounded-xl border border-emerald-400/40 px-4 py-2 font-semibold text-emerald-100 hover:bg-emerald-500/10"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(
+                        `Room code: ${created.roomCode}\nJoin password: (þú valdir)\nOwner password: ${created.ownerPassword}`
+                      );
+                      alert("Afritað í clipboard (ath: join password er ekki vistað hér).");
+                    }}
+                  >
+                    Afrita info
+                  </button>
+                </div>
+                <p className="mt-3 text-xs text-emerald-100/80">
+                  Ath: Join passwordið er það sem þú slóst inn. Owner password birtist bara hér, einu sinni.
+                </p>
+              </div>
+            )}
+          </section>
+
+          {/* Join */}
+          <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow">
+            <h2 className="text-xl font-semibold">Join-a room</h2>
+            <p className="mt-1 text-sm text-neutral-300">Sláðu inn room code + join password.</p>
+
+            <form onSubmit={handleJoin} className="mt-6 space-y-4">
+              <div>
+                <label className="text-sm text-neutral-200">Room code</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  value={jRoomCode}
+                  onChange={(e) => setJRoomCode(e.target.value)}
+                  placeholder="t.d. MAREL-9647"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  value={jDisplayName}
+                  onChange={(e) => setJDisplayName(e.target.value)}
+                  placeholder="t.d. Elís"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-neutral-200">Join password</label>
+                <input
+                  type="password"
+                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  value={jJoinPassword}
+                  onChange={(e) => setJJoinPassword(e.target.value)}
+                />
+              </div>
+
+              {joinError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {joinError}
+                </div>
+              )}
+
+              <button
+                disabled={joinLoading}
+                className="w-full rounded-xl bg-neutral-100 px-4 py-2 font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+              >
+                {joinLoading ? "Join-a..." : "Join-a room"}
+              </button>
+
+              <p className="text-xs text-neutral-400">
+                Ef nafnið þitt er þegar til í roominu, færðu villu (til að forðast tvítekningu).
+              </p>
+            </form>
+          </section>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        <footer className="mt-10 text-xs text-neutral-500">
+          MVP: handvirk úrslit + global bónusspurningar. Rooms eru fyrir vinnustaði.
+        </footer>
+      </div>
+    </main>
   );
 }

@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
+    "argon2": "^0.44.0",
+    "jose": "^6.1.3",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3"

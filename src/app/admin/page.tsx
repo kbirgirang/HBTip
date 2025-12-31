@@ -283,6 +283,22 @@ export default function AdminPage() {
     }
   }
 
+  // Check if ADMIN_PASSWORD is configured on mount
+  useEffect(() => {
+    async function checkEnv() {
+      try {
+        const res = await fetch("/api/admin/check-env");
+        const json = (await res.json()) as { adminPasswordConfigured: boolean };
+        if (!json.adminPasswordConfigured) {
+          setErr("ADMIN_PASSWORD not set");
+        }
+      } catch {
+        // Silent fail - will show error when user tries to use functionality
+      }
+    }
+    void checkEnv();
+  }, []);
+
   useEffect(() => {
     if (tab === "results") void loadMatches(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps

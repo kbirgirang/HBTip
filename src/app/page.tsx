@@ -102,9 +102,9 @@ export default function HomePage() {
     <main className="min-h-screen bg-neutral-950 text-neutral-100">
       <div className="mx-auto max-w-5xl px-4 py-10">
         <header className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight">EHF EURO 2026 – Office Pool</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Evrópukeppnin í handbolta 2026 - Vinnustaðatip</h1>
           <p className="mt-2 text-neutral-300">
-            Búðu til deild fyrir vinnustaðinn eða join-aðu með room code + join password.
+            Búðu til deild fyrir vinnustaðinn eða join-aðu með deildar kóða + lykilorði
           </p>
         </header>
 

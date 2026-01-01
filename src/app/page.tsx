@@ -468,11 +468,11 @@ export default function HomePage() {
                       setFRoomCode(lRoomCode);
                       setFJoinPassword(lJoinPassword);
                     }}
-                    className="text-neutral-400 hover:text-neutral-200 underline"
+                    className="text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200 underline"
                   >
                     Gleymdir þú username?
                   </button>
-                  <span className="text-neutral-600">·</span>
+                  <span className="text-slate-400 dark:text-neutral-600">·</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -481,7 +481,7 @@ export default function HomePage() {
                       setFJoinPassword(lJoinPassword);
                       setFUsername(lUsername);
                     }}
-                    className="text-neutral-400 hover:text-neutral-200 underline"
+                    className="text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200 underline"
                   >
                     Gleymdir þú password?
                   </button>
@@ -491,9 +491,9 @@ export default function HomePage() {
 
             {/* Forgot Username Form */}
             {joinTab === "login" && forgotTab === "username" && (
-              <div className="mt-6 rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
+              <div className="mt-6 rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Fletta upp username</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Fletta upp username</h3>
                   <button
                     type="button"
                     onClick={() => {
@@ -501,34 +501,34 @@ export default function HomePage() {
                       setForgotError(null);
                       setForgotSuccess(null);
                     }}
-                    className="text-xs text-neutral-400 hover:text-neutral-200"
+                    className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                   >
                     Loka
                   </button>
                 </div>
                 <form onSubmit={handleForgotUsername} className="space-y-3">
                   <div>
-                    <label className="text-xs text-neutral-300">Númer deildar</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Númer deildar</label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fRoomCode}
                       onChange={(e) => setFRoomCode(e.target.value)}
                       placeholder="t.d. MAREL-9647"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Lykilorð deildar</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Lykilorð deildar</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fJoinPassword}
                       onChange={(e) => setFJoinPassword(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Nafn (valfrjálst - til að sía)</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Nafn (valfrjálst - til að sía)</label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fDisplayName}
                       onChange={(e) => setFDisplayName(e.target.value)}
                       placeholder="t.d. Kári"
@@ -547,7 +547,7 @@ export default function HomePage() {
                   <button
                     type="submit"
                     disabled={forgotLoading}
-                    className="w-full rounded-lg bg-neutral-700 px-3 py-1.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-600 disabled:opacity-60"
+                    className="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600"
                   >
                     {forgotLoading ? "Leita..." : "Fletta upp username"}
                   </button>
@@ -557,9 +557,9 @@ export default function HomePage() {
 
             {/* Reset Password Form */}
             {joinTab === "login" && forgotTab === "password" && (
-              <div className="mt-6 rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
+              <div className="mt-6 rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Reset-a password</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Reset-a password</h3>
                   <button
                     type="button"
                     onClick={() => {
@@ -567,54 +567,54 @@ export default function HomePage() {
                       setForgotError(null);
                       setForgotSuccess(null);
                     }}
-                    className="text-xs text-neutral-400 hover:text-neutral-200"
+                    className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                   >
                     Loka
                   </button>
                 </div>
                 <form onSubmit={handleResetPassword} className="space-y-3">
                   <div>
-                    <label className="text-xs text-neutral-300">Númer deildar</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Númer deildar</label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fRoomCode}
                       onChange={(e) => setFRoomCode(e.target.value)}
                       placeholder="t.d. MAREL-9647"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Lykilorð deildar</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Lykilorð deildar</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fJoinPassword}
                       onChange={(e) => setFJoinPassword(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Username</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Username</label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fUsername}
                       onChange={(e) => setFUsername(e.target.value)}
                       placeholder="t.d. kari"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Nýtt password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Nýtt password</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fNewPassword}
                       onChange={(e) => setFNewPassword(e.target.value)}
                       placeholder="minnst 6 stafir"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Staðfesta nýtt password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Staðfesta nýtt password</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fNewPasswordConfirm}
                       onChange={(e) => setFNewPasswordConfirm(e.target.value)}
                       placeholder="sama password aftur"
@@ -633,7 +633,7 @@ export default function HomePage() {
                   <button
                     type="submit"
                     disabled={forgotLoading}
-                    className="w-full rounded-lg bg-neutral-700 px-3 py-1.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-600 disabled:opacity-60"
+                    className="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600"
                   >
                     {forgotLoading ? "Reset-a..." : "Reset-a password"}
                   </button>

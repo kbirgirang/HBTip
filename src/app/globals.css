@@ -18,21 +18,17 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Light mode overrides */
+/* Light mode - default */
 html.light {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+/* Dark mode */
 html.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
 }
 
-/* Force Tailwind dark mode to work with class strategy */
-@media (prefers-color-scheme: dark) {
-  html:not(.light) {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Tailwind v4 dark mode support - class strategy */
+@variant dark (&:where(.dark, .dark *));

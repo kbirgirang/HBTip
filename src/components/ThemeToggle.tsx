@@ -21,10 +21,27 @@ export default function ThemeToggle() {
 
   function applyTheme(newTheme: "light" | "dark") {
     const html = document.documentElement;
-    html.classList.remove("light", "dark");
+    const body = document.body;
+    
+    // Fjarlægja báðar classes
+    html.classList.remove("light");
+    html.classList.remove("dark");
+    
+    // Bæta við nýju class
     html.classList.add(newTheme);
+    
+    // Force immediate style update
+    if (newTheme === "light") {
+      body.style.backgroundColor = "#ffffff";
+      body.style.color = "#171717";
+    } else {
+      body.style.backgroundColor = "#0a0a0a";
+      body.style.color = "#ededed";
+    }
+    
     // Force reflow
     void html.offsetHeight;
+    console.log("Theme applied:", newTheme, "HTML classes:", html.className);
   }
 
   const handleClick = () => {

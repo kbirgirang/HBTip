@@ -48,9 +48,27 @@ export default function RoomPage() {
   const params = useParams<{ roomCode: string }>();
   const roomCode = params?.roomCode ? decodeURIComponent(params.roomCode) : "";
 
-  const [tab, setTab] = useState<"matches" | "leaderboard">("matches");
+  const [tab, setTab] = useState<"matches" | "leaderboard" | "owner">("matches");
   const [data, setData] = useState<ViewData | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
+  // Owner management state
+  const [members, setMembers] = useState<Array<{ id: string; username: string; display_name: string; is_owner: boolean }>>([]);
+  const [ownerPassword, setOwnerPassword] = useState("");
+  const [ownerError, setOwnerError] = useState<string | null>(null);
+  const [ownerSuccess, setOwnerSuccess] = useState<string | null>(null);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  // Change join password
+  const [newJoinPassword, setNewJoinPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  // Remove member
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+
+  // Change member name
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [editingMemberName, setEditingMemberName] = useState("");
 
   async function load() {
     setErr(null);
@@ -67,6 +85,125 @@ export default function RoomPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  async function loadMembers() {
+    if (!data?.me.is_owner) return;
+    setLoadingMembers(true);
+    setOwnerError(null);
+    try {
+      const res = await fetch("/api/room/owner/list-members");
+      const json = await res.json();
+      if (!res.ok) {
+        setOwnerError(json.error || "Ekki tókst að sækja members");
+        return;
+      }
+      setMembers(json.members || []);
+    } catch {
+      setOwnerError("Tenging klikkaði");
+    } finally {
+      setLoadingMembers(false);
+    }
+  }
+
+  useEffect(() => {
+    if (tab === "owner" && data?.me.is_owner) {
+      void loadMembers();
+    }
+  }, [tab, data?.me.is_owner]);
+
+  async function handleChangeJoinPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setOwnerError(null);
+    setOwnerSuccess(null);
+
+    if (!ownerPassword) return setOwnerError("Owner password vantar");
+    if (newJoinPassword.length < 6) return setOwnerError("Nýtt join password þarf að vera amk 6 stafir");
+
+    setChangingPassword(true);
+    try {
+      const res = await fetch("/api/room/owner/change-join-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerPassword, newJoinPassword }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setOwnerError(json.error || "Ekki tókst að breyta join password");
+        return;
+      }
+
+      setOwnerSuccess("Join password hefur verið breytt");
+      setNewJoinPassword("");
+      setOwnerPassword("");
+    } catch {
+      setOwnerError("Tenging klikkaði");
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
+  async function handleRemoveMember(memberId: string) {
+    if (!ownerPassword) return setOwnerError("Owner password vantar");
+    if (!confirm("Ertu viss um að þú viljir fjarlægja þennan member?")) return;
+
+    setRemovingMemberId(memberId);
+    setOwnerError(null);
+    setOwnerSuccess(null);
+
+    try {
+      const res = await fetch("/api/room/owner/remove-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerPassword, memberId }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setOwnerError(json.error || "Ekki tókst að fjarlægja member");
+        return;
+      }
+
+      setOwnerSuccess("Member hefur verið fjarlægður");
+      setOwnerPassword("");
+      void loadMembers();
+    } catch {
+      setOwnerError("Tenging klikkaði");
+    } finally {
+      setRemovingMemberId(null);
+    }
+  }
+
+  async function handleChangeMemberName(memberId: string) {
+    if (!ownerPassword) return setOwnerError("Owner password vantar");
+    if (editingMemberName.trim().length < 2) return setOwnerError("Display name þarf að vera amk 2 stafir");
+
+    setOwnerError(null);
+    setOwnerSuccess(null);
+
+    try {
+      const res = await fetch("/api/room/owner/change-member-name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerPassword, memberId, newDisplayName: editingMemberName.trim() }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setOwnerError(json.error || "Ekki tókst að breyta display name");
+        return;
+      }
+
+      setOwnerSuccess("Display name hefur verið breytt");
+      setOwnerPassword("");
+      setEditingMemberId(null);
+      setEditingMemberName("");
+      void loadMembers();
+      void load(); // Reload main data to update leaderboard
+    } catch {
+      setOwnerError("Tenging klikkaði");
+    }
+  }
 
   const header = useMemo(() => {
     if (!data) return null;
@@ -95,6 +232,11 @@ export default function RoomPage() {
           <TabButton active={tab === "leaderboard"} onClick={() => setTab("leaderboard")}>
             Staða
           </TabButton>
+          {data?.me.is_owner && (
+            <TabButton active={tab === "owner"} onClick={() => setTab("owner")}>
+              Owner
+            </TabButton>
+          )}
         </div>
 
         <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
@@ -213,6 +355,158 @@ export default function RoomPage() {
                   );
                 })
               )}
+            </div>
+          )}
+
+          {data && tab === "owner" && data.me.is_owner && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold">Owner stjórnun</h2>
+                <p className="mt-1 text-sm text-neutral-400">Stjórna deildinni með owner password.</p>
+              </div>
+
+              {ownerError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {ownerError}
+                </div>
+              )}
+
+              {ownerSuccess && (
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+                  {ownerSuccess}
+                </div>
+              )}
+
+              {/* Change Join Password */}
+              <div className="rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
+                <h3 className="text-sm font-semibold">Breyta join password</h3>
+                <p className="mt-1 text-xs text-neutral-400">Breyttu lykilorði sem notendur nota til að skrá sig inná deildina.</p>
+                <form onSubmit={handleChangeJoinPassword} className="mt-4 space-y-3">
+                  <div>
+                    <label className="text-xs text-neutral-300">Owner password</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      value={ownerPassword}
+                      onChange={(e) => setOwnerPassword(e.target.value)}
+                      placeholder="Owner password"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Nýtt join password</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      value={newJoinPassword}
+                      onChange={(e) => setNewJoinPassword(e.target.value)}
+                      placeholder="minnst 6 stafir"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="w-full rounded-lg bg-neutral-700 px-3 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-600 disabled:opacity-60"
+                  >
+                    {changingPassword ? "Breyta..." : "Breyta join password"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Members List */}
+              <div className="rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
+                <h3 className="text-sm font-semibold">Members</h3>
+                <p className="mt-1 text-xs text-neutral-400">Stjórna members í deildinni.</p>
+
+                {loadingMembers ? (
+                  <p className="mt-4 text-sm text-neutral-400">Hleð...</p>
+                ) : members.length === 0 ? (
+                  <p className="mt-4 text-sm text-neutral-400">Engir members fundust.</p>
+                ) : (
+                  <div className="mt-4 space-y-2">
+                    {members.map((m) => (
+                      <div
+                        key={m.id}
+                        className="flex items-center justify-between rounded-lg border border-neutral-700 bg-neutral-900/40 p-3"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{m.display_name}</span>
+                            {m.is_owner && (
+                              <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-300">Owner</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-neutral-400">@{m.username}</p>
+                        </div>
+
+                        {!m.is_owner && (
+                          <div className="flex gap-2">
+                            {editingMemberId === m.id ? (
+                              <>
+                                <input
+                                  type="text"
+                                  className="w-32 rounded border border-neutral-600 bg-neutral-800 px-2 py-1 text-xs outline-none focus:border-neutral-500"
+                                  value={editingMemberName}
+                                  onChange={(e) => setEditingMemberName(e.target.value)}
+                                  placeholder="Nýtt nafn"
+                                />
+                                <button
+                                  onClick={() => handleChangeMemberName(m.id)}
+                                  className="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-500"
+                                >
+                                  Vista
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingMemberId(null);
+                                    setEditingMemberName("");
+                                  }}
+                                  className="rounded bg-neutral-700 px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-600"
+                                >
+                                  Hætta
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditingMemberId(m.id);
+                                    setEditingMemberName(m.display_name);
+                                  }}
+                                  className="rounded bg-neutral-700 px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-600"
+                                >
+                                  Breyta nafni
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveMember(m.id)}
+                                  disabled={removingMemberId === m.id}
+                                  className="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-500 disabled:opacity-60"
+                                >
+                                  {removingMemberId === m.id ? "Fjarlægi..." : "Fjarlægja"}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!loadingMembers && members.length > 0 && (
+                  <div className="mt-4 rounded-lg border border-neutral-700 bg-neutral-900/20 p-3">
+                    <p className="text-xs text-neutral-400">
+                      <strong>Ath:</strong> Til að breyta nafni eða fjarlægja member, þarftu að setja inn owner password fyrst.
+                    </p>
+                    <input
+                      type="password"
+                      className="mt-2 w-full rounded border border-neutral-600 bg-neutral-800 px-3 py-1.5 text-xs outline-none focus:border-neutral-500"
+                      value={ownerPassword}
+                      onChange={(e) => setOwnerPassword(e.target.value)}
+                      placeholder="Owner password"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

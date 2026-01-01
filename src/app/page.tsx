@@ -406,21 +406,21 @@ export default function HomePage() {
             {/* Login Form */}
             {joinTab === "login" && (
               <form onSubmit={handleLogin} className="mt-6 space-y-4">
-                <div>
-                  <label className="text-sm text-neutral-200">Númer deildar</label>
-                  <input
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+              <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Númer deildar</label>
+                <input
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lRoomCode}
                     onChange={(e) => setLRoomCode(e.target.value)}
-                    placeholder="t.d. MAREL-9647"
-                  />
-                </div>
+                  placeholder="t.d. MAREL-9647"
+                />
+              </div>
 
-                <div>
-                  <label className="text-sm text-neutral-200">Lykilorð deildar</label>
+              <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð deildar</label>
                   <input
                     type="password"
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lJoinPassword}
                     onChange={(e) => setLJoinPassword(e.target.value)}
                     placeholder="Join password fyrir deildina"
@@ -428,27 +428,27 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-neutral-200">Username</label>
-                  <input
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Username</label>
+                <input
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lUsername}
                     onChange={(e) => setLUsername(e.target.value)}
                     placeholder="t.d. kari"
-                  />
-                </div>
+                />
+              </div>
 
-                <div>
-                  <label className="text-sm text-neutral-200">Password</label>
-                  <input
-                    type="password"
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+              <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Password</label>
+                <input
+                  type="password"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lPassword}
                     onChange={(e) => setLPassword(e.target.value)}
-                  />
-                </div>
+                />
+              </div>
 
                 {loginError && (
-                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
                     {loginError}
                   </div>
                 )}
@@ -645,9 +645,9 @@ export default function HomePage() {
             {joinTab === "register" && (
               <form onSubmit={handleRegister} className="mt-6 space-y-4">
                 <div>
-                  <label className="text-sm text-neutral-200">Númer deildar</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Númer deildar</label>
                   <input
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rRoomCode}
                     onChange={(e) => setRRoomCode(e.target.value)}
                     placeholder="t.d. MAREL-9647"
@@ -655,10 +655,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-neutral-200">Lykilorð deildar</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð deildar</label>
                   <input
                     type="password"
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rJoinPassword}
                     onChange={(e) => setRJoinPassword(e.target.value)}
                     placeholder="Join password fyrir deildina"
@@ -666,9 +666,9 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-neutral-200">Username</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Username</label>
                   <input
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rUsername}
                     onChange={(e) => setRUsername(e.target.value)}
                     placeholder="t.d. kari"
@@ -676,10 +676,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-neutral-200">Password</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Password</label>
                   <input
                     type="password"
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rPassword}
                     onChange={(e) => setRPassword(e.target.value)}
                     placeholder="minnst 6 stafir"
@@ -687,9 +687,9 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
                   <input
-                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rDisplayName}
                     onChange={(e) => setRDisplayName(e.target.value)}
                     placeholder="t.d. Kári"
@@ -699,16 +699,16 @@ export default function HomePage() {
                 {registerError && (
                   <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
                     {registerError}
-                  </div>
-                )}
+                </div>
+              )}
 
-                <button
+              <button
                   disabled={registerLoading}
                   className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-                >
+              >
                   {registerLoading ? "Skrái..." : "Búa til aðgang"}
-                </button>
-              </form>
+              </button>
+            </form>
             )}
           </section>
         </div>

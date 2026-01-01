@@ -31,7 +31,7 @@ export async function GET() {
     .from("matches")
     .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result")
     .eq("tournament_id", room.tournament_id)
-    .order("starts_at", { ascending: true });
+    .order("match_no", { ascending: true, nullsFirst: false });
 
   if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
 
@@ -39,7 +39,7 @@ export async function GET() {
   const { data: bonusQs, error: bErr } = await supabaseServer
     .from("bonus_questions")
     .select(
-      "id, match_id, title, type, points, closes_at, correct_number, correct_player_id, choice_options, correct_choice"
+      "id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice"
     )
     .eq("tournament_id", room.tournament_id);
 
@@ -52,7 +52,7 @@ export async function GET() {
   if (qIds.length > 0) {
     const { data: ans, error: aErr } = await supabaseServer
       .from("bonus_answers")
-      .select("question_id, answer_number, answer_player_id, answer_choice")
+      .select("question_id, answer_number, answer_choice")
       .eq("room_id", room.id)
       .eq("member_id", session.memberId)
       .in("question_id", qIds);
@@ -94,7 +94,7 @@ export async function GET() {
   if (qIds.length > 0) {
     const { data: allAns, error: allAErr } = await supabaseServer
       .from("bonus_answers")
-      .select("member_id, question_id, answer_number, answer_player_id, answer_choice")
+      .select("member_id, question_id, answer_number, answer_choice")
       .eq("room_id", room.id)
       .in("question_id", qIds);
 
@@ -114,7 +114,6 @@ export async function GET() {
     bonusByMatchId.set(q.match_id, {
       ...q,
       my_answer_number: mine?.answer_number ?? null,
-      my_answer_player_id: mine?.answer_player_id ?? null,
       my_answer_choice: mine?.answer_choice ?? null,
     });
   }
@@ -154,8 +153,6 @@ export async function GET() {
         isCorrect = ans.answer_number === question.correct_number;
       } else if (question.type === "choice" && question.correct_choice != null) {
         isCorrect = ans.answer_choice === question.correct_choice;
-      } else if (question.type === "player" && question.correct_player_id != null) {
-        isCorrect = ans.answer_player_id === question.correct_player_id;
       }
 
       if (isCorrect) {

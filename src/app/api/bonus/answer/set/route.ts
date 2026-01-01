@@ -6,8 +6,6 @@ type Body = {
   questionId: string;
   answerNumber?: number | null;
   answerChoice?: string | null; // ef type=choice
-  answerPlayerName?: string | null; // ef type=player
-  answerPlayerTeam?: string | null; // valfrjálst
 };
 
 export async function POST(req: Request) {
@@ -47,7 +45,6 @@ export async function POST(req: Request) {
 
   let answer_number: number | null = null;
   let answer_choice: string | null = null;
-  let answer_player_id: string | null = null;
 
   if (q.type === "number") {
     if (body.answerNumber === undefined || body.answerNumber === null || Number.isNaN(Number(body.answerNumber))) {
@@ -59,35 +56,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "answerChoice required" }, { status: 400 });
     }
     answer_choice = body.answerChoice.trim();
-  } else if (q.type === "player") {
-    const name = (body.answerPlayerName || "").trim();
-    if (name.length < 2) return NextResponse.json({ error: "answerPlayerName required" }, { status: 400 });
-
-    // Finna eða búa til player í players töflunni
-    const { data: existing } = await supabaseServer
-      .from("players")
-      .select("id")
-      .eq("tournament_id", q.tournament_id)
-      .ilike("full_name", name)
-      .limit(1);
-
-    if (existing && existing.length > 0) {
-      answer_player_id = existing[0].id;
-    } else {
-      const { data: created, error: cErr } = await supabaseServer
-        .from("players")
-        .insert({
-          tournament_id: q.tournament_id,
-          full_name: name,
-          team: (body.answerPlayerTeam || "").trim() || null,
-          is_active: true,
-        })
-        .select("id")
-        .single();
-
-      if (cErr || !created) return NextResponse.json({ error: cErr?.message || "Failed to create player" }, { status: 500 });
-      answer_player_id = created.id;
-    }
   } else {
     return NextResponse.json({ error: "Unknown bonus question type" }, { status: 400 });
   }
@@ -102,12 +70,12 @@ export async function POST(req: Request) {
         question_id: q.id,
         answer_number,
         answer_choice,
-        answer_player_id,
+        answer_player_id: null,
       },
       { onConflict: "member_id,question_id" }
     );
 
   if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, answer_number, answer_choice, answer_player_id });
+  return NextResponse.json({ ok: true, answer_number, answer_choice });
 }

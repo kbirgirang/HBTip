@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
 type Pick = "1" | "X" | "2";
-type BonusType = "number" | "player" | "choice";
+type BonusType = "number" | "choice";
 
 type ViewData = {
   room: { code: string; name: string };
@@ -31,7 +31,6 @@ type ViewData = {
 
       // correct answers (not used by user UI now, but fine to keep)
       correct_number: number | null;
-      correct_player_id: string | null;
 
       // choice
       choice_options?: string[] | null;
@@ -39,7 +38,6 @@ type ViewData = {
 
       // my existing answer (from DB)
       my_answer_number?: number | null;
-      my_answer_player_id?: string | null;
       my_answer_choice?: string | null;
     };
   }>;
@@ -278,14 +276,12 @@ function BonusAnswerCard({
     bonus.my_answer_number != null ? String(bonus.my_answer_number) : ""
   );
   const [answerChoice, setAnswerChoice] = useState<string>(bonus.my_answer_choice || "");
-  const [answerPlayerId, setAnswerPlayerId] = useState<string>(bonus.my_answer_player_id || "");
 
   // ✅ mikilvægt: ef load() kemur með ný gögn, sync-a state
   useEffect(() => {
     setAnswerNumber(bonus.my_answer_number != null ? String(bonus.my_answer_number) : "");
     setAnswerChoice(bonus.my_answer_choice || "");
-    setAnswerPlayerId(bonus.my_answer_player_id || "");
-  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice, bonus.my_answer_player_id]);
+  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice]);
 
   async function save() {
     setLocalErr(null);
@@ -309,10 +305,6 @@ function BonusAnswerCard({
       if (!options.includes(answerChoice)) return setLocalErr("Valið er ekki í listanum.");
     }
 
-    if (bonus.type === "player") {
-      if (!answerPlayerId) return setLocalErr("Veldu leikmann.");
-      // NOTE: user UI fyrir players er ekki komið hér (þú vantar lista af players í /api/room/view).
-    }
 
     setSaving(true);
     try {
@@ -320,7 +312,6 @@ function BonusAnswerCard({
 
       if (bonus.type === "number") payload.answerNumber = Number(answerNumber);
       if (bonus.type === "choice") payload.answerChoice = answerChoice;
-      if (bonus.type === "player") payload.answerPlayerId = answerPlayerId;
 
       const res = await fetch("/api/bonus/answer/set", {
         method: "POST",
@@ -347,18 +338,9 @@ function BonusAnswerCard({
   }
 
   const myAnswerLabel =
-    bonus.type === "number"
-      ? bonus.my_answer_number
-      : bonus.type === "choice"
-      ? bonus.my_answer_choice
-      : bonus.my_answer_player_id;
+    bonus.type === "number" ? bonus.my_answer_number : bonus.my_answer_choice;
 
-  const correctAnswerLabel =
-    bonus.type === "number"
-      ? bonus.correct_number
-      : bonus.type === "choice"
-      ? bonus.correct_choice
-      : bonus.correct_player_id;
+  const correctAnswerLabel = bonus.type === "number" ? bonus.correct_number : bonus.correct_choice;
 
   const isCorrect = locked && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
   const isWrong = locked && myAnswerLabel != null && correctAnswerLabel != null && !isCorrect;
@@ -454,11 +436,6 @@ function BonusAnswerCard({
           </div>
         )}
 
-        {bonus.type === "player" && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-            Player-bónus er ekki tengdur players lista í user UI ennþá. (Segðu mér ef þú vilt það næst.)
-          </div>
-        )}
 
         {localErr && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">

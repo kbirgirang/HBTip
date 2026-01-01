@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-type BonusType = "number" | "player" | "choice";
+type BonusType = "number" | "choice";
 
 function normalizeType(v: any): BonusType | null {
   const s = String(v || "").toLowerCase().trim();
-  if (s === "number" || s === "player" || s === "choice") return s;
+  if (s === "number" || s === "choice") return s;
   return null;
 }
 
@@ -45,7 +45,6 @@ export async function POST(req: Request) {
     // Correct fields (valfrjálst)
     const correctNumber = body?.correctNumber != null ? Number(body.correctNumber) : null;
     const correctChoice = body?.correctChoice ? String(body.correctChoice).trim() : null;
-    const correctPlayerId = body?.correctPlayerId ? String(body.correctPlayerId).trim() : null;
 
     if (!adminPassword) {
       return NextResponse.json({ error: "Admin password vantar." }, { status: 400 });
@@ -60,7 +59,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Stig þurfa að vera 0 eða hærra." }, { status: 400 });
     }
     if (!type) {
-      return NextResponse.json({ error: "Type þarf að vera 'number', 'player' eða 'choice'." }, { status: 400 });
+      return NextResponse.json({ error: "Type þarf að vera 'number' eða 'choice'." }, { status: 400 });
     }
 
     const expected = process.env.ADMIN_PASSWORD;
@@ -118,7 +117,7 @@ export async function POST(req: Request) {
       // Correct fields (set úr body eða null)
       correct_number: type === "number" ? correctNumber : null,
       correct_choice: type === "choice" ? correctChoice : null,
-      correct_player_id: type === "player" ? correctPlayerId : null,
+      correct_player_id: null,
 
       // Choice
       choice_options: choiceOptions,

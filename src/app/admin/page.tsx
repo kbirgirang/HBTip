@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type BonusType = "number" | "player" | "choice";
+type BonusType = "number" | "choice";
 
 type MatchRow = {
   id: string;
@@ -381,7 +381,6 @@ export default function AdminPage() {
     // correct fields
     setCorrectNumber(q.correct_number != null ? String(q.correct_number) : "");
     setCorrectChoice(q.correct_choice || "");
-    setCorrectPlayerId(q.correct_player_id || "");
 
     flash("Bónus sett í form (Edit) ✏️");
   }
@@ -418,7 +417,6 @@ export default function AdminPage() {
   // ✅ correct answer inputs
   const [correctNumber, setCorrectNumber] = useState<string>("");
   const [correctChoice, setCorrectChoice] = useState<string>("");
-  const [correctPlayerId, setCorrectPlayerId] = useState<string>("");
 
   const [savingBonus, setSavingBonus] = useState(false);
 
@@ -429,7 +427,6 @@ export default function AdminPage() {
       setCorrectChoice("");
     }
     if (bonusType !== "number") setCorrectNumber("");
-    if (bonusType !== "player") setCorrectPlayerId("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bonusType]);
 
@@ -469,7 +466,6 @@ export default function AdminPage() {
 
     setCorrectNumber("");
     setCorrectChoice("");
-    setCorrectPlayerId("");
   }
 
   async function saveBonus(e: React.FormEvent) {
@@ -512,7 +508,6 @@ export default function AdminPage() {
         // correct fields (optional)
         correctNumber: bonusType === "number" && correctNumber.trim() ? Number(correctNumber) : null,
         correctChoice: bonusType === "choice" && correctChoice ? correctChoice : null,
-        correctPlayerId: bonusType === "player" && correctPlayerId ? correctPlayerId : null,
       };
 
       const res = await fetch("/api/admin/bonus/create", {
@@ -771,7 +766,6 @@ export default function AdminPage() {
                           className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
                         >
                           <option value="number">Tala</option>
-                          <option value="player">Leikmaður</option>
                           <option value="choice">Krossa</option>
                         </select>
                       </div>
@@ -833,20 +827,6 @@ export default function AdminPage() {
                       </div>
                     )}
 
-                    {bonusType === "player" && (
-                      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-                        Player bónus: þú þarft players lista til að velja “réttan leikmann”.
-                        <div className="mt-2">
-                          <label className="text-sm text-neutral-200">Rétt player_id (valfrjálst)</label>
-                          <input
-                            value={correctPlayerId}
-                            onChange={(e) => setCorrectPlayerId(e.target.value)}
-                            placeholder="player uuid..."
-                            className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
-                          />
-                        </div>
-                      </div>
-                    )}
 
                     <div className="flex flex-col gap-2">
                       <button
@@ -936,8 +916,7 @@ export default function AdminPage() {
                               <div className="flex items-center justify-between gap-3">
                                 <div className="font-semibold">Bónus: {q.title}</div>
                                 <div className="text-xs text-neutral-300">
-                                  +{q.points} stig ·{" "}
-                                  {q.type === "number" ? "tala" : q.type === "player" ? "leikmaður" : "krossa"}
+                                  +{q.points} stig · {q.type === "number" ? "tala" : "krossa"}
                                 </div>
                               </div>
 
@@ -959,11 +938,6 @@ export default function AdminPage() {
                               {q.type === "choice" && q.correct_choice && (
                                 <div className="mt-2 text-xs text-neutral-300">
                                   Rétt val: <span className="font-semibold">{q.correct_choice}</span>
-                                </div>
-                              )}
-                              {q.type === "player" && q.correct_player_id && (
-                                <div className="mt-2 text-xs text-neutral-300">
-                                  Rétt player_id: <span className="font-mono">{q.correct_player_id}</span>
                                 </div>
                               )}
                             </div>

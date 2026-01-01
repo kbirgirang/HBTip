@@ -481,11 +481,20 @@ export default function AdminPage() {
     if (bonusType === "choice") {
       options = parsedChoiceOptions;
 
+      // Debug: sýna hvað er í raun í textarea
+      const rawLines = bonusOptionsText.split("\n");
+      const trimmedLines = rawLines.map((x) => x.trim()).filter(Boolean);
+
       if (options.length < 2 || options.length > 6) {
-        return setErr("Valmöguleikar þurfa að vera 2–6 línur (1 per línu).");
+        return setErr(
+          `Valmöguleikar þurfa að vera 2–6 línur (1 per línu).\n\nNúverandi: ${options.length} línur\nRá línur í textarea: ${rawLines.length}\nLínur eftir trim: ${trimmedLines.length}\n\nLínur sem eru taldar: ${options.length > 0 ? options.map((o, i) => `${i + 1}. "${o}"`).join(", ") : "engar"}`
+        );
       }
       const norm = options.map((x) => x.toLowerCase());
-      if (new Set(norm).size !== options.length) return setErr("Valmöguleikar mega ekki vera tvíteknir.");
+      if (new Set(norm).size !== options.length) {
+        const duplicates = options.filter((opt, idx) => norm.indexOf(opt.toLowerCase()) !== idx);
+        return setErr(`Valmöguleikar mega ekki vera tvíteknir. Tvíteknir: ${duplicates.join(", ")}`);
+      }
 
       if (correctChoice && !options.includes(correctChoice)) return setErr("Rétt val er ekki í valmöguleikum.");
     }

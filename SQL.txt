@@ -1,0 +1,260 @@
+-- =========================
+-- Office Pool DB Schema (FRESH INSTALL)
+-- Men’s EHF EURO 2026
+-- Bonus per match (1 per match) + CHOICE
+-- =========================
+
+create extension if not exists "pgcrypto";
+create extension if not exists "citext";
+
+-- (VALFRJÁLST) Hreinsa allt - PASSA: þetta eyðir gögnum
+drop table if exists public.bonus_answers cascade;
+drop table if exists public.bonus_questions cascade;
+drop table if exists public.predictions cascade;
+drop table if exists public.matches cascade;
+drop table if exists public.players cascade;
+drop table if exists public.room_members cascade;
+drop table if exists public.rooms cascade;
+drop table if exists public.admin_settings cascade;
+drop table if exists public.tournaments cascade;
+
+drop type if exists public.bonus_type cascade;
+
+-- -------------------------
+-- 1) Tournaments
+-- -------------------------
+create table public.tournaments (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  name text not null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+-- -------------------------
+-- 2) Admin settings
+-- -------------------------
+create table public.admin_settings (
+  id uuid primary key default gen_random_uuid(),
+  tournament_id uuid not null references public.tournaments(id) on delete cascade,
+  points_per_correct_1x2 int not null default 1,
+  timezone text not null default 'Atlantic/Reykjavik',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (tournament_id)
+);
+
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger trg_admin_settings_updated_at
+before update on public.admin_settings
+for each row execute function public.set_updated_at();
+
+-- -------------------------
+-- 3) Rooms
+-- -------------------------
+create table public.rooms (
+  id uuid primary key default gen_random_uuid(),
+  tournament_id uuid not null references public.tournaments(id) on delete cascade,
+
+  room_code citext not null unique,
+  room_name text not null,
+
+  owner_password_hash text not null,
+  join_password_hash text not null,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create trigger trg_rooms_updated_at
+before update on public.rooms
+for each row execute function public.set_updated_at();
+
+create index idx_rooms_tournament on public.rooms(tournament_id);
+
+-- -------------------------
+-- 4) Room members
+-- -------------------------
+create table public.room_members (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid not null references public.rooms(id) on delete cascade,
+
+  display_name text not null,
+  pin_hash text null,
+  is_owner boolean not null default false,
+
+  created_at timestamptz not null default now(),
+  unique (room_id, display_name)
+);
+
+create index idx_room_members_room on public.room_members(room_id);
+
+-- -------------------------
+-- 5) Matches
+-- -------------------------
+create table public.matches (
+  id uuid primary key default gen_random_uuid(),
+  tournament_id uuid not null references public.tournaments(id) on delete cascade,
+
+  match_no int null,
+  stage text null,
+  home_team text not null,
+  away_team text not null,
+  starts_at timestamptz not null,
+
+  allow_draw boolean not null default true,
+  result char(1) null check (result in ('1','X','2')),
+  finished_at timestamptz null,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create trigger trg_matches_updated_at
+before update on public.matches
+for each row execute function public.set_updated_at();
+
+create index idx_matches_tournament_time on public.matches(tournament_id, starts_at);
+
+-- -------------------------
+-- 6) Predictions
+-- -------------------------
+create table public.predictions (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid not null references public.rooms(id) on delete cascade,
+  member_id uuid not null references public.room_members(id) on delete cascade,
+  match_id uuid not null references public.matches(id) on delete cascade,
+
+  pick char(1) not null check (pick in ('1','X','2')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (member_id, match_id)
+);
+
+create trigger trg_predictions_updated_at
+before update on public.predictions
+for each row execute function public.set_updated_at();
+
+create index idx_predictions_room_match on public.predictions(room_id, match_id);
+create index idx_predictions_member on public.predictions(member_id);
+
+-- -------------------------
+-- 7) Players
+-- -------------------------
+create table public.players (
+  id uuid primary key default gen_random_uuid(),
+  tournament_id uuid not null references public.tournaments(id) on delete cascade,
+  full_name text not null,
+  team text null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique (tournament_id, full_name)
+);
+
+create index idx_players_tournament on public.players(tournament_id);
+
+-- -------------------------
+-- 8) Bonus questions (PER MATCH) + CHOICE
+-- -------------------------
+create type public.bonus_type as enum ('number', 'choice');
+
+create table public.bonus_questions (
+  id uuid primary key default gen_random_uuid(),
+  tournament_id uuid not null references public.tournaments(id) on delete cascade,
+
+  match_id uuid not null references public.matches(id) on delete cascade, -- 1 per match
+
+  title text not null,
+  type public.bonus_type not null,
+  points int not null default 5,
+
+  closes_at timestamptz not null,
+
+  correct_number numeric null,
+  correct_player_id uuid null references public.players(id) on delete set null,
+
+  choice_options text[] null,
+  correct_choice text null,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  check (
+    (correct_number is null and correct_player_id is null and correct_choice is null)
+    or
+    (type = 'number' and correct_number is not null and correct_player_id is null and correct_choice is null)
+    or
+    (type = 'choice' and correct_choice is not null and correct_number is null and correct_player_id is null)
+  ),
+
+  check (
+    (type <> 'choice')
+    or
+    (choice_options is not null and array_length(choice_options, 1) between 2 and 6)
+  )
+);
+
+create trigger trg_bonus_questions_updated_at
+before update on public.bonus_questions
+for each row execute function public.set_updated_at();
+
+create index idx_bonus_questions_match_id on public.bonus_questions(match_id);
+
+create unique index uq_bonus_one_per_match
+on public.bonus_questions(match_id);
+
+-- -------------------------
+-- 9) Bonus answers + CHOICE
+-- -------------------------
+create table public.bonus_answers (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid not null references public.rooms(id) on delete cascade,
+  member_id uuid not null references public.room_members(id) on delete cascade,
+  question_id uuid not null references public.bonus_questions(id) on delete cascade,
+
+  answer_number numeric null,
+  answer_player_id uuid null references public.players(id) on delete set null,
+  answer_choice text null,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  unique (member_id, question_id),
+
+  check (
+    (answer_number is null and answer_player_id is null and answer_choice is null)
+    or
+    (answer_number is not null and answer_player_id is null and answer_choice is null)
+    or
+    (answer_choice is not null and answer_number is null and answer_player_id is null)
+  )
+);
+
+create trigger trg_bonus_answers_updated_at
+before update on public.bonus_answers
+for each row execute function public.set_updated_at();
+
+create index idx_bonus_answers_room on public.bonus_answers(room_id);
+create index idx_bonus_answers_member on public.bonus_answers(member_id);
+
+-- -------------------------
+-- 10) Seed
+-- -------------------------
+insert into public.tournaments (slug, name, is_active)
+values ('mens-ehf-euro-2026', 'Men’s EHF EURO 2026', true)
+on conflict (slug) do nothing;
+
+insert into public.admin_settings (tournament_id, points_per_correct_1x2, timezone)
+select id, 1, 'Atlantic/Reykjavik'
+from public.tournaments
+where slug = 'mens-ehf-euro-2026'
+on conflict (tournament_id) do nothing;
+
+notify pgrst, 'reload schema';

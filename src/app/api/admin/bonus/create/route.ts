@@ -39,8 +39,9 @@ export async function POST(req: Request) {
     const points = Number(body?.points ?? 5);
     const type = normalizeType(body?.type);
 
-    // Fyrir choice
-    const optionsText = body?.optionsText; // textarea lines
+    // Fyrir choice - taka við bæði options (array) og optionsText (string)
+    const optionsArray = body?.options; // array sem frontend sendir
+    const optionsText = body?.optionsText; // string (gamla leiðin, ef einhver notar)
 
     // Correct fields (valfrjálst)
     const correctNumber = body?.correctNumber != null ? Number(body.correctNumber) : null;
@@ -87,7 +88,19 @@ export async function POST(req: Request) {
     let choiceOptions: string[] | null = null;
 
     if (type === "choice") {
-      const opts = parseOptions(optionsText);
+      let opts: string[] = [];
+      
+      // Ef options er array (nýja leiðin frá frontend)
+      if (Array.isArray(optionsArray) && optionsArray.length > 0) {
+        opts = optionsArray
+          .map((x: any) => String(x || "").trim())
+          .filter(Boolean);
+      } 
+      // Ef optionsText er string (gamla leiðin)
+      else if (optionsText) {
+        opts = parseOptions(optionsText);
+      }
+      
       if (opts.length < 2 || opts.length > 6) {
         return NextResponse.json(
           { error: "Valmöguleikar þurfa að vera 2–6 línur (1 per línu)." },

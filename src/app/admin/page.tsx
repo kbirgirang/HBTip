@@ -542,7 +542,7 @@ export default function AdminPage() {
 
   const headerRight = useMemo(() => {
     return (
-      <div className="relative z-10 flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+      <div className="relative z-50 flex flex-col gap-2 md:flex-row md:items-center md:justify-end pr-16">
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-600 dark:text-neutral-400">Admin password</span>
           <input

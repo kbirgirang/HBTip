@@ -72,7 +72,7 @@ export default function ThemeToggle() {
   }
 
   return (
-    <div className="fixed right-4 top-4 z-50">
+    <div className="fixed right-4 top-4 z-40">
       <button
         type="button"
         onClick={handleClick}

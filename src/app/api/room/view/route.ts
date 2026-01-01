@@ -142,6 +142,7 @@ export async function GET() {
     }
 
     // Bónus stig
+    let bonusPoints = 0;
     for (const ans of allBonusAnswers ?? []) {
       if (ans.member_id !== m.id) continue;
       const question = bonusById.get(ans.question_id);
@@ -158,11 +159,12 @@ export async function GET() {
       }
 
       if (isCorrect) {
+        bonusPoints += question.points;
         points += question.points;
       }
     }
 
-    return { memberId: m.id, displayName: m.display_name, points, correct1x2 };
+    return { memberId: m.id, displayName: m.display_name, points, correct1x2, bonusPoints };
   });
 
   leaderboard.sort(

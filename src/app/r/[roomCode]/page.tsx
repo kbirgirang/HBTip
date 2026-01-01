@@ -43,7 +43,7 @@ type ViewData = {
       my_answer_choice?: string | null;
     };
   }>;
-  leaderboard: Array<{ memberId: string; displayName: string; points: number; correct1x2: number }>;
+  leaderboard: Array<{ memberId: string; displayName: string; points: number; correct1x2: number; bonusPoints: number }>;
 };
 
 export default function RoomPage() {
@@ -182,8 +182,20 @@ export default function RoomPage() {
                         </span>
 
                         {m.myPick && (
-                          <span className="text-xs text-neutral-400">
-                            Þín spá: <span className="font-mono">{m.myPick}</span>
+                          <span className="text-xs">
+                            Þín spá:{" "}
+                            <span
+                              className={[
+                                "font-mono px-2 py-0.5 rounded",
+                                m.result != null
+                                  ? m.myPick === m.result
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                    : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                  : "text-neutral-400",
+                              ].join(" ")}
+                            >
+                              {m.myPick}
+                            </span>
                           </span>
                         )}
 
@@ -214,7 +226,8 @@ export default function RoomPage() {
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Nafn</th>
                     <th className="px-3 py-2 text-right">Stig</th>
-                    <th className="px-3 py-2 text-right">Rétt 1X2</th>
+                    <th className="px-3 py-2 text-right">1X2</th>
+                    <th className="px-3 py-2 text-right">Bónus</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -223,7 +236,8 @@ export default function RoomPage() {
                       <td className="px-3 py-2">{idx + 1}</td>
                       <td className="px-3 py-2">{p.displayName}</td>
                       <td className="px-3 py-2 text-right font-semibold">{p.points}</td>
-                      <td className="px-3 py-2 text-right">{p.correct1x2}</td>
+                      <td className="px-3 py-2 text-right text-neutral-400">{p.correct1x2}</td>
+                      <td className="px-3 py-2 text-right text-neutral-400">{p.bonusPoints || 0}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -347,6 +361,7 @@ function BonusAnswerCard({
       : bonus.correct_player_id;
 
   const isCorrect = locked && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
+  const isWrong = locked && myAnswerLabel != null && correctAnswerLabel != null && !isCorrect;
 
   // Minimalist view when locked
   if (locked) {
@@ -357,7 +372,12 @@ function BonusAnswerCard({
           {myAnswerLabel != null && myAnswerLabel !== "" ? (
             <>
               <span className="text-neutral-400">Þitt:</span>
-              <span className={isCorrect ? "font-semibold text-emerald-400" : "text-neutral-300"}>
+              <span
+                className={[
+                  "font-semibold px-1.5 py-0.5 rounded",
+                  isCorrect ? "text-emerald-400 bg-emerald-500/20" : isWrong ? "text-red-400 bg-red-500/20" : "text-neutral-300",
+                ].join(" ")}
+              >
                 {String(myAnswerLabel)}
               </span>
             </>

@@ -104,21 +104,21 @@ export default function HomePage() {
         <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight">EHF EURO 2026 – Office Pool</h1>
           <p className="mt-2 text-neutral-300">
-            Búðu til room fyrir vinnustaðinn eða join-aðu með room code + join password.
+            Búðu til deild fyrir vinnustaðinn eða join-aðu með room code + join password.
           </p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Create */}
           <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow">
-            <h2 className="text-xl font-semibold">Búa til room</h2>
+            <h2 className="text-xl font-semibold">Búa til deild</h2>
             <p className="mt-1 text-sm text-neutral-300">
               Þú verður owner og færð owner password (geymdu það).
             </p>
 
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
               <div>
-                <label className="text-sm text-neutral-200">Room name</label>
+                <label className="text-sm text-neutral-200">Nafn deildar</label>
                 <input
                   className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
                   value={cRoomName}
@@ -138,7 +138,7 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Join password (deilirðu með vinnustaðnum)</label>
+                <label className="text-sm text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
@@ -165,7 +165,7 @@ export default function HomePage() {
             {created && (
               <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
                 <p className="text-sm text-emerald-100">
-                  <span className="font-semibold">Room code:</span> {created.roomCode}
+                  <span className="font-semibold">Númer deildar:</span> {created.roomCode}
                 </p>
                 <p className="mt-2 text-sm text-emerald-100">
                   <span className="font-semibold">Owner password (geymdu):</span>{" "}
@@ -176,7 +176,7 @@ export default function HomePage() {
                     className="rounded-xl bg-emerald-300 px-4 py-2 font-semibold text-emerald-950 hover:bg-emerald-200"
                     onClick={() => (window.location.href = `/r/${encodeURIComponent(created.roomCode)}`)}
                   >
-                    Fara í room
+                    Fara í deildina
                   </button>
                   <button
                     className="rounded-xl border border-emerald-400/40 px-4 py-2 font-semibold text-emerald-100 hover:bg-emerald-500/10"
@@ -199,12 +199,12 @@ export default function HomePage() {
 
           {/* Join */}
           <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow">
-            <h2 className="text-xl font-semibold">Join-a room</h2>
-            <p className="mt-1 text-sm text-neutral-300">Sláðu inn room code + join password.</p>
+            <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
+            <p className="mt-1 text-sm text-neutral-300">Sláðu inn deildanúmer og lykilorð.</p>
 
             <form onSubmit={handleJoin} className="mt-6 space-y-4">
               <div>
-                <label className="text-sm text-neutral-200">Room code</label>
+                <label className="text-sm text-neutral-200">Númer deildar</label>
                 <input
                   className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
                   value={jRoomCode}
@@ -224,7 +224,7 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Join password</label>
+                <label className="text-sm text-neutral-200">Lykilorð deildar</label>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"

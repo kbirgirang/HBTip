@@ -89,13 +89,28 @@ export async function GET() {
 
   if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
 
+  // 7b) ALL bonus answers for ALL members (for leaderboard)
+  let allBonusAnswers: any[] = [];
+  if (qIds.length > 0) {
+    const { data: allAns, error: allAErr } = await supabaseServer
+      .from("bonus_answers")
+      .select("member_id, question_id, answer_number, answer_player_id, answer_choice")
+      .eq("room_id", room.id)
+      .in("question_id", qIds);
+
+    if (allAErr) return NextResponse.json({ error: allAErr.message }, { status: 500 });
+    allBonusAnswers = allAns ?? [];
+  }
+
   // --- Lookup maps
   const matchById = new Map((matches ?? []).map((x: any) => [x.id, x]));
 
   // bonus per match map (merge in my answers)
   const bonusByMatchId = new Map<string, any>();
+  const bonusById = new Map<string, any>();
   for (const q of bonusQs ?? []) {
     const mine = myAnswerByQid.get(q.id);
+    bonusById.set(q.id, q);
     bonusByMatchId.set(q.match_id, {
       ...q,
       my_answer_number: mine?.answer_number ?? null,
@@ -110,11 +125,12 @@ export async function GET() {
     if (pr.member_id === session.memberId) myPicks.set(pr.match_id, pr.pick as Pick);
   }
 
-  // 8) Leaderboard (bara 1X2 núna)
+  // 8) Leaderboard (1X2 + bónus)
   const leaderboard = (members ?? []).map((m: any) => {
     let correct1x2 = 0;
     let points = 0;
 
+    // 1X2 stig
     for (const pr of preds ?? []) {
       if (pr.member_id !== m.id) continue;
       const match = matchById.get(pr.match_id);
@@ -122,6 +138,27 @@ export async function GET() {
       if (pr.pick === match.result) {
         correct1x2 += 1;
         points += pointsPer;
+      }
+    }
+
+    // Bónus stig
+    for (const ans of allBonusAnswers ?? []) {
+      if (ans.member_id !== m.id) continue;
+      const question = bonusById.get(ans.question_id);
+      if (!question) continue;
+
+      // Athuga hvort rétt svar sé sett
+      let isCorrect = false;
+      if (question.type === "number" && question.correct_number != null) {
+        isCorrect = ans.answer_number === question.correct_number;
+      } else if (question.type === "choice" && question.correct_choice != null) {
+        isCorrect = ans.answer_choice === question.correct_choice;
+      } else if (question.type === "player" && question.correct_player_id != null) {
+        isCorrect = ans.answer_player_id === question.correct_player_id;
+      }
+
+      if (isCorrect) {
+        points += question.points;
       }
     }
 

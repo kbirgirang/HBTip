@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type Pick = "1" | "X" | "2";
 type BonusType = "number" | "player" | "choice";
@@ -73,20 +74,23 @@ export default function RoomPage() {
   const header = useMemo(() => {
     if (!data) return null;
     return (
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">
-          {data.room.name} <span className="text-neutral-400">({data.room.code})</span>
-        </h1>
-        <p className="text-sm text-neutral-300">
-          Skráður inn sem <span className="font-semibold">{data.me.display_name}</span>. Stig per rétt 1X2:{" "}
-          <span className="font-semibold">{data.pointsPerCorrect1x2}</span>
-        </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold">
+            {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
+          </h1>
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">
+            Skráður inn sem <span className="font-semibold">{data.me.display_name}</span>. Stig per rétt 1X2:{" "}
+            <span className="font-semibold">{data.pointsPerCorrect1x2}</span>
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
     );
   }, [data]);
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+    <main className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mx-auto max-w-5xl px-4 py-10">
         {header}
 
@@ -99,8 +103,8 @@ export default function RoomPage() {
           </TabButton>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-          {!data && !err && <p className="text-neutral-300">Hleð...</p>}
+        <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/40">
+          {!data && !err && <p className="text-neutral-600 dark:text-neutral-300">Hleð...</p>}
 
           {err && (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -111,7 +115,7 @@ export default function RoomPage() {
           {data && tab === "matches" && (
             <div className="space-y-3">
               {data.matches.length === 0 ? (
-                <p className="text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
+                <p className="text-neutral-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
               ) : (
                 data.matches.map((m) => {
                   const started = new Date(m.starts_at).getTime() <= Date.now();
@@ -141,14 +145,14 @@ export default function RoomPage() {
                   }
 
                   return (
-                    <div key={m.id} className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                    <div key={m.id} className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950/40">
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <div className="font-semibold">
                             {m.home_team} vs {m.away_team}{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
-                          <div className="text-xs text-neutral-400">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
                             {m.stage ? `${m.stage} · ` : ""}
                             {new Date(m.starts_at).toLocaleString()}
                             {m.match_no != null ? ` · #${m.match_no}` : ""}
@@ -172,21 +176,21 @@ export default function RoomPage() {
                         </div>
                       </div>
 
-                      <div className="mt-2 text-sm text-neutral-300 flex items-center gap-2 flex-wrap">
+                      <div className="mt-2 text-sm text-neutral-700 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
                         <span>
                           Úrslit:{" "}
-                          <span className="rounded-lg border border-neutral-700 bg-neutral-950 px-2 py-1 font-mono">
+                          <span className="rounded-lg border border-neutral-300 bg-white px-2 py-1 font-mono dark:border-neutral-700 dark:bg-neutral-950">
                             {m.result ?? "-"}
                           </span>
                         </span>
 
                         {m.myPick && (
-                          <span className="text-xs text-neutral-400">
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             Þín spá: <span className="font-mono">{m.myPick}</span>
                           </span>
                         )}
 
-                        {started && <span className="text-xs text-neutral-400">(lokað)</span>}
+                        {started && <span className="text-xs text-neutral-500 dark:text-neutral-400">(lokað)</span>}
                       </div>
 
                       {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
@@ -201,9 +205,9 @@ export default function RoomPage() {
           )}
 
           {data && tab === "leaderboard" && (
-            <div className="overflow-hidden rounded-xl border border-neutral-800">
+            <div className="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800">
               <table className="w-full text-sm">
-                <thead className="bg-neutral-950/60 text-neutral-300">
+                <thead className="bg-neutral-100 text-neutral-700 dark:bg-neutral-950/60 dark:text-neutral-300">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Nafn</th>
@@ -213,7 +217,7 @@ export default function RoomPage() {
                 </thead>
                 <tbody>
                   {data.leaderboard.map((p, idx) => (
-                    <tr key={p.memberId} className="border-t border-neutral-800">
+                    <tr key={p.memberId} className="border-t border-neutral-200 dark:border-neutral-800">
                       <td className="px-3 py-2">{idx + 1}</td>
                       <td className="px-3 py-2">{p.displayName}</td>
                       <td className="px-3 py-2 text-right font-semibold">{p.points}</td>
@@ -330,21 +334,21 @@ function BonusAnswerCard({
       : bonus.my_answer_player_id;
 
   return (
-    <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950/60 p-3">
+    <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-950/60">
       <div className="flex items-start justify-between gap-3">
         <div className="font-semibold">Bónus: {bonus.title}</div>
-        <div className="text-xs text-neutral-300">
+        <div className="text-xs text-neutral-600 dark:text-neutral-300">
           +{bonus.points} stig · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
         </div>
       </div>
 
-      <div className="mt-1 text-xs text-neutral-400">Lokar þegar leikur byrjar.</div>
+      <div className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Lokar þegar leikur byrjar.</div>
 
       {/* ✅ sýna vistað svar ef til */}
       {myAnswerLabel != null && myAnswerLabel !== "" && (
-        <div className="mt-2 text-sm text-neutral-200">
+        <div className="mt-2 text-sm text-neutral-700 dark:text-neutral-200">
           Þitt svar:{" "}
-          <span className="rounded-lg border border-neutral-700 bg-neutral-950 px-2 py-1 font-mono">
+          <span className="rounded-lg border border-neutral-300 bg-white px-2 py-1 font-mono dark:border-neutral-700 dark:bg-neutral-950">
             {String(myAnswerLabel)}
           </span>
         </div>
@@ -358,14 +362,14 @@ function BonusAnswerCard({
             inputMode="decimal"
             placeholder="Skrifaðu tölu..."
             disabled={started}
-            className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500 disabled:opacity-60"
+            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-500 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-950"
           />
         )}
 
         {bonus.type === "choice" && (
           <div className="space-y-2">
             {(bonus.choice_options || []).map((opt) => (
-              <label key={opt} className="flex items-center gap-2 text-sm text-neutral-200">
+              <label key={opt} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
                 <input
                   type="radio"
                   name={`bonus_${bonus.id}`}
@@ -401,7 +405,7 @@ function BonusAnswerCard({
         <button
           onClick={save}
           disabled={saving || started}
-          className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+          className="w-full rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
         >
           {started ? "Bónus lokað" : saving ? "Vistast..." : "Vista bónus svar"}
         </button>
@@ -429,8 +433,8 @@ function TabButton({
       className={[
         "rounded-xl px-4 py-2 text-sm font-semibold border",
         active
-          ? "border-neutral-200 bg-neutral-100 text-neutral-900"
-          : "border-neutral-800 bg-neutral-900/40 text-neutral-200 hover:bg-neutral-900/70",
+          ? "border-neutral-200 bg-neutral-100 text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/40 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
       ].join(" ")}
     >
       {children}
@@ -456,10 +460,10 @@ function PickButton({
       className={[
         "h-10 w-10 rounded-lg border text-sm font-bold transition",
         disabled
-          ? "border-neutral-800 bg-neutral-900 text-neutral-600"
+          ? "border-neutral-300 bg-neutral-100 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
           : selected
-          ? "border-emerald-300 bg-emerald-300 text-emerald-950"
-          : "border-neutral-600 bg-neutral-100 text-neutral-900 hover:bg-white",
+          ? "border-emerald-300 bg-emerald-300 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950"
+          : "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700",
       ].join(" ")}
     >
       {children}

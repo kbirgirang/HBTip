@@ -99,28 +99,28 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+    <main className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mx-auto max-w-5xl px-4 py-10">
         <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight">Evrópukeppnin í handbolta 2026 - Vinnustaðatip</h1>
-          <p className="mt-2 text-neutral-300">
+          <p className="mt-2 text-neutral-600 dark:text-neutral-300">
             Búðu til deild fyrir vinnustaðinn eða join-aðu með deildar kóða + lykilorði
           </p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Create */}
-          <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow dark:border-neutral-800 dark:bg-neutral-900/40">
             <h2 className="text-xl font-semibold">Búa til deild</h2>
-            <p className="mt-1 text-sm text-neutral-300">
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
               Þú verður owner og færð owner password (geymdu það).
             </p>
 
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
               <div>
-                <label className="text-sm text-neutral-200">Nafn deildar</label>
+                <label className="text-sm text-neutral-700 dark:text-neutral-200">Nafn deildar</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950"
                   value={cRoomName}
                   onChange={(e) => setCRoomName(e.target.value)}
                   placeholder="t.d. Marel"
@@ -128,9 +128,9 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                <label className="text-sm text-neutral-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950"
                   value={cDisplayName}
                   onChange={(e) => setCDisplayName(e.target.value)}
                   placeholder="t.d. Kári"
@@ -138,10 +138,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
+                <label className="text-sm text-neutral-700 dark:text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950"
                   value={cJoinPassword}
                   onChange={(e) => setCJoinPassword(e.target.value)}
                   placeholder="minnst 6 stafir"
@@ -156,7 +156,7 @@ export default function HomePage() {
 
               <button
                 disabled={createLoading}
-                className="w-full rounded-xl bg-neutral-100 px-4 py-2 font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                className="w-full rounded-xl bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
               >
                 {createLoading ? "Bý til..." : "Búa til deild"}
               </button>
@@ -198,15 +198,15 @@ export default function HomePage() {
           </section>
 
           {/* Join */}
-          <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow dark:border-neutral-800 dark:bg-neutral-900/40">
             <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
-            <p className="mt-1 text-sm text-neutral-300">Sláðu inn deildanúmer og lykilorð.</p>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">Sláðu inn deildanúmer og lykilorð.</p>
 
             <form onSubmit={handleJoin} className="mt-6 space-y-4">
               <div>
-                <label className="text-sm text-neutral-200">Númer deildar</label>
+                <label className="text-sm text-neutral-700 dark:text-neutral-200">Númer deildar</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950"
                   value={jRoomCode}
                   onChange={(e) => setJRoomCode(e.target.value)}
                   placeholder="t.d. MAREL-9647"
@@ -214,9 +214,9 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                <label className="text-sm text-neutral-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950"
                   value={jDisplayName}
                   onChange={(e) => setJDisplayName(e.target.value)}
                   placeholder="t.d. Elís"
@@ -224,10 +224,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Lykilorð deildar</label>
+                <label className="text-sm text-neutral-700 dark:text-neutral-200">Lykilorð deildar</label>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950"
                   value={jJoinPassword}
                   onChange={(e) => setJJoinPassword(e.target.value)}
                 />
@@ -241,19 +241,19 @@ export default function HomePage() {
 
               <button
                 disabled={joinLoading}
-                className="w-full rounded-xl bg-neutral-100 px-4 py-2 font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                className="w-full rounded-xl bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
               >
                 {joinLoading ? "Join-a..." : "Join-a deildina"}
               </button>
 
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Ef nafnið þitt er þegar til í roominu, færðu villu (til að forðast tvítekningu).
               </p>
             </form>
           </section>
         </div>
 
-        <footer className="mt-10 text-xs text-neutral-500">
+        <footer className="mt-10 text-xs text-neutral-500 dark:text-neutral-400">
           MVP: handvirk úrslit + global bónusspurningar. Rooms eru fyrir vinnustaði.
         </footer>
       </div>

@@ -1,3 +1,4 @@
+// src/app/api/admin/bonus/list/route.ts
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
@@ -16,16 +17,18 @@ export async function GET() {
     // 1) Matches
     const { data: matches, error: mErr } = await supabaseServer
       .from("matches")
-      .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw")
+      .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result")
       .eq("tournament_id", t.id)
       .order("starts_at", { ascending: true });
 
     if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
 
-    // 2) Bonus questions
+    // 2) Bonus questions (include correct fields too)
     const { data: bonus, error: bErr } = await supabaseServer
       .from("bonus_questions")
-      .select("id, match_id, title, type, points, closes_at, choice_options")
+      .select(
+        "id, match_id, title, type, points, closes_at, choice_options, correct_number, correct_choice, correct_player_id"
+      )
       .eq("tournament_id", t.id);
 
     if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });

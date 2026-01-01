@@ -1,3 +1,4 @@
+// src/app/admin/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -357,21 +358,30 @@ export default function AdminPage() {
     }
   }
 
+  // ✅ FIX: editing mode so dropdown doesn't overwrite title, and Edit always fills everything
+  const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
+
   function prefillBonusFromRow(row: MatchWithBonus) {
-    if (!row?.bonus) return;
+    const q = row?.bonus;
+    if (!q) return;
 
+    clearAlerts();
+
+    setEditingBonusId(q.id);
     setBonusMatchId(row.id);
-    setBonusTitle(row.bonus.title || `Bónus: ${row.home_team} vs ${row.away_team}`);
-    setBonusType(row.bonus.type);
-    setBonusPoints(row.bonus.points ?? 5);
 
-    // ✅ correct fields prefill
-    setCorrectNumber(row.bonus.correct_number != null ? String(row.bonus.correct_number) : "");
-    setCorrectChoice(row.bonus.correct_choice || "");
-    setCorrectPlayerId(row.bonus.correct_player_id || "");
+    setBonusTitle(q.title || `Bónus: ${row.home_team} vs ${row.away_team}`);
+    setBonusType(q.type);
+    setBonusPoints(q.points ?? 5);
 
-    if (row.bonus.type === "choice") setBonusOptionsText((row.bonus.choice_options || []).join("\n"));
+    // choice options
+    if (q.type === "choice") setBonusOptionsText((q.choice_options || []).join("\n"));
     else setBonusOptionsText("");
+
+    // correct fields
+    setCorrectNumber(q.correct_number != null ? String(q.correct_number) : "");
+    setCorrectChoice(q.correct_choice || "");
+    setCorrectPlayerId(q.correct_player_id || "");
 
     flash("Bónus sett í form (Edit) ✏️");
   }
@@ -405,7 +415,7 @@ export default function AdminPage() {
   const [bonusPoints, setBonusPoints] = useState<number>(5);
   const [bonusOptionsText, setBonusOptionsText] = useState<string>("");
 
-  // ✅ NEW: correct answer inputs
+  // ✅ correct answer inputs
   const [correctNumber, setCorrectNumber] = useState<string>("");
   const [correctChoice, setCorrectChoice] = useState<string>("");
   const [correctPlayerId, setCorrectPlayerId] = useState<string>("");
@@ -431,7 +441,7 @@ export default function AdminPage() {
       .filter(Boolean);
   }, [bonusOptionsText]);
 
-  // ✅ keep correctChoice valid (if options changed)
+  // keep correctChoice valid (if options changed)
   useEffect(() => {
     if (bonusType !== "choice") return;
     if (!correctChoice) return;
@@ -442,8 +452,24 @@ export default function AdminPage() {
 
   function onSelectBonusMatch(id: string) {
     setBonusMatchId(id);
-    const m = matches.find((x) => x.id === id);
-    if (m && !bonusTitle.trim()) setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
+
+    // ✅ only auto template title if NOT editing
+    if (!editingBonusId) {
+      const m = matches.find((x) => x.id === id);
+      if (m) setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
+    }
+  }
+
+  function resetBonusForm() {
+    setEditingBonusId(null);
+    setBonusTitle("");
+    setBonusType("number");
+    setBonusPoints(5);
+    setBonusOptionsText("");
+
+    setCorrectNumber("");
+    setCorrectChoice("");
+    setCorrectPlayerId("");
   }
 
   async function saveBonus(e: React.FormEvent) {
@@ -465,7 +491,6 @@ export default function AdminPage() {
       const norm = options.map((x) => x.toLowerCase());
       if (new Set(norm).size !== options.length) return setErr("Valmöguleikar mega ekki vera tvíteknir.");
 
-      // correctChoice is optional, but if set it must be in options
       if (correctChoice && !options.includes(correctChoice)) return setErr("Rétt val er ekki í valmöguleikum.");
     }
 
@@ -484,7 +509,7 @@ export default function AdminPage() {
         points: bonusPoints,
         options: bonusType === "choice" ? options : [],
 
-        // ✅ send correct fields (optional)
+        // correct fields (optional)
         correctNumber: bonusType === "number" && correctNumber.trim() ? Number(correctNumber) : null,
         correctChoice: bonusType === "choice" && correctChoice ? correctChoice : null,
         correctPlayerId: bonusType === "player" && correctPlayerId ? correctPlayerId : null,
@@ -499,7 +524,9 @@ export default function AdminPage() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að vista bónus.");
 
-      flash("Bónus vistuð ✅");
+      flash(editingBonusId ? "Bónus uppfærð ✅" : "Bónus vistuð ✅");
+      setEditingBonusId(null);
+
       await loadMatches(true);
       await loadBonusList(true);
     } catch {
@@ -683,7 +710,7 @@ export default function AdminPage() {
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <div className="space-y-6">
               <Card
-                title="Setja bónus (eitt field)"
+                title={editingBonusId ? "Edit bónus" : "Setja bónus (eitt field)"}
                 subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa á match start."
                 right={
                   <button
@@ -761,7 +788,7 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* ✅ NEW: correct answer inputs */}
+                    {/* correct answer inputs */}
                     {bonusType === "number" && (
                       <div>
                         <label className="text-sm text-neutral-300">Rétt tala (valfrjálst)</label>
@@ -772,9 +799,6 @@ export default function AdminPage() {
                           placeholder="t.d. 7"
                           className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
                         />
-                        <p className="mt-1 text-xs text-neutral-500">
-                          Ef þú skilur autt, geturðu sett rétta tölu seinna með “set-correct” endpoint (eða edit).
-                        </p>
                       </div>
                     )}
 
@@ -811,8 +835,7 @@ export default function AdminPage() {
 
                     {bonusType === "player" && (
                       <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-                        Player bónus: þú þarft players lista til að velja “réttan leikmann”. (Segðu mér ef þú vilt bæta
-                        því við næst.)
+                        Player bónus: þú þarft players lista til að velja “réttan leikmann”.
                         <div className="mt-2">
                           <label className="text-sm text-neutral-200">Rétt player_id (valfrjálst)</label>
                           <input
@@ -825,12 +848,27 @@ export default function AdminPage() {
                       </div>
                     )}
 
-                    <button
-                      disabled={savingBonus}
-                      className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
-                    >
-                      {savingBonus ? "Vista..." : "Vista bónus"}
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        disabled={savingBonus}
+                        className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                      >
+                        {savingBonus ? "Vista..." : editingBonusId ? "Uppfæra bónus" : "Vista bónus"}
+                      </button>
+
+                      {editingBonusId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            resetBonusForm();
+                            flash("Hætti í Edit");
+                          }}
+                          className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
+                        >
+                          Hætta í Edit
+                        </button>
+                      )}
+                    </div>
 
                     <p className="text-xs text-neutral-500">
                       Þetta er “upsert” — ef bónus er þegar til á þessum leik, þá uppfærist hún.
@@ -913,7 +951,6 @@ export default function AdminPage() {
                                 </div>
                               )}
 
-                              {/* ✅ show correct answer if set */}
                               {q.type === "number" && q.correct_number != null && (
                                 <div className="mt-2 text-xs text-neutral-300">
                                   Rétt tala: <span className="font-mono">{q.correct_number}</span>

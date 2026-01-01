@@ -63,6 +63,7 @@ export default function AdminPage() {
   // SETTINGS
   // -----------------------------
   const [pointsPer1x2, setPointsPer1x2] = useState<number>(1);
+  const [pointsPerX, setPointsPerX] = useState<number | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
 
   async function saveSettings(e: React.FormEvent) {
@@ -71,6 +72,9 @@ export default function AdminPage() {
 
     if (!adminPassword) return setErr("Admin password vantar.");
     if (!Number.isFinite(pointsPer1x2) || pointsPer1x2 < 0) return setErr("Stig þurfa að vera 0 eða hærra.");
+    if (pointsPerX != null && (!Number.isFinite(pointsPerX) || pointsPerX < 0)) {
+      return setErr("X stig þurfa að vera 0 eða hærra eða tómur.");
+    }
 
     setSavingSettings(true);
     try {
@@ -80,6 +84,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           adminPassword,
           pointsPerCorrect1x2: pointsPer1x2,
+          pointsPerCorrectX: pointsPerX === null || pointsPerX === 0 ? null : pointsPerX,
         }),
       });
 
@@ -385,7 +390,7 @@ export default function AdminPage() {
     flash("Bónus sett í form (Edit) ✏️");
   }
 
-  // Check if ADMIN_PASSWORD is configured on mount
+  // Check if ADMIN_PASSWORD is configured on mount and load settings
   useEffect(() => {
     async function checkEnv() {
       try {
@@ -395,6 +400,18 @@ export default function AdminPage() {
       } catch {}
     }
     void checkEnv();
+
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/admin/settings/get");
+        const json = (await res.json()) as { pointsPerCorrect1x2: number; pointsPerCorrectX: number | null };
+        if (res.ok) {
+          setPointsPer1x2(json.pointsPerCorrect1x2 ?? 1);
+          setPointsPerX(json.pointsPerCorrectX ?? null);
+        }
+      } catch {}
+    }
+    void loadSettings();
   }, []);
 
   useEffect(() => {
@@ -725,7 +742,7 @@ export default function AdminPage() {
                     disabled={loadingMatches || loadingBonusList}
                     className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
                   >
-                    {loadingMatches || loadingBonusList ? "Hleð..." : "Refresh"}
+                    {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
                   </button>
                 }
               >
@@ -875,7 +892,7 @@ export default function AdminPage() {
                     disabled={loadingBonusList}
                     className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
                   >
-                    {loadingBonusList ? "Hleð..." : "Refresh"}
+                    {loadingBonusList ? "Hleð..." : "Endurlesa"}
                   </button>
                 }
               >
@@ -1014,7 +1031,7 @@ export default function AdminPage() {
 
                         <button
                           onClick={() => deleteMatch(m.id)}
-                          className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-100 hover:bg-red-500/15"
+                          className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
                         >
                           Delete
                         </button>
@@ -1042,6 +1059,26 @@ export default function AdminPage() {
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   />
                   <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">Dæmi: 1, 2 eða 3.</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">
+                    Stig per rétt X (valfrjálst)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={pointsPerX === null ? "" : pointsPerX}
+                    onChange={(e) => {
+                      const val = e.target.value === "" ? null : Number(e.target.value);
+                      setPointsPerX(val);
+                    }}
+                    placeholder="Tómur = sama og 1X2"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                    Ef tómur, nota sama stig og 1X2. Ef sett, nota þetta stig fyrir X.
+                  </p>
                 </div>
 
                 <button

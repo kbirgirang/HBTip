@@ -67,11 +67,12 @@ export async function GET() {
   // 5) Settings
   const { data: settings } = await supabaseServer
     .from("admin_settings")
-    .select("points_per_correct_1x2")
+    .select("points_per_correct_1x2, points_per_correct_x")
     .eq("tournament_id", room.tournament_id)
     .single();
 
   const pointsPer = settings?.points_per_correct_1x2 ?? 1;
+  const pointsPerX = settings?.points_per_correct_x ?? null; // null = nota pointsPer
 
   // 6) Members
   const { data: members, error: memErr } = await supabaseServer
@@ -136,7 +137,9 @@ export async function GET() {
       if (!match?.result) continue;
       if (pr.pick === match.result) {
         correct1x2 += 1;
-        points += pointsPer;
+        // Ef X og pointsPerX er sett, nota það, annars nota pointsPer
+        const pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
+        points += pointsForThis;
       }
     }
 

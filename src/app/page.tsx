@@ -263,7 +263,7 @@ export default function HomePage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Create */}
-          <section className="rounded-2xl border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
+          <section className="rounded-2xl border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-xl font-semibold">Búa til deild</h2>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
               Þú verður owner og færð owner password (geymdu það).
@@ -273,7 +273,7 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-neutral-700 dark:text-neutral-200">Nafn deildar</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cRoomName}
                   onChange={(e) => setCRoomName(e.target.value)}
                   placeholder="t.d. Marel"
@@ -372,7 +372,7 @@ export default function HomePage() {
           </section>
 
           {/* Join - Register/Login */}
-          <section className="rounded-2xl border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
+          <section className="rounded-2xl border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">Skráðu þig inn eða búðu til nýjan aðgang.</p>
 

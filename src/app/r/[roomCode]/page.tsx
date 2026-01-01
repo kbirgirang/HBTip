@@ -210,9 +210,9 @@ export default function RoomPage() {
     return (
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">
-          {data.room.name} <span className="text-neutral-400">({data.room.code})</span>
+          {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
-        <p className="text-sm text-neutral-300">
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">
           Skráður inn sem <span className="font-semibold">{data.me.display_name}</span>. Stig per rétt 1X2:{" "}
           <span className="font-semibold">{data.pointsPerCorrect1x2}</span>
         </p>
@@ -239,8 +239,8 @@ export default function RoomPage() {
           )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-          {!data && !err && <p className="text-neutral-300">Hleð...</p>}
+        <div className="mt-6 rounded-2xl border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6">
+          {!data && !err && <p className="text-neutral-600 dark:text-neutral-300">Hleð...</p>}
 
           {err && (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -251,7 +251,7 @@ export default function RoomPage() {
           {data && tab === "matches" && (
             <div className="space-y-3">
               {data.matches.length === 0 ? (
-                <p className="text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
+                <p className="text-neutral-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
               ) : (
                 data.matches.map((m) => {
                   const started = new Date(m.starts_at).getTime() <= Date.now();
@@ -282,14 +282,14 @@ export default function RoomPage() {
                   }
 
                   return (
-                    <div key={m.id} className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                    <div key={m.id} className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <div className="font-semibold">
                             {m.home_team} vs {m.away_team}{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
-                          <div className="text-xs text-neutral-400">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
                             {m.stage ? `${m.stage} · ` : ""}
                             {new Date(m.starts_at).toLocaleString()}
                             {m.match_no != null ? ` · #${m.match_no}` : ""}
@@ -313,10 +313,10 @@ export default function RoomPage() {
                         </div>
                       </div>
 
-                      <div className="mt-2 text-sm text-neutral-300 flex items-center gap-2 flex-wrap">
+                      <div className="mt-2 text-sm text-neutral-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
                         <span>
                           Úrslit:{" "}
-                          <span className="rounded-lg border border-neutral-700 bg-neutral-950 px-2 py-1 font-mono">
+                          <span className="rounded-lg border border-neutral-300 bg-neutral-100 px-2 py-1 font-mono text-neutral-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100">
                             {m.result ?? "-"}
                           </span>
                         </span>
@@ -331,7 +331,7 @@ export default function RoomPage() {
                                   ? m.myPick === m.result
                                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                                     : "bg-red-500/20 text-red-400 border border-red-500/30"
-                                  : "text-neutral-400",
+                                  : "text-neutral-500 dark:text-neutral-400",
                               ].join(" ")}
                             >
                               {m.myPick}
@@ -339,7 +339,7 @@ export default function RoomPage() {
                           </span>
                         )}
 
-                        {locked && <span className="text-xs text-neutral-400">(lokað)</span>}
+                        {locked && <span className="text-xs text-neutral-500 dark:text-neutral-400">(lokað)</span>}
                       </div>
 
                       {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
@@ -642,16 +642,16 @@ function BonusAnswerCard({
   // Minimalist view when locked
   if (locked) {
     return (
-      <div className="mt-3 rounded-lg border border-neutral-800 bg-neutral-950/40 p-2">
-        <div className="text-xs font-medium text-neutral-300">{bonus.title}</div>
+      <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-2">
+        <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{bonus.title}</div>
         <div className="mt-1.5 flex items-center gap-2 text-xs">
           {myAnswerLabel != null && myAnswerLabel !== "" ? (
             <>
-              <span className="text-neutral-400">Þitt:</span>
+              <span className="text-neutral-500 dark:text-neutral-400">Þitt:</span>
               <span
                 className={[
                   "font-semibold px-1.5 py-0.5 rounded",
-                  isCorrect ? "text-emerald-400 bg-emerald-500/20" : isWrong ? "text-red-400 bg-red-500/20" : "text-neutral-300",
+                  isCorrect ? "text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-500/20" : isWrong ? "text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-500/20" : "text-neutral-600 dark:text-neutral-300",
                 ].join(" ")}
               >
                 {String(myAnswerLabel)}
@@ -660,10 +660,10 @@ function BonusAnswerCard({
           ) : (
             <span className="text-neutral-500">Ekkert svar</span>
           )}
-          <span className="text-neutral-500">·</span>
-          <span className="text-neutral-400">Rétt:</span>
+          <span className="text-neutral-400 dark:text-neutral-500">·</span>
+          <span className="text-neutral-500 dark:text-neutral-400">Rétt:</span>
           {correctAnswerLabel != null ? (
-            <span className="font-semibold text-emerald-400">{String(correctAnswerLabel)}</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{String(correctAnswerLabel)}</span>
           ) : (
             <span className="text-neutral-500">-</span>
           )}
@@ -674,15 +674,15 @@ function BonusAnswerCard({
 
   // Full form when open
   return (
-    <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950/60 p-3">
+    <div className="mt-3 rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
       <div className="flex items-start justify-between gap-3">
-        <div className="font-semibold">Bónus: {bonus.title}</div>
-        <div className="text-xs text-neutral-300">
+        <div className="font-semibold text-neutral-900 dark:text-neutral-100">Bónus: {bonus.title}</div>
+        <div className="text-xs text-neutral-600 dark:text-neutral-300">
           +{bonus.points} stig · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
         </div>
       </div>
 
-      <div className="mt-1 text-xs text-neutral-400">
+      <div className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
         Lokar: {new Date(bonus.closes_at).toLocaleString()}
       </div>
 
@@ -703,14 +703,14 @@ function BonusAnswerCard({
             onChange={(e) => setAnswerNumber(e.target.value)}
             inputMode="decimal"
             placeholder="Skrifaðu tölu..."
-            className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
           />
         )}
 
         {bonus.type === "choice" && (
           <div className="space-y-2">
             {(bonus.choice_options || []).map((opt) => (
-              <label key={opt} className="flex items-center gap-2 text-sm text-neutral-200">
+              <label key={opt} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
                 <input
                   type="radio"
                   name={`bonus_${bonus.id}`}
@@ -740,7 +740,7 @@ function BonusAnswerCard({
         <button
           onClick={save}
           disabled={saving}
-          className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+          className="w-full rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
         >
           {saving ? "Vistast..." : "Vista bónus svar"}
         </button>
@@ -795,10 +795,10 @@ function PickButton({
       className={[
         "h-10 w-10 rounded-lg border text-sm font-bold transition",
         disabled
-          ? "border-neutral-800 bg-neutral-900 text-neutral-600"
+          ? "border-neutral-300 bg-neutral-100 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
           : selected
-          ? "border-emerald-300 bg-emerald-300 text-emerald-950"
-          : "border-neutral-600 bg-neutral-100 text-neutral-900 hover:bg-white",
+          ? "border-blue-500 bg-blue-100 text-blue-700 dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950"
+          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
       ].join(" ")}
     >
       {children}

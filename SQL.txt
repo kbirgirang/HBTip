@@ -1,7 +1,8 @@
 -- =========================
 -- Office Pool DB Schema (FRESH INSTALL)
--- Men’s EHF EURO 2026
+-- Men's EHF EURO 2026
 -- Bonus per match (1 per match) + CHOICE
+-- UPPFÆRT: Username + Password kerfi
 -- =========================
 
 create extension if not exists "pgcrypto";
@@ -80,18 +81,19 @@ for each row execute function public.set_updated_at();
 create index idx_rooms_tournament on public.rooms(tournament_id);
 
 -- -------------------------
--- 4) Room members
+-- 4) Room members (UPPFÆRT: username + password)
 -- -------------------------
 create table public.room_members (
   id uuid primary key default gen_random_uuid(),
   room_id uuid not null references public.rooms(id) on delete cascade,
 
+  username citext not null,
+  password_hash text not null,
   display_name text not null,
-  pin_hash text null,
   is_owner boolean not null default false,
 
   created_at timestamptz not null default now(),
-  unique (room_id, display_name)
+  unique (room_id, username)
 );
 
 create index idx_room_members_room on public.room_members(room_id);
@@ -161,7 +163,7 @@ create table public.players (
 create index idx_players_tournament on public.players(tournament_id);
 
 -- -------------------------
--- 8) Bonus questions (PER MATCH) + CHOICE
+-- 8) Bonus questions (PER MATCH) + CHOICE (UPPFÆRT: bara number og choice)
 -- -------------------------
 create type public.bonus_type as enum ('number', 'choice');
 
@@ -248,7 +250,7 @@ create index idx_bonus_answers_member on public.bonus_answers(member_id);
 -- 10) Seed
 -- -------------------------
 insert into public.tournaments (slug, name, is_active)
-values ('mens-ehf-euro-2026', 'Men’s EHF EURO 2026', true)
+values ('mens-ehf-euro-2026', 'Men's EHF EURO 2026', true)
 on conflict (slug) do nothing;
 
 insert into public.admin_settings (tournament_id, points_per_correct_1x2, timezone)

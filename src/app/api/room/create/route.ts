@@ -8,6 +8,8 @@ type Body = {
   roomName: string;
   joinPassword: string;
   ownerPassword?: string;
+  ownerUsername: string;
+  ownerPassword_user: string;
   displayName: string;
 };
 
@@ -23,11 +25,19 @@ export async function POST(req: Request) {
 
   const roomName = (body.roomName || "").trim();
   const joinPassword = (body.joinPassword || "").trim();
+  const ownerUsername = (body.ownerUsername || "").trim().toLowerCase();
+  const ownerPassword_user = (body.ownerPassword_user || "").trim();
   const displayName = (body.displayName || "").trim();
   const ownerPassword = (body.ownerPassword || "").trim() || generateOwnerPassword();
 
   if (roomName.length < 2) {
     return NextResponse.json({ error: "roomName is required" }, { status: 400 });
+  }
+  if (ownerUsername.length < 3) {
+    return NextResponse.json({ error: "Owner username þarf að vera amk 3 stafir" }, { status: 400 });
+  }
+  if (ownerPassword_user.length < 6) {
+    return NextResponse.json({ error: "Owner password þarf að vera amk 6 stafir" }, { status: 400 });
   }
   if (displayName.length < 2) {
     return NextResponse.json({ error: "displayName is required" }, { status: 400 });
@@ -77,13 +87,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: rErr?.message || "Failed to create room" }, { status: 500 });
   }
 
+  const ownerPasswordHash = await hashPassword(ownerPassword_user);
+
   const { data: member, error: mErr } = await supabaseServer
     .from("room_members")
     .insert({
       room_id: room.id,
+      username: ownerUsername,
+      password_hash: ownerPasswordHash,
       display_name: displayName,
       is_owner: true,
-      pin_hash: null,
     })
     .select("id")
     .single();

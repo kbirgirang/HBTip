@@ -27,10 +27,14 @@ type BonusRow = {
   points: number;
   closes_at: string;
   choice_options?: string[] | null;
+
+  // ✅ correct fields (admin can set)
+  correct_number?: number | null;
+  correct_choice?: string | null;
+  correct_player_id?: string | null;
 };
 
 type MatchWithBonus = MatchRow & { bonus: BonusRow | null };
-
 type AdminBonusListResponse = { matches: MatchWithBonus[] };
 
 type Tab = "create" | "results" | "settings";
@@ -79,10 +83,7 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að vista stillingar.");
-        return;
-      }
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að vista stillingar.");
 
       flash("Stillingar vistaðar ✅");
     } catch {
@@ -130,10 +131,7 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að búa til leik.");
-        return;
-      }
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að búa til leik.");
 
       setHomeTeam("");
       setAwayTeam("");
@@ -150,8 +148,6 @@ export default function AdminPage() {
 
   // -----------------------------
   // BULK INSERT
-  // Format:
-  // stage | home | away | YYYY-MM-DD HH:mm | draw/nodraw | matchNo?
   // -----------------------------
   const [bulkText, setBulkText] = useState(
     [
@@ -245,19 +241,15 @@ export default function AdminPage() {
           }),
         });
 
-        if (res.ok) {
-          ok += 1;
-        } else {
+        if (res.ok) ok += 1;
+        else {
           const j = await res.json().catch(() => ({}));
           failed.push(`${r.raw}  →  ${j?.error || "unknown error"}`);
         }
       }
 
-      if (failed.length) {
-        setErr(`Setti inn ${ok}/${rows.length}. Villur:\n- ` + failed.join("\n- "));
-      } else {
-        flash(`Setti inn ${ok} leiki ✅`);
-      }
+      if (failed.length) setErr(`Setti inn ${ok}/${rows.length}. Villur:\n- ` + failed.join("\n- "));
+      else flash(`Setti inn ${ok} leiki ✅`);
     } catch {
       setErr("Tenging klikkaði.");
     } finally {
@@ -266,7 +258,7 @@ export default function AdminPage() {
   }
 
   // -----------------------------
-  // RESULTS + DELETE + BONUS (single form)
+  // RESULTS + DELETE
   // -----------------------------
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
@@ -278,15 +270,10 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/matches", { cache: "no-store" });
       const json = (await res.json()) as Partial<AdminMatchesResponse> & { error?: string };
 
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að sækja leiki.");
-        return;
-      }
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að sækja leiki.");
 
       const list = json.matches || [];
       setMatches(list);
-
-      // set default selected match for bonus
       setBonusMatchId((prev) => prev || (list[0]?.id ?? ""));
 
       if (!silent) flash("Leikir uppfærðir ✅");
@@ -296,72 +283,6 @@ export default function AdminPage() {
       setLoadingMatches(false);
     }
   }
-
-  // -----------------------------
-  // BONUS LIST (show existing)
-  // -----------------------------
-  const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
-  const [loadingBonusList, setLoadingBonusList] = useState(false);
-
-  async function loadBonusList(silent?: boolean) {
-    if (!silent) clearAlerts();
-    setLoadingBonusList(true);
-    try {
-      const res = await fetch("/api/admin/bonus/list", { cache: "no-store" });
-      const json = (await res.json()) as Partial<AdminBonusListResponse> & { error?: string };
-
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að sækja bónus lista.");
-        return;
-      }
-
-      setMatchesWithBonus(json.matches || []);
-      if (!silent) flash("Bónus listi uppfærður ✅");
-    } catch {
-      setErr("Tenging klikkaði.");
-    } finally {
-      setLoadingBonusList(false);
-    }
-  }
-
-  function prefillBonusFromRow(row: MatchWithBonus) {
-    if (!row?.bonus) return;
-
-    setBonusMatchId(row.id);
-    setBonusTitle(row.bonus.title || `Bónus: ${row.home_team} vs ${row.away_team}`);
-    setBonusType(row.bonus.type);
-    setBonusPoints(row.bonus.points ?? 5);
-    if (row.bonus.type === "choice") {
-      setBonusOptionsText((row.bonus.choice_options || []).join("\n"));
-    } else {
-      setBonusOptionsText("");
-    }
-    flash("Bónus sett í form (Edit) ✏️");
-  }
-
-  // Check if ADMIN_PASSWORD is configured on mount
-  useEffect(() => {
-    async function checkEnv() {
-      try {
-        const res = await fetch("/api/admin/check-env");
-        const json = (await res.json()) as { adminPasswordConfigured: boolean };
-        if (!json.adminPasswordConfigured) {
-          setErr("ADMIN_PASSWORD not set");
-        }
-      } catch {
-        // Silent fail - will show error when user tries to use functionality
-      }
-    }
-    void checkEnv();
-  }, []);
-
-  useEffect(() => {
-    if (tab === "results") {
-      void loadMatches(true);
-      void loadBonusList(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
 
   async function setResult(matchId: string, result: "1" | "X" | "2" | null) {
     clearAlerts();
@@ -375,10 +296,7 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að vista úrslit.");
-        return;
-      }
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að vista úrslit.");
 
       setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, result } : m)));
       flash("Úrslit vistuð ✅");
@@ -405,10 +323,7 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að eyða leik.");
-        return;
-      }
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að eyða leik.");
 
       setMatches((prev) => prev.filter((x) => x.id !== matchId));
       setMatchesWithBonus((prev) => prev.filter((x) => x.id !== matchId));
@@ -419,24 +334,116 @@ export default function AdminPage() {
   }
 
   // -----------------------------
-  // BONUS (ONE FORM)
+  // BONUS LIST
+  // -----------------------------
+  const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
+  const [loadingBonusList, setLoadingBonusList] = useState(false);
+
+  async function loadBonusList(silent?: boolean) {
+    if (!silent) clearAlerts();
+    setLoadingBonusList(true);
+    try {
+      const res = await fetch("/api/admin/bonus/list", { cache: "no-store" });
+      const json = (await res.json()) as Partial<AdminBonusListResponse> & { error?: string };
+
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að sækja bónus lista.");
+
+      setMatchesWithBonus(json.matches || []);
+      if (!silent) flash("Bónus listi uppfærður ✅");
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoadingBonusList(false);
+    }
+  }
+
+  function prefillBonusFromRow(row: MatchWithBonus) {
+    if (!row?.bonus) return;
+
+    setBonusMatchId(row.id);
+    setBonusTitle(row.bonus.title || `Bónus: ${row.home_team} vs ${row.away_team}`);
+    setBonusType(row.bonus.type);
+    setBonusPoints(row.bonus.points ?? 5);
+
+    // ✅ correct fields prefill
+    setCorrectNumber(row.bonus.correct_number != null ? String(row.bonus.correct_number) : "");
+    setCorrectChoice(row.bonus.correct_choice || "");
+    setCorrectPlayerId(row.bonus.correct_player_id || "");
+
+    if (row.bonus.type === "choice") setBonusOptionsText((row.bonus.choice_options || []).join("\n"));
+    else setBonusOptionsText("");
+
+    flash("Bónus sett í form (Edit) ✏️");
+  }
+
+  // Check if ADMIN_PASSWORD is configured on mount
+  useEffect(() => {
+    async function checkEnv() {
+      try {
+        const res = await fetch("/api/admin/check-env");
+        const json = (await res.json()) as { adminPasswordConfigured: boolean };
+        if (!json.adminPasswordConfigured) setErr("ADMIN_PASSWORD not set");
+      } catch {}
+    }
+    void checkEnv();
+  }, []);
+
+  useEffect(() => {
+    if (tab === "results") {
+      void loadMatches(true);
+      void loadBonusList(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // -----------------------------
+  // BONUS FORM
   // -----------------------------
   const [bonusMatchId, setBonusMatchId] = useState<string>("");
   const [bonusTitle, setBonusTitle] = useState<string>("");
   const [bonusType, setBonusType] = useState<BonusType>("number");
   const [bonusPoints, setBonusPoints] = useState<number>(5);
   const [bonusOptionsText, setBonusOptionsText] = useState<string>("");
+
+  // ✅ NEW: correct answer inputs
+  const [correctNumber, setCorrectNumber] = useState<string>("");
+  const [correctChoice, setCorrectChoice] = useState<string>("");
+  const [correctPlayerId, setCorrectPlayerId] = useState<string>("");
+
   const [savingBonus, setSavingBonus] = useState(false);
+
+  // þegar type skiptir: hreinsa óviðkomandi correct fields
+  useEffect(() => {
+    if (bonusType !== "choice") {
+      setBonusOptionsText("");
+      setCorrectChoice("");
+    }
+    if (bonusType !== "number") setCorrectNumber("");
+    if (bonusType !== "player") setCorrectPlayerId("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bonusType]);
+
+  // derived choice options list
+  const parsedChoiceOptions = useMemo(() => {
+    return bonusOptionsText
+      .split("\n")
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }, [bonusOptionsText]);
+
+  // ✅ keep correctChoice valid (if options changed)
+  useEffect(() => {
+    if (bonusType !== "choice") return;
+    if (!correctChoice) return;
+    if (!parsedChoiceOptions.includes(correctChoice)) setCorrectChoice("");
+  }, [bonusType, parsedChoiceOptions, correctChoice]);
 
   const selectedBonusMatch = useMemo(() => matches.find((m) => m.id === bonusMatchId) ?? null, [matches, bonusMatchId]);
 
   function onSelectBonusMatch(id: string) {
     setBonusMatchId(id);
-    // default title template
     const m = matches.find((x) => x.id === id);
-    if (m && !bonusTitle.trim()) {
-      setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
-    }
+    if (m && !bonusTitle.trim()) setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
   }
 
   async function saveBonus(e: React.FormEvent) {
@@ -450,34 +457,47 @@ export default function AdminPage() {
 
     let options: string[] = [];
     if (bonusType === "choice") {
-      options = bonusOptionsText
-        .split("\n")
-        .map((x) => x.trim())
-        .filter(Boolean);
-      if (options.length < 2) return setErr("Krossa spurning þarf minnst 2 valmöguleika.");
-      if (options.length > 6) return setErr("Hámark 6 valmöguleikar.");
+      options = parsedChoiceOptions;
+
+      if (options.length < 2 || options.length > 6) {
+        return setErr("Valmöguleikar þurfa að vera 2–6 línur (1 per línu).");
+      }
+      const norm = options.map((x) => x.toLowerCase());
+      if (new Set(norm).size !== options.length) return setErr("Valmöguleikar mega ekki vera tvíteknir.");
+
+      // correctChoice is optional, but if set it must be in options
+      if (correctChoice && !options.includes(correctChoice)) return setErr("Rétt val er ekki í valmöguleikum.");
+    }
+
+    if (bonusType === "number" && correctNumber.trim()) {
+      const n = Number(correctNumber);
+      if (!Number.isFinite(n)) return setErr("Rétt tala er ógild.");
     }
 
     setSavingBonus(true);
     try {
+      const payload: any = {
+        adminPassword,
+        matchId: bonusMatchId,
+        title: bonusTitle.trim(),
+        type: bonusType,
+        points: bonusPoints,
+        options: bonusType === "choice" ? options : [],
+
+        // ✅ send correct fields (optional)
+        correctNumber: bonusType === "number" && correctNumber.trim() ? Number(correctNumber) : null,
+        correctChoice: bonusType === "choice" && correctChoice ? correctChoice : null,
+        correctPlayerId: bonusType === "player" && correctPlayerId ? correctPlayerId : null,
+      };
+
       const res = await fetch("/api/admin/bonus/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          adminPassword,
-          matchId: bonusMatchId,
-          title: bonusTitle.trim(),
-          type: bonusType,
-          points: bonusPoints,
-          options: bonusType === "choice" ? options : [],
-        }),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(json?.error || "Ekki tókst að vista bónus.");
-        return;
-      }
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að vista bónus.");
 
       flash("Bónus vistuð ✅");
       await loadMatches(true);
@@ -741,16 +761,67 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {bonusType === "choice" && (
+                    {/* ✅ NEW: correct answer inputs */}
+                    {bonusType === "number" && (
                       <div>
-                        <label className="text-sm text-neutral-300">Valmöguleikar (1 per línu, 2–6)</label>
-                        <textarea
-                          value={bonusOptionsText}
-                          onChange={(e) => setBonusOptionsText(e.target.value)}
-                          rows={4}
-                          placeholder={"Dæmi:\nIceland\nSweden\nDraw"}
-                          className="mt-1 w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
+                        <label className="text-sm text-neutral-300">Rétt tala (valfrjálst)</label>
+                        <input
+                          value={correctNumber}
+                          onChange={(e) => setCorrectNumber(e.target.value)}
+                          inputMode="decimal"
+                          placeholder="t.d. 7"
+                          className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
                         />
+                        <p className="mt-1 text-xs text-neutral-500">
+                          Ef þú skilur autt, geturðu sett rétta tölu seinna með “set-correct” endpoint (eða edit).
+                        </p>
+                      </div>
+                    )}
+
+                    {bonusType === "choice" && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm text-neutral-300">Valmöguleikar (1 per línu, 2–6)</label>
+                          <textarea
+                            value={bonusOptionsText}
+                            onChange={(e) => setBonusOptionsText(e.target.value)}
+                            rows={4}
+                            placeholder={"Dæmi:\nIceland\nSweden\nDraw"}
+                            className="mt-1 w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm text-neutral-300">Rétt val (valfrjálst)</label>
+                          <select
+                            value={correctChoice}
+                            onChange={(e) => setCorrectChoice(e.target.value)}
+                            className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                          >
+                            <option value="">— ekki sett —</option>
+                            {parsedChoiceOptions.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {bonusType === "player" && (
+                      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+                        Player bónus: þú þarft players lista til að velja “réttan leikmann”. (Segðu mér ef þú vilt bæta
+                        því við næst.)
+                        <div className="mt-2">
+                          <label className="text-sm text-neutral-200">Rétt player_id (valfrjálst)</label>
+                          <input
+                            value={correctPlayerId}
+                            onChange={(e) => setCorrectPlayerId(e.target.value)}
+                            placeholder="player uuid..."
+                            className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -839,6 +910,23 @@ export default function AdminPage() {
                               {q.type === "choice" && (
                                 <div className="mt-2 text-xs text-neutral-400">
                                   Valmöguleikar: {(q.choice_options || []).join(" · ")}
+                                </div>
+                              )}
+
+                              {/* ✅ show correct answer if set */}
+                              {q.type === "number" && q.correct_number != null && (
+                                <div className="mt-2 text-xs text-neutral-300">
+                                  Rétt tala: <span className="font-mono">{q.correct_number}</span>
+                                </div>
+                              )}
+                              {q.type === "choice" && q.correct_choice && (
+                                <div className="mt-2 text-xs text-neutral-300">
+                                  Rétt val: <span className="font-semibold">{q.correct_choice}</span>
+                                </div>
+                              )}
+                              {q.type === "player" && q.correct_player_id && (
+                                <div className="mt-2 text-xs text-neutral-300">
+                                  Rétt player_id: <span className="font-mono">{q.correct_player_id}</span>
                                 </div>
                               )}
                             </div>

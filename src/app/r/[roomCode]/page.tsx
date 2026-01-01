@@ -766,10 +766,10 @@ function TabButton({
     <button
       onClick={onClick}
       className={[
-        "rounded-xl px-4 py-2 text-sm font-semibold border",
+        "rounded-xl px-4 py-2 text-sm font-semibold border transition",
         active
-          ? "border-neutral-200 bg-neutral-100 text-neutral-900"
-          : "border-neutral-800 bg-neutral-900/40 text-neutral-200 hover:bg-neutral-900/70",
+          ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-blue-500 dark:bg-blue-500 dark:text-white"
+          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
       ].join(" ")}
     >
       {children}

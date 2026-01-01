@@ -115,9 +115,10 @@ export default function RoomPage() {
               ) : (
                 data.matches.map((m) => {
                   const started = new Date(m.starts_at).getTime() <= Date.now();
+                  const locked = started || m.result != null;
 
                   async function pick(p: Pick) {
-                    if (started) return;
+                    if (locked) return;
 
                     const res = await fetch("/api/prediction/set", {
                       method: "POST",
@@ -156,17 +157,17 @@ export default function RoomPage() {
                         </div>
 
                         <div className="flex gap-2">
-                          <PickButton selected={m.myPick === "1"} disabled={started} onClick={() => pick("1")}>
+                          <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
                             1
                           </PickButton>
 
                           {m.allow_draw && (
-                            <PickButton selected={m.myPick === "X"} disabled={started} onClick={() => pick("X")}>
+                            <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
                               X
                             </PickButton>
                           )}
 
-                          <PickButton selected={m.myPick === "2"} disabled={started} onClick={() => pick("2")}>
+                          <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
                             2
                           </PickButton>
                         </div>
@@ -186,7 +187,7 @@ export default function RoomPage() {
                           </span>
                         )}
 
-                        {started && <span className="text-xs text-neutral-400">(lokað)</span>}
+                        {locked && <span className="text-xs text-neutral-400">(lokað)</span>}
                       </div>
 
                       {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
@@ -249,6 +250,8 @@ function BonusAnswerCard({
   const [localErr, setLocalErr] = useState<string | null>(null);
 
   const started = useMemo(() => new Date(matchStartsAt).getTime() <= Date.now(), [matchStartsAt]);
+  const bonusClosed = useMemo(() => new Date(bonus.closes_at).getTime() <= Date.now(), [bonus.closes_at]);
+  const locked = started || bonusClosed;
 
   const [answerNumber, setAnswerNumber] = useState<string>(
     bonus.my_answer_number != null ? String(bonus.my_answer_number) : ""
@@ -266,8 +269,8 @@ function BonusAnswerCard({
   async function save() {
     setLocalErr(null);
 
-    if (started) {
-      setLocalErr("Bónus er lokað (leikur er byrjaður).");
+    if (locked) {
+      setLocalErr("Bónus er lokað.");
       return;
     }
 
@@ -338,7 +341,9 @@ function BonusAnswerCard({
         </div>
       </div>
 
-      <div className="mt-1 text-xs text-neutral-400">Lokar þegar leikur byrjar.</div>
+      <div className="mt-1 text-xs text-neutral-400">
+        {locked ? "Lokað" : `Lokar: ${new Date(bonus.closes_at).toLocaleString()}`}
+      </div>
 
       {/* ✅ sýna vistað svar ef til */}
       {myAnswerLabel != null && myAnswerLabel !== "" && (
@@ -357,7 +362,7 @@ function BonusAnswerCard({
             onChange={(e) => setAnswerNumber(e.target.value)}
             inputMode="decimal"
             placeholder="Skrifaðu tölu..."
-            disabled={started}
+            disabled={locked}
             className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500 disabled:opacity-60"
           />
         )}
@@ -372,7 +377,7 @@ function BonusAnswerCard({
                   value={opt}
                   checked={answerChoice === opt}
                   onChange={() => setAnswerChoice(opt)}
-                  disabled={started}
+                  disabled={locked}
                 />
                 <span>{opt}</span>
               </label>
@@ -400,10 +405,10 @@ function BonusAnswerCard({
 
         <button
           onClick={save}
-          disabled={saving || started}
+          disabled={saving || locked}
           className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
         >
-          {started ? "Bónus lokað" : saving ? "Vistast..." : "Vista bónus svar"}
+          {locked ? "Bónus lokað" : saving ? "Vistast..." : "Vista bónus svar"}
         </button>
       </div>
     </div>

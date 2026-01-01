@@ -37,8 +37,10 @@ export async function POST(req: Request) {
     }
 
     // finished_at: set when result is set, cleared when result is cleared
-    const finishedAt = body.result ? new Date().toISOString() : null;
+    const nowIso = new Date().toISOString();
+    const finishedAt = body.result ? nowIso : null;
 
+    // 1) Update match result
     const { error } = await supabaseServer
       .from("matches")
       .update({
@@ -50,6 +52,19 @@ export async function POST(req: Request) {
     if (error) {
       console.error("set-result DB error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // 2) If result was set -> close bonus immediately
+    if (body.result) {
+      const { error: bErr } = await supabaseServer
+        .from("bonus_questions")
+        .update({ closes_at: nowIso })
+        .eq("match_id", body.matchId);
+
+      if (bErr) {
+        console.error("set-result bonus close error:", bErr);
+        return NextResponse.json({ error: bErr.message }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ ok: true });

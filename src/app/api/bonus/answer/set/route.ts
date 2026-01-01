@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 type Body = {
   questionId: string;
   answerNumber?: number | null;
+  answerChoice?: string | null; // ef type=choice
   answerPlayerName?: string | null; // ef type=player
   answerPlayerTeam?: string | null; // valfrjálst
 };
@@ -16,20 +17,36 @@ export async function POST(req: Request) {
   const body = (await req.json()) as Body;
   if (!body.questionId) return NextResponse.json({ error: "questionId required" }, { status: 400 });
 
-  // Sækja spurningu og athuga lokun
+  // 1) Fetch question with match_id
   const { data: q, error: qErr } = await supabaseServer
     .from("bonus_questions")
-    .select("id, tournament_id, type, closes_at")
+    .select("id, tournament_id, type, closes_at, match_id")
     .eq("id", body.questionId)
     .single();
 
   if (qErr || !q) return NextResponse.json({ error: "Question not found" }, { status: 404 });
 
-  if (new Date(q.closes_at).getTime() <= Date.now()) {
-    return NextResponse.json({ error: "Bonus question is closed" }, { status: 400 });
+  // 2) Fetch match to check starts_at and result
+  const { data: match, error: mErr } = await supabaseServer
+    .from("matches")
+    .select("starts_at, result")
+    .eq("id", q.match_id)
+    .single();
+
+  if (mErr || !match) return NextResponse.json({ error: "Match not found" }, { status: 404 });
+
+  // 3) Lock check: match started OR bonus closed OR result is set
+  const now = Date.now();
+  const started = new Date(match.starts_at).getTime() <= now;
+  const bonusClosed = new Date(q.closes_at).getTime() <= now;
+  const locked = started || bonusClosed || match.result != null;
+
+  if (locked) {
+    return NextResponse.json({ error: "Bónus er lokað." }, { status: 400 });
   }
 
   let answer_number: number | null = null;
+  let answer_choice: string | null = null;
   let answer_player_id: string | null = null;
 
   if (q.type === "number") {
@@ -37,6 +54,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "answerNumber required" }, { status: 400 });
     }
     answer_number = Number(body.answerNumber);
+  } else if (q.type === "choice") {
+    if (!body.answerChoice || typeof body.answerChoice !== "string" || body.answerChoice.trim() === "") {
+      return NextResponse.json({ error: "answerChoice required" }, { status: 400 });
+    }
+    answer_choice = body.answerChoice.trim();
   } else if (q.type === "player") {
     const name = (body.answerPlayerName || "").trim();
     if (name.length < 2) return NextResponse.json({ error: "answerPlayerName required" }, { status: 400 });
@@ -79,6 +101,7 @@ export async function POST(req: Request) {
         member_id: session.memberId,
         question_id: q.id,
         answer_number,
+        answer_choice,
         answer_player_id,
       },
       { onConflict: "member_id,question_id" }
@@ -86,5 +109,5 @@ export async function POST(req: Request) {
 
   if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, answer_number, answer_player_id });
+  return NextResponse.json({ ok: true, answer_number, answer_choice, answer_player_id });
 }

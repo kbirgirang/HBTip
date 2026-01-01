@@ -42,6 +42,11 @@ export async function POST(req: Request) {
     // Fyrir choice
     const optionsText = body?.optionsText; // textarea lines
 
+    // Correct fields (valfrjálst)
+    const correctNumber = body?.correctNumber != null ? Number(body.correctNumber) : null;
+    const correctChoice = body?.correctChoice ? String(body.correctChoice).trim() : null;
+    const correctPlayerId = body?.correctPlayerId ? String(body.correctPlayerId).trim() : null;
+
     if (!adminPassword) {
       return NextResponse.json({ error: "Admin password vantar." }, { status: 400 });
     }
@@ -93,6 +98,14 @@ export async function POST(req: Request) {
       choiceOptions = opts;
     }
 
+    // Validate correct fields based on type
+    if (type === "number" && correctNumber != null && !Number.isFinite(correctNumber)) {
+      return NextResponse.json({ error: "correctNumber er ógild tala." }, { status: 400 });
+    }
+    if (type === "choice" && correctChoice && choiceOptions && !choiceOptions.includes(correctChoice)) {
+      return NextResponse.json({ error: "correctChoice er ekki í valmöguleikum." }, { status: 400 });
+    }
+
     // Upsert per match (1 bónus per match)
     const payload: any = {
       tournament_id: match.tournament_id,
@@ -102,10 +115,10 @@ export async function POST(req: Request) {
       points,
       closes_at: closesAt,
 
-      // Rétt svar sett seinna í set-correct route
-      correct_number: null,
-      correct_player_id: null,
-      correct_choice: null,
+      // Correct fields (set úr body eða null)
+      correct_number: type === "number" ? correctNumber : null,
+      correct_choice: type === "choice" ? correctChoice : null,
+      correct_player_id: type === "player" ? correctPlayerId : null,
 
       // Choice
       choice_options: choiceOptions,

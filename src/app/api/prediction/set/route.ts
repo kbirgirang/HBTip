@@ -18,10 +18,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "matchId and pick required" }, { status: 400 });
   }
 
-  // Fetch match to check start time + allow_draw
+  // Fetch match to check start time, result, and allow_draw
   const { data: match, error: mErr } = await supabaseServer
     .from("matches")
-    .select("id, starts_at, allow_draw")
+    .select("id, starts_at, allow_draw, result")
     .eq("id", body.matchId)
     .single();
 
@@ -34,9 +34,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Draw not allowed for this match" }, { status: 400 });
   }
 
-  // Deadline check
-  if (new Date(match.starts_at).getTime() <= Date.now()) {
-    return NextResponse.json({ error: "Match already started" }, { status: 400 });
+  // Lock check: match started OR result is set
+  const started = new Date(match.starts_at).getTime() <= Date.now();
+  const locked = started || match.result != null;
+
+  if (locked) {
+    return NextResponse.json({ error: "Leikur er lokaður. Ekki hægt að breyta spá." }, { status: 400 });
   }
 
   // Upsert prediction

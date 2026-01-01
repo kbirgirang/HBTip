@@ -511,9 +511,9 @@ export default function RoomPage() {
           )}
 
           {data && tab === "leaderboard" && (
-            <div className="overflow-hidden rounded-xl border border-neutral-800">
+            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800">
               <table className="w-full text-sm">
-                <thead className="bg-neutral-950/60 text-neutral-300">
+                <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Nafn</th>
@@ -524,12 +524,12 @@ export default function RoomPage() {
                 </thead>
                 <tbody>
                   {data.leaderboard.map((p, idx) => (
-                    <tr key={p.memberId} className="border-t border-neutral-800">
-                      <td className="px-3 py-2">{idx + 1}</td>
-                      <td className="px-3 py-2">{p.displayName}</td>
-                      <td className="px-3 py-2 text-right font-semibold">{p.points}</td>
-                      <td className="px-3 py-2 text-right text-neutral-400">{p.correct1x2}</td>
-                      <td className="px-3 py-2 text-right text-neutral-400">{p.bonusPoints || 0}</td>
+                    <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
+                      <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{idx + 1}</td>
+                      <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
+                      <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
+                      <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
+                      <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
                     </tr>
                   ))}
                 </tbody>

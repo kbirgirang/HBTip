@@ -1,0 +1,45 @@
+import { NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
+
+export async function GET() {
+  try {
+    const tournamentSlug = "mens-ehf-euro-2026";
+
+    const { data: t, error: tErr } = await supabaseServer
+      .from("tournaments")
+      .select("id")
+      .eq("slug", tournamentSlug)
+      .single();
+
+    if (tErr || !t) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
+
+    // 1) Matches
+    const { data: matches, error: mErr } = await supabaseServer
+      .from("matches")
+      .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw")
+      .eq("tournament_id", t.id)
+      .order("starts_at", { ascending: true });
+
+    if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
+
+    // 2) Bonus questions
+    const { data: bonus, error: bErr } = await supabaseServer
+      .from("bonus_questions")
+      .select("id, match_id, title, type, points, closes_at, choice_options")
+      .eq("tournament_id", t.id);
+
+    if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
+
+    const bonusByMatchId = new Map<string, any>();
+    for (const q of bonus ?? []) bonusByMatchId.set(q.match_id, q);
+
+    const out = (matches ?? []).map((m) => ({
+      ...m,
+      bonus: bonusByMatchId.get(m.id) ?? null,
+    }));
+
+    return NextResponse.json({ matches: out });
+  } catch {
+    return NextResponse.json({ error: "Óvænt villa." }, { status: 500 });
+  }
+}

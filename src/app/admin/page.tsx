@@ -19,6 +19,20 @@ type AdminMatchesResponse = {
   matches: MatchRow[];
 };
 
+type BonusRow = {
+  id: string;
+  match_id: string;
+  title: string;
+  type: BonusType;
+  points: number;
+  closes_at: string;
+  choice_options?: string[] | null;
+};
+
+type MatchWithBonus = MatchRow & { bonus: BonusRow | null };
+
+type AdminBonusListResponse = { matches: MatchWithBonus[] };
+
 type Tab = "create" | "results" | "settings";
 
 export default function AdminPage() {
@@ -283,6 +297,48 @@ export default function AdminPage() {
     }
   }
 
+  // -----------------------------
+  // BONUS LIST (show existing)
+  // -----------------------------
+  const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
+  const [loadingBonusList, setLoadingBonusList] = useState(false);
+
+  async function loadBonusList(silent?: boolean) {
+    if (!silent) clearAlerts();
+    setLoadingBonusList(true);
+    try {
+      const res = await fetch("/api/admin/bonus/list", { cache: "no-store" });
+      const json = (await res.json()) as Partial<AdminBonusListResponse> & { error?: string };
+
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að sækja bónus lista.");
+        return;
+      }
+
+      setMatchesWithBonus(json.matches || []);
+      if (!silent) flash("Bónus listi uppfærður ✅");
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoadingBonusList(false);
+    }
+  }
+
+  function prefillBonusFromRow(row: MatchWithBonus) {
+    if (!row?.bonus) return;
+
+    setBonusMatchId(row.id);
+    setBonusTitle(row.bonus.title || `Bónus: ${row.home_team} vs ${row.away_team}`);
+    setBonusType(row.bonus.type);
+    setBonusPoints(row.bonus.points ?? 5);
+    if (row.bonus.type === "choice") {
+      setBonusOptionsText((row.bonus.choice_options || []).join("\n"));
+    } else {
+      setBonusOptionsText("");
+    }
+    flash("Bónus sett í form (Edit) ✏️");
+  }
+
   // Check if ADMIN_PASSWORD is configured on mount
   useEffect(() => {
     async function checkEnv() {
@@ -300,7 +356,10 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (tab === "results") void loadMatches(true);
+    if (tab === "results") {
+      void loadMatches(true);
+      void loadBonusList(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -352,6 +411,7 @@ export default function AdminPage() {
       }
 
       setMatches((prev) => prev.filter((x) => x.id !== matchId));
+      setMatchesWithBonus((prev) => prev.filter((x) => x.id !== matchId));
       flash("Leik eytt ✅");
     } catch {
       setErr("Tenging klikkaði.");
@@ -420,9 +480,8 @@ export default function AdminPage() {
       }
 
       flash("Bónus vistuð ✅");
-      // ekki tæma allt (oft vill maður breyta aðeins)
-      // en við refreshum leiki (ef þú vilt sjá nýja röð o.s.frv.)
       await loadMatches(true);
+      await loadBonusList(true);
     } catch {
       setErr("Tenging klikkaði.");
     } finally {
@@ -446,6 +505,10 @@ export default function AdminPage() {
       </div>
     );
   }, [adminPassword]);
+
+  const bonusCount = useMemo(() => {
+    return (matchesWithBonus || []).reduce((acc, m) => acc + (m.bonus ? 1 : 0), 0);
+  }, [matchesWithBonus]);
 
   return (
     <main className="min-h-screen bg-neutral-950 text-neutral-100">
@@ -598,109 +661,203 @@ export default function AdminPage() {
         {/* RESULTS + BONUS */}
         {tab === "results" && (
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <Card
-              title="Setja bónus (eitt field)"
-              subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa á match start."
-              right={
-                <button
-                  onClick={() => loadMatches()}
-                  disabled={loadingMatches}
-                  className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                >
-                  {loadingMatches ? "Hleð..." : "Refresh"}
-                </button>
-              }
-            >
-              {matches.length === 0 ? (
-                <p className="text-sm text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
-              ) : (
-                <form onSubmit={saveBonus} className="space-y-4">
-                  <div>
-                    <label className="text-sm text-neutral-300">Leikur</label>
-                    <select
-                      value={bonusMatchId}
-                      onChange={(e) => onSelectBonusMatch(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
-                    >
-                      {matches.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {(m.match_no != null ? `#${m.match_no} · ` : "") +
-                            `${m.home_team} vs ${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedBonusMatch && (
-                      <p className="mt-1 text-xs text-neutral-500">
-                        {selectedBonusMatch.stage ? `${selectedBonusMatch.stage} · ` : ""}
-                        {selectedBonusMatch.allow_draw ? "X leyft" : "X óvirkt"} ·
-                        {" "}
-                        Lokar: {new Date(selectedBonusMatch.starts_at).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-neutral-300">Bónus spurning</label>
-                    <input
-                      value={bonusTitle}
-                      onChange={(e) => setBonusTitle(e.target.value)}
-                      placeholder="t.d. Hver skorar flest mörk?"
-                      className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
-                    />
-                  </div>
-
-                  <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-6">
+              <Card
+                title="Setja bónus (eitt field)"
+                subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa á match start."
+                right={
+                  <button
+                    onClick={() => {
+                      void loadMatches();
+                      void loadBonusList(true);
+                    }}
+                    disabled={loadingMatches || loadingBonusList}
+                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                  >
+                    {loadingMatches || loadingBonusList ? "Hleð..." : "Refresh"}
+                  </button>
+                }
+              >
+                {matches.length === 0 ? (
+                  <p className="text-sm text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
+                ) : (
+                  <form onSubmit={saveBonus} className="space-y-4">
                     <div>
-                      <label className="text-sm text-neutral-300">Tegund</label>
+                      <label className="text-sm text-neutral-300">Leikur</label>
                       <select
-                        value={bonusType}
-                        onChange={(e) => setBonusType(e.target.value as BonusType)}
+                        value={bonusMatchId}
+                        onChange={(e) => onSelectBonusMatch(e.target.value)}
                         className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
                       >
-                        <option value="number">Tala</option>
-                        <option value="player">Leikmaður</option>
-                        <option value="choice">Krossa</option>
+                        {matches.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {(m.match_no != null ? `#${m.match_no} · ` : "") +
+                              `${m.home_team} vs ${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
+                          </option>
+                        ))}
                       </select>
+                      {selectedBonusMatch && (
+                        <p className="mt-1 text-xs text-neutral-500">
+                          {selectedBonusMatch.stage ? `${selectedBonusMatch.stage} · ` : ""}
+                          {selectedBonusMatch.allow_draw ? "X leyft" : "X óvirkt"} · Lokar:{" "}
+                          {new Date(selectedBonusMatch.starts_at).toLocaleString()}
+                        </p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="text-sm text-neutral-300">Stig</label>
+                      <label className="text-sm text-neutral-300">Bónus spurning</label>
                       <input
-                        type="number"
-                        min={1}
-                        value={bonusPoints}
-                        onChange={(e) => setBonusPoints(Number(e.target.value))}
+                        value={bonusTitle}
+                        onChange={(e) => setBonusTitle(e.target.value)}
+                        placeholder="t.d. Hver skorar flest mörk?"
                         className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
                       />
                     </div>
-                  </div>
 
-                  {bonusType === "choice" && (
-                    <div>
-                      <label className="text-sm text-neutral-300">Valmöguleikar (1 per línu, 2–6)</label>
-                      <textarea
-                        value={bonusOptionsText}
-                        onChange={(e) => setBonusOptionsText(e.target.value)}
-                        rows={4}
-                        placeholder={"Dæmi:\nIceland\nSweden\nDraw"}
-                        className="mt-1 w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
-                      />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div>
+                        <label className="text-sm text-neutral-300">Tegund</label>
+                        <select
+                          value={bonusType}
+                          onChange={(e) => setBonusType(e.target.value as BonusType)}
+                          className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                        >
+                          <option value="number">Tala</option>
+                          <option value="player">Leikmaður</option>
+                          <option value="choice">Krossa</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-neutral-300">Stig</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={bonusPoints}
+                          onChange={(e) => setBonusPoints(Number(e.target.value))}
+                          className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                        />
+                      </div>
                     </div>
-                  )}
 
+                    {bonusType === "choice" && (
+                      <div>
+                        <label className="text-sm text-neutral-300">Valmöguleikar (1 per línu, 2–6)</label>
+                        <textarea
+                          value={bonusOptionsText}
+                          onChange={(e) => setBonusOptionsText(e.target.value)}
+                          rows={4}
+                          placeholder={"Dæmi:\nIceland\nSweden\nDraw"}
+                          className="mt-1 w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
+                        />
+                      </div>
+                    )}
+
+                    <button
+                      disabled={savingBonus}
+                      className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                    >
+                      {savingBonus ? "Vista..." : "Vista bónus"}
+                    </button>
+
+                    <p className="text-xs text-neutral-500">
+                      Þetta er “upsert” — ef bónus er þegar til á þessum leik, þá uppfærist hún.
+                    </p>
+                  </form>
+                )}
+              </Card>
+
+              <Card
+                title={`Bónus spurningar (í gangi) · ${bonusCount}`}
+                subtitle="Sjáðu hvaða leikir eru með bónus. Edit setur í formið."
+                right={
                   <button
-                    disabled={savingBonus}
-                    className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                    onClick={() => loadBonusList()}
+                    disabled={loadingBonusList}
+                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
                   >
-                    {savingBonus ? "Vista..." : "Vista bónus"}
+                    {loadingBonusList ? "Hleð..." : "Refresh"}
                   </button>
+                }
+              >
+                {matchesWithBonus.filter((x) => x.bonus).length === 0 ? (
+                  <p className="text-sm text-neutral-300">Engar bónus spurningar komnar inn ennþá.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {matchesWithBonus
+                      .filter((x) => x.bonus)
+                      .map((m) => {
+                        const q = m.bonus!;
+                        const closed = new Date(q.closes_at).getTime() <= Date.now();
 
-                  <p className="text-xs text-neutral-500">
-                    Þetta er “upsert” — ef bónus er þegar til á þessum leik, þá uppfærist hún.
-                  </p>
-                </form>
-              )}
-            </Card>
+                        return (
+                          <div
+                            key={q.id}
+                            className="flex flex-col gap-2 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className="font-semibold">
+                                  {m.home_team} vs {m.away_team}{" "}
+                                  {m.match_no != null ? (
+                                    <span className="text-xs text-neutral-400">· #{m.match_no}</span>
+                                  ) : null}
+                                </div>
+                                <div className="text-xs text-neutral-400">
+                                  {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
+                                </div>
+                              </div>
+
+                              <div className="text-xs">
+                                <span
+                                  className={[
+                                    "rounded-lg border px-2 py-1",
+                                    closed
+                                      ? "border-neutral-700 bg-neutral-900 text-neutral-300"
+                                      : "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+                                  ].join(" ")}
+                                >
+                                  {closed ? "Lokað" : "Opið"}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="font-semibold">Bónus: {q.title}</div>
+                                <div className="text-xs text-neutral-300">
+                                  +{q.points} stig ·{" "}
+                                  {q.type === "number" ? "tala" : q.type === "player" ? "leikmaður" : "krossa"}
+                                </div>
+                              </div>
+
+                              <div className="mt-1 text-xs text-neutral-400">
+                                Lokar: {new Date(q.closes_at).toLocaleString()}
+                              </div>
+
+                              {q.type === "choice" && (
+                                <div className="mt-2 text-xs text-neutral-400">
+                                  Valmöguleikar: {(q.choice_options || []).join(" · ")}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => prefillBonusFromRow(m)}
+                                className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </Card>
+            </div>
 
             <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Delete.">
               {matches.length === 0 ? (

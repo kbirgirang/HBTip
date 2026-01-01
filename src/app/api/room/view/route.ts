@@ -35,13 +35,34 @@ export async function GET() {
 
   if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
 
-  // 4) Bonus questions PER MATCH (1 per match)
+  // 4) Bonus questions PER MATCH (1 per match) + choice fields
   const { data: bonusQs, error: bErr } = await supabaseServer
     .from("bonus_questions")
-    .select("id, match_id, title, type, points, closes_at, correct_number, correct_player_id")
+    .select(
+      "id, match_id, title, type, points, closes_at, correct_number, correct_player_id, choice_options, correct_choice"
+    )
     .eq("tournament_id", room.tournament_id);
 
   if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
+
+  // 4b) My bonus answers (for this member) - only for questions we have
+  const qIds = (bonusQs ?? []).map((q: any) => q.id);
+  let myBonusAnswers: any[] = [];
+
+  if (qIds.length > 0) {
+    const { data: ans, error: aErr } = await supabaseServer
+      .from("bonus_answers")
+      .select("question_id, answer_number, answer_player_id, answer_choice")
+      .eq("room_id", room.id)
+      .eq("member_id", session.memberId)
+      .in("question_id", qIds);
+
+    if (aErr) return NextResponse.json({ error: aErr.message }, { status: 500 });
+    myBonusAnswers = ans ?? [];
+  }
+
+  const myAnswerByQid = new Map<string, any>();
+  for (const a of myBonusAnswers) myAnswerByQid.set(a.question_id, a);
 
   // 5) Settings
   const { data: settings } = await supabaseServer
@@ -69,25 +90,32 @@ export async function GET() {
   if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
 
   // --- Lookup maps
-  const matchById = new Map((matches ?? []).map((x) => [x.id, x]));
+  const matchById = new Map((matches ?? []).map((x: any) => [x.id, x]));
+
+  // bonus per match map (merge in my answers)
   const bonusByMatchId = new Map<string, any>();
   for (const q of bonusQs ?? []) {
-    // 1 per match - ef eitthvað er tví-tekið þá vinnur síðasta (en unique index á að stoppa það)
-    bonusByMatchId.set(q.match_id, q);
+    const mine = myAnswerByQid.get(q.id);
+    bonusByMatchId.set(q.match_id, {
+      ...q,
+      my_answer_number: mine?.answer_number ?? null,
+      my_answer_player_id: mine?.answer_player_id ?? null,
+      my_answer_choice: mine?.answer_choice ?? null,
+    });
   }
 
   // --- My picks
   const myPicks = new Map<string, Pick>();
-  for (const pr of preds ?? []) {
+  for (const pr of (preds ?? [])) {
     if (pr.member_id === session.memberId) myPicks.set(pr.match_id, pr.pick as Pick);
   }
 
   // 8) Leaderboard (bara 1X2 núna)
-  const leaderboard = (members ?? []).map((m) => {
+  const leaderboard = (members ?? []).map((m: any) => {
     let correct1x2 = 0;
     let points = 0;
 
-    for (const pr of preds ?? []) {
+    for (const pr of (preds ?? [])) {
       if (pr.member_id !== m.id) continue;
       const match = matchById.get(pr.match_id);
       if (!match?.result) continue;
@@ -101,11 +129,11 @@ export async function GET() {
   });
 
   leaderboard.sort(
-    (a, b) => b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
+    (a: any, b: any) => b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
   );
 
   // 9) Return matches with myPick + bonus
-  const matchesOut = (matches ?? []).map((m) => ({
+  const matchesOut = (matches ?? []).map((m: any) => ({
     ...m,
     myPick: myPicks.get(m.id) ?? null,
     bonus: bonusByMatchId.get(m.id) ?? null,

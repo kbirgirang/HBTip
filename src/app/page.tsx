@@ -33,6 +33,7 @@ export default function HomePage() {
 
   // Login form state
   const [lRoomCode, setLRoomCode] = useState("");
+  const [lJoinPassword, setLJoinPassword] = useState("");
   const [lUsername, setLUsername] = useState("");
   const [lPassword, setLPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -124,6 +125,7 @@ export default function HomePage() {
     setLoginError(null);
 
     if (lRoomCode.trim().length < 2) return setLoginError("Room code vantar.");
+    if (lJoinPassword.trim().length < 1) return setLoginError("Join password vantar.");
     if (lUsername.trim().length < 1) return setLoginError("Username vantar.");
     if (lPassword.trim().length < 1) return setLoginError("Password vantar.");
 
@@ -134,6 +136,7 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           roomCode: lRoomCode,
+          joinPassword: lJoinPassword,
           username: lUsername,
           password: lPassword,
         }),
@@ -316,6 +319,17 @@ export default function HomePage() {
                     value={lRoomCode}
                     onChange={(e) => setLRoomCode(e.target.value)}
                     placeholder="t.d. MAREL-9647"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-neutral-200">Lykilorð deildar</label>
+                  <input
+                    type="password"
+                    className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                    value={lJoinPassword}
+                    onChange={(e) => setLJoinPassword(e.target.value)}
+                    placeholder="Join password fyrir deildina"
                   />
                 </div>
 

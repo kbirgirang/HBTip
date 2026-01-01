@@ -48,7 +48,7 @@ export default function HomePage() {
       const data = (await res.json()) as CreateResp;
 
       if (!res.ok || "error" in data) {
-        setCreateError("error" in data ? data.error : "Ekki tókst að búa til room.");
+        setCreateError("error" in data ? data.error : "Ekki tókst að búa til deildina.");
         return;
       }
 
@@ -158,7 +158,7 @@ export default function HomePage() {
                 disabled={createLoading}
                 className="w-full rounded-xl bg-neutral-100 px-4 py-2 font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
               >
-                {createLoading ? "Bý til..." : "Búa til room"}
+                {createLoading ? "Bý til..." : "Búa til deild"}
               </button>
             </form>
 
@@ -243,7 +243,7 @@ export default function HomePage() {
                 disabled={joinLoading}
                 className="w-full rounded-xl bg-neutral-100 px-4 py-2 font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
               >
-                {joinLoading ? "Join-a..." : "Join-a room"}
+                {joinLoading ? "Join-a..." : "Join-a deildina"}
               </button>
 
               <p className="text-xs text-neutral-400">

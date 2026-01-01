@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
 type Pick = "1" | "X" | "2";
-
 type BonusType = "number" | "player" | "choice";
 
 type ViewData = {
@@ -61,7 +60,7 @@ export default function RoomPage() {
     const json = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      setErr(json?.error || "Ekki tókst að sækja gögn.");
+      setErr((json as any)?.error || "Ekki tókst að sækja gögn.");
       return;
     }
     setData(json as ViewData);
@@ -192,11 +191,7 @@ export default function RoomPage() {
 
                       {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
                       {m.bonus && (
-                        <BonusAnswerCard
-                          bonus={m.bonus}
-                          matchStartsAt={m.starts_at}
-                          onSaved={() => void load()}
-                        />
+                        <BonusAnswerCard bonus={m.bonus} matchStartsAt={m.starts_at} onSaved={() => void load()} />
                       )}
                     </div>
                   );
@@ -261,6 +256,13 @@ function BonusAnswerCard({
   const [answerChoice, setAnswerChoice] = useState<string>(bonus.my_answer_choice || "");
   const [answerPlayerId, setAnswerPlayerId] = useState<string>(bonus.my_answer_player_id || "");
 
+  // ✅ mikilvægt: ef load() kemur með ný gögn, sync-a state
+  useEffect(() => {
+    setAnswerNumber(bonus.my_answer_number != null ? String(bonus.my_answer_number) : "");
+    setAnswerChoice(bonus.my_answer_choice || "");
+    setAnswerPlayerId(bonus.my_answer_player_id || "");
+  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice, bonus.my_answer_player_id]);
+
   async function save() {
     setLocalErr(null);
 
@@ -308,6 +310,10 @@ function BonusAnswerCard({
         return;
       }
 
+      // ✅ sýna strax (án þess að bíða eftir reload)
+      if (bonus.type === "number") setAnswerNumber(String(Number(answerNumber)));
+      if (bonus.type === "choice") setAnswerChoice(answerChoice);
+
       onSaved?.();
     } catch {
       setLocalErr("Tenging klikkaði.");
@@ -315,6 +321,13 @@ function BonusAnswerCard({
       setSaving(false);
     }
   }
+
+  const myAnswerLabel =
+    bonus.type === "number"
+      ? bonus.my_answer_number
+      : bonus.type === "choice"
+      ? bonus.my_answer_choice
+      : bonus.my_answer_player_id;
 
   return (
     <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950/60 p-3">
@@ -326,6 +339,16 @@ function BonusAnswerCard({
       </div>
 
       <div className="mt-1 text-xs text-neutral-400">Lokar þegar leikur byrjar.</div>
+
+      {/* ✅ sýna vistað svar ef til */}
+      {myAnswerLabel != null && myAnswerLabel !== "" && (
+        <div className="mt-2 text-sm text-neutral-200">
+          Þitt svar:{" "}
+          <span className="rounded-lg border border-neutral-700 bg-neutral-950 px-2 py-1 font-mono">
+            {String(myAnswerLabel)}
+          </span>
+        </div>
+      )}
 
       <div className="mt-3 space-y-3">
         {bonus.type === "number" && (

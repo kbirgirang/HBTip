@@ -106,7 +106,7 @@ export async function GET() {
 
   // --- My picks
   const myPicks = new Map<string, Pick>();
-  for (const pr of (preds ?? [])) {
+  for (const pr of preds ?? []) {
     if (pr.member_id === session.memberId) myPicks.set(pr.match_id, pr.pick as Pick);
   }
 
@@ -115,7 +115,7 @@ export async function GET() {
     let correct1x2 = 0;
     let points = 0;
 
-    for (const pr of (preds ?? [])) {
+    for (const pr of preds ?? []) {
       if (pr.member_id !== m.id) continue;
       const match = matchById.get(pr.match_id);
       if (!match?.result) continue;
@@ -129,7 +129,8 @@ export async function GET() {
   });
 
   leaderboard.sort(
-    (a: any, b: any) => b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
+    (a: any, b: any) =>
+      b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
   );
 
   // 9) Return matches with myPick + bonus

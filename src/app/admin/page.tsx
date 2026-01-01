@@ -550,7 +550,7 @@ export default function AdminPage() {
             onChange={(e) => setAdminPassword(e.target.value)}
             type="password"
             placeholder="••••••••"
-            className="w-56 rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+            className="w-56 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
           />
         </div>
       </div>
@@ -567,7 +567,7 @@ export default function AdminPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-bold">Admin</h1>
-            <p className="mt-1 text-sm text-neutral-400">Settu inn leiki, úrslit og stillingar.</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">Settu inn leiki, úrslit og stillingar.</p>
           </div>
           {headerRight}
         </div>
@@ -605,9 +605,9 @@ export default function AdminPage() {
             <Card title="Búa til leik (stakur)" subtitle="Fljótleg leið fyrir einn leik í einu.">
               <form onSubmit={createMatch} className="space-y-4">
                 <div>
-                  <label className="text-sm text-neutral-300">Stage</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Stage</label>
                   <input
-                    className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={stage}
                     onChange={(e) => setStage(e.target.value)}
                   />
@@ -615,18 +615,18 @@ export default function AdminPage() {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="text-sm text-neutral-300">Home</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Home</label>
                     <input
-                      className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={homeTeam}
                       onChange={(e) => setHomeTeam(e.target.value)}
                       placeholder="Iceland"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-neutral-300">Away</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Away</label>
                     <input
-                      className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={awayTeam}
                       onChange={(e) => setAwayTeam(e.target.value)}
                       placeholder="Sweden"
@@ -636,35 +636,35 @@ export default function AdminPage() {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="text-sm text-neutral-300">Starts at</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Starts at</label>
                     <input
                       type="datetime-local"
-                      className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={startsAtLocal}
                       onChange={(e) => setStartsAtLocal(e.target.value)}
                     />
-                    <p className="mt-1 text-xs text-neutral-500">Vistað sem ISO/UTC.</p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">Vistað sem ISO/UTC.</p>
                   </div>
 
                   <div>
-                    <label className="text-sm text-neutral-300">Match no (valfrjálst)</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Match no (valfrjálst)</label>
                     <input
                       type="number"
-                      className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={matchNo}
                       onChange={(e) => setMatchNo(e.target.value === "" ? "" : Number(e.target.value))}
                     />
                   </div>
                 </div>
 
-                <label className="flex items-center gap-2 text-sm text-neutral-300">
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-300">
                   <input type="checkbox" checked={allowDraw} onChange={(e) => setAllowDraw(e.target.checked)} />
                   Allow draw (X) — riðlar ✅ / útsláttur ❌
                 </label>
 
                 <button
                   disabled={creatingMatch}
-                  className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
                   {creatingMatch ? "Bý til..." : "Búa til leik"}
                 </button>
@@ -673,9 +673,9 @@ export default function AdminPage() {
 
             <Card title="Setja inn marga leiki (bulk)" subtitle="Límdu inn línur — einn leikur per lína.">
               <div className="space-y-3">
-                <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3">
-                  <div className="text-xs text-neutral-400">Format:</div>
-                  <div className="mt-1 font-mono text-xs text-neutral-200">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 p-3">
+                  <div className="text-xs text-slate-600 dark:text-neutral-400">Format:</div>
+                  <div className="mt-1 font-mono text-xs text-slate-900 dark:text-neutral-200">
                     Stage | Home | Away | YYYY-MM-DD HH:mm | draw/nodraw | matchNo?
                   </div>
                 </div>
@@ -684,14 +684,14 @@ export default function AdminPage() {
                   value={bulkText}
                   onChange={(e) => setBulkText(e.target.value)}
                   rows={10}
-                  className="w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
+                  className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 font-mono text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                 />
 
                 <div className="flex items-center gap-2">
                   <button
                     disabled={bulkLoading}
                     onClick={bulkCreate}
-                    className="flex-1 rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                    className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                   >
                     {bulkLoading ? "Set inn..." : "Setja inn alla"}
                   </button>
@@ -699,7 +699,7 @@ export default function AdminPage() {
                   <button
                     disabled={bulkLoading}
                     onClick={() => setBulkText("")}
-                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                   >
                     Hreinsa
                   </button>
@@ -730,15 +730,15 @@ export default function AdminPage() {
                 }
               >
                 {matches.length === 0 ? (
-                  <p className="text-sm text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
+                  <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
                 ) : (
                   <form onSubmit={saveBonus} className="space-y-4">
                     <div>
-                      <label className="text-sm text-neutral-300">Leikur</label>
+                      <label className="text-sm text-slate-700 dark:text-neutral-300">Leikur</label>
                       <select
                         value={bonusMatchId}
                         onChange={(e) => onSelectBonusMatch(e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       >
                         {matches.map((m) => (
                           <option key={m.id} value={m.id}>
@@ -748,7 +748,7 @@ export default function AdminPage() {
                         ))}
                       </select>
                       {selectedBonusMatch && (
-                        <p className="mt-1 text-xs text-neutral-500">
+                        <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
                           {selectedBonusMatch.stage ? `${selectedBonusMatch.stage} · ` : ""}
                           {selectedBonusMatch.allow_draw ? "X leyft" : "X óvirkt"} · Lokar:{" "}
                           {new Date(selectedBonusMatch.starts_at).toLocaleString()}
@@ -757,22 +757,22 @@ export default function AdminPage() {
                     </div>
 
                     <div>
-                      <label className="text-sm text-neutral-300">Bónus spurning</label>
+                      <label className="text-sm text-slate-700 dark:text-neutral-300">Bónus spurning</label>
                       <input
                         value={bonusTitle}
                         onChange={(e) => setBonusTitle(e.target.value)}
                         placeholder="t.d. Hver skorar flest mörk?"
-                        className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       />
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-2">
                       <div>
-                        <label className="text-sm text-neutral-300">Tegund</label>
+                        <label className="text-sm text-slate-700 dark:text-neutral-300">Tegund</label>
                         <select
                           value={bonusType}
                           onChange={(e) => setBonusType(e.target.value as BonusType)}
-                          className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                          className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                         >
                           <option value="number">Tala</option>
                           <option value="choice">Krossa</option>
@@ -780,13 +780,13 @@ export default function AdminPage() {
                       </div>
 
                       <div>
-                        <label className="text-sm text-neutral-300">Stig</label>
+                        <label className="text-sm text-slate-700 dark:text-neutral-300">Stig</label>
                         <input
                           type="number"
                           min={1}
                           value={bonusPoints}
                           onChange={(e) => setBonusPoints(Number(e.target.value))}
-                          className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                          className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                         />
                       </div>
                     </div>
@@ -794,13 +794,13 @@ export default function AdminPage() {
                     {/* correct answer inputs */}
                     {bonusType === "number" && (
                       <div>
-                        <label className="text-sm text-neutral-300">Rétt tala (valfrjálst)</label>
+                        <label className="text-sm text-slate-700 dark:text-neutral-300">Rétt tala (valfrjálst)</label>
                         <input
                           value={correctNumber}
                           onChange={(e) => setCorrectNumber(e.target.value)}
                           inputMode="decimal"
                           placeholder="t.d. 7"
-                          className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                          className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                         />
                       </div>
                     )}
@@ -808,22 +808,22 @@ export default function AdminPage() {
                     {bonusType === "choice" && (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-sm text-neutral-300">Valmöguleikar (1 per línu, 2–6)</label>
+                          <label className="text-sm text-slate-700 dark:text-neutral-300">Valmöguleikar (1 per línu, 2–6)</label>
                           <textarea
                             value={bonusOptionsText}
                             onChange={(e) => setBonusOptionsText(e.target.value)}
                             rows={4}
                             placeholder={"Dæmi:\nIceland\nSweden\nDraw"}
-                            className="mt-1 w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
+                            className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 font-mono text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                           />
                         </div>
 
                         <div>
-                          <label className="text-sm text-neutral-300">Rétt val (valfrjálst)</label>
+                          <label className="text-sm text-slate-700 dark:text-neutral-300">Rétt val (valfrjálst)</label>
                           <select
                             value={correctChoice}
                             onChange={(e) => setCorrectChoice(e.target.value)}
-                            className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                           >
                             <option value="">— ekki sett —</option>
                             {parsedChoiceOptions.map((opt) => (
@@ -840,7 +840,7 @@ export default function AdminPage() {
                     <div className="flex flex-col gap-2">
                       <button
                         disabled={savingBonus}
-                        className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                        className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                       >
                         {savingBonus ? "Vista..." : editingBonusId ? "Uppfæra bónus" : "Vista bónus"}
                       </button>
@@ -852,14 +852,14 @@ export default function AdminPage() {
                             resetBonusForm();
                             flash("Hætti í Edit");
                           }}
-                          className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                         >
                           Hætta í Edit
                         </button>
                       )}
                     </div>
 
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-slate-500 dark:text-neutral-500">
                       Þetta er “upsert” — ef bónus er þegar til á þessum leik, þá uppfærist hún.
                     </p>
                   </form>
@@ -880,7 +880,7 @@ export default function AdminPage() {
                 }
               >
                 {matchesWithBonus.filter((x) => x.bonus).length === 0 ? (
-                  <p className="text-sm text-neutral-300">Engar bónus spurningar komnar inn ennþá.</p>
+                  <p className="text-sm text-slate-600 dark:text-neutral-300">Engar bónus spurningar komnar inn ennþá.</p>
                 ) : (
                   <div className="space-y-3">
                     {matchesWithBonus
@@ -892,17 +892,17 @@ export default function AdminPage() {
                         return (
                           <div
                             key={q.id}
-                            className="flex flex-col gap-2 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4"
+                            className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-4"
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <div className="font-semibold">
                                   {m.home_team} vs {m.away_team}{" "}
                                   {m.match_no != null ? (
-                                    <span className="text-xs text-neutral-400">· #{m.match_no}</span>
+                                    <span className="text-xs text-slate-500 dark:text-neutral-400">· #{m.match_no}</span>
                                   ) : null}
                                 </div>
-                                <div className="text-xs text-neutral-400">
+                                <div className="text-xs text-slate-600 dark:text-neutral-400">
                                   {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
                                 </div>
                               </div>
@@ -921,31 +921,31 @@ export default function AdminPage() {
                               </div>
                             </div>
 
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-3">
+                            <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
                               <div className="flex items-center justify-between gap-3">
-                                <div className="font-semibold">Bónus: {q.title}</div>
-                                <div className="text-xs text-neutral-300">
+                                <div className="font-semibold text-slate-900 dark:text-neutral-100">Bónus: {q.title}</div>
+                                <div className="text-xs text-slate-600 dark:text-neutral-300">
                                   +{q.points} stig · {q.type === "number" ? "tala" : "krossa"}
                                 </div>
                               </div>
 
-                              <div className="mt-1 text-xs text-neutral-400">
+                              <div className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
                                 Lokar: {new Date(q.closes_at).toLocaleString()}
                               </div>
 
                               {q.type === "choice" && (
-                                <div className="mt-2 text-xs text-neutral-400">
+                                <div className="mt-2 text-xs text-slate-500 dark:text-neutral-400">
                                   Valmöguleikar: {(q.choice_options || []).join(" · ")}
                                 </div>
                               )}
 
                               {q.type === "number" && q.correct_number != null && (
-                                <div className="mt-2 text-xs text-neutral-300">
+                                <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
                                   Rétt tala: <span className="font-mono">{q.correct_number}</span>
                                 </div>
                               )}
                               {q.type === "choice" && q.correct_choice && (
-                                <div className="mt-2 text-xs text-neutral-300">
+                                <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
                                   Rétt val: <span className="font-semibold">{q.correct_choice}</span>
                                 </div>
                               )}
@@ -954,7 +954,7 @@ export default function AdminPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => prefillBonusFromRow(m)}
-                                className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
+                                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                               >
                                 Edit
                               </button>
@@ -969,27 +969,27 @@ export default function AdminPage() {
 
             <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Delete.">
               {matches.length === 0 ? (
-                <p className="text-sm text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
+                <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
               ) : (
                 <div className="space-y-3">
                   {matches.map((m) => (
                     <div
                       key={m.id}
-                      className="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4 md:flex-row md:items-center md:justify-between"
+                      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-4 md:flex-row md:items-center md:justify-between"
                     >
                       <div>
-                        <div className="font-semibold">
+                        <div className="font-semibold text-slate-900 dark:text-neutral-100">
                           {m.home_team} vs {m.away_team}
-                          {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                          {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
                         </div>
-                        <div className="text-xs text-neutral-400">
+                        <div className="text-xs text-slate-600 dark:text-neutral-400">
                           {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
                           {m.match_no != null ? ` · #${m.match_no}` : ""}
                         </div>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-neutral-300">Úrslit:</span>
+                        <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
 
                         <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
                           1
@@ -1007,7 +1007,7 @@ export default function AdminPage() {
 
                         <button
                           onClick={() => setResult(m.id, null)}
-                          className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
+                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                         >
                           Clear
                         </button>
@@ -1033,20 +1033,20 @@ export default function AdminPage() {
             <Card title="Stigagjöf" subtitle="Breyttu stigum fyrir rétt 1X2 (gildir fyrir allt tournament).">
               <form onSubmit={saveSettings} className="space-y-4">
                 <div>
-                  <label className="text-sm text-neutral-300">Stig per rétt 1X2</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Stig per rétt 1X2</label>
                   <input
                     type="number"
                     min={0}
                     value={pointsPer1x2}
                     onChange={(e) => setPointsPer1x2(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   />
-                  <p className="mt-1 text-xs text-neutral-500">Dæmi: 1, 2 eða 3.</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">Dæmi: 1, 2 eða 3.</p>
                 </div>
 
                 <button
                   disabled={savingSettings}
-                  className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
                   {savingSettings ? "Vista..." : "Vista stillingar"}
                 </button>
@@ -1054,7 +1054,7 @@ export default function AdminPage() {
             </Card>
 
             <Card title="Hraðleið" subtitle="Mælt: bulk innsetning → bónus (eitt field) → úrslit.">
-              <ul className="list-disc space-y-2 pl-5 text-sm text-neutral-300">
+              <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-neutral-300">
                 <li>Settu inn alla leiki í einu með “bulk”.</li>
                 <li>Settu bónus með því að velja leik og skrifa spurningu.</li>
                 <li>Ef þú setur tvítekningar: Delete í úrslita listanum.</li>
@@ -1063,7 +1063,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        <p className="mt-8 text-xs text-neutral-600">
+        <p className="mt-8 text-xs text-slate-500 dark:text-neutral-600">
           MVP: admin password er bara hjá þér. Seinna getum við læst admin með session role eða Supabase RLS.
         </p>
       </div>
@@ -1086,8 +1086,8 @@ function TabButton({
       className={[
         "rounded-xl px-4 py-2 text-sm font-semibold border transition",
         active
-          ? "border-neutral-200 bg-neutral-100 text-neutral-900"
-          : "border-neutral-800 bg-neutral-900/40 text-neutral-200 hover:bg-neutral-900/70",
+          ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-blue-500 dark:bg-blue-500 dark:text-white"
+          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
       ].join(" ")}
     >
       {children}
@@ -1107,11 +1107,11 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-neutral-800 bg-neutral-900/30 p-6">
+    <section className="rounded-3xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/30 p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold">{title}</h2>
-          {subtitle && <p className="mt-1 text-sm text-neutral-400">{subtitle}</p>}
+          <h2 className="text-lg font-bold text-slate-900 dark:text-neutral-100">{title}</h2>
+          {subtitle && <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">{subtitle}</p>}
         </div>
         {right}
       </div>

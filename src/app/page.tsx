@@ -39,6 +39,18 @@ export default function HomePage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
+  // Forgot username/password state
+  const [forgotTab, setForgotTab] = useState<"username" | "password" | null>(null);
+  const [fRoomCode, setFRoomCode] = useState("");
+  const [fJoinPassword, setFJoinPassword] = useState("");
+  const [fDisplayName, setFDisplayName] = useState("");
+  const [fUsername, setFUsername] = useState("");
+  const [fNewPassword, setFNewPassword] = useState("");
+  const [fNewPasswordConfirm, setFNewPasswordConfirm] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotSuccess, setForgotSuccess] = useState<string | null>(null);
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setCreateError(null);
@@ -154,6 +166,88 @@ export default function HomePage() {
       setLoginError("Tenging klikkaði. Prófaðu aftur.");
     } finally {
       setLoginLoading(false);
+    }
+  }
+
+  async function handleForgotUsername(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotError(null);
+    setForgotSuccess(null);
+
+    if (fRoomCode.trim().length < 2) return setForgotError("Room code vantar.");
+    if (fJoinPassword.trim().length < 1) return setForgotError("Join password vantar.");
+
+    setForgotLoading(true);
+    try {
+      const res = await fetch("/api/room/forgot-username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomCode: fRoomCode,
+          joinPassword: fJoinPassword,
+          ...(fDisplayName ? { displayName: fDisplayName } : {}),
+        }),
+      });
+
+      const data = (await res.json()) as { usernames?: Array<{ username: string; displayName: string }>; error?: string };
+
+      if (!res.ok || "error" in data) {
+        setForgotError("error" in data && data.error ? data.error : "Ekki tókst að finna username.");
+        return;
+      }
+
+      if (data.usernames && data.usernames.length > 0) {
+        const usernamesList = data.usernames.map((u) => `${u.displayName}: ${u.username}`).join("\n");
+        setForgotSuccess(`Username(s) fundust:\n${usernamesList}`);
+      } else {
+        setForgotError("Engin username fundust.");
+      }
+    } catch {
+      setForgotError("Tenging klikkaði. Prófaðu aftur.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotError(null);
+    setForgotSuccess(null);
+
+    if (fRoomCode.trim().length < 2) return setForgotError("Room code vantar.");
+    if (fJoinPassword.trim().length < 1) return setForgotError("Join password vantar.");
+    if (fUsername.trim().length < 1) return setForgotError("Username vantar.");
+    if (fNewPassword.trim().length < 6) return setForgotError("Nýtt password þarf að vera amk 6 stafir.");
+    if (fNewPassword !== fNewPasswordConfirm) return setForgotError("Password-in passa ekki saman.");
+
+    setForgotLoading(true);
+    try {
+      const res = await fetch("/api/room/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomCode: fRoomCode,
+          joinPassword: fJoinPassword,
+          username: fUsername,
+          newPassword: fNewPassword,
+        }),
+      });
+
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+
+      if (!res.ok || "error" in data) {
+        setForgotError("error" in data && data.error ? data.error : "Ekki tókst að reset-a password.");
+        return;
+      }
+
+      setForgotSuccess("Password hefur verið reset-að! Þú getur nú skráð þig inn með nýja password-inu.");
+      // Clear password fields
+      setFNewPassword("");
+      setFNewPasswordConfirm("");
+    } catch {
+      setForgotError("Tenging klikkaði. Prófaðu aftur.");
+    } finally {
+      setForgotLoading(false);
     }
   }
 
@@ -365,7 +459,186 @@ export default function HomePage() {
                 >
                   {loginLoading ? "Skrái inn..." : "Skrá inn"}
                 </button>
+
+                <div className="mt-3 flex gap-3 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotTab("username");
+                      setFRoomCode(lRoomCode);
+                      setFJoinPassword(lJoinPassword);
+                    }}
+                    className="text-neutral-400 hover:text-neutral-200 underline"
+                  >
+                    Gleymdir þú username?
+                  </button>
+                  <span className="text-neutral-600">·</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotTab("password");
+                      setFRoomCode(lRoomCode);
+                      setFJoinPassword(lJoinPassword);
+                      setFUsername(lUsername);
+                    }}
+                    className="text-neutral-400 hover:text-neutral-200 underline"
+                  >
+                    Gleymdir þú password?
+                  </button>
+                </div>
               </form>
+            )}
+
+            {/* Forgot Username Form */}
+            {joinTab === "login" && forgotTab === "username" && (
+              <div className="mt-6 rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Fletta upp username</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotTab(null);
+                      setForgotError(null);
+                      setForgotSuccess(null);
+                    }}
+                    className="text-xs text-neutral-400 hover:text-neutral-200"
+                  >
+                    Loka
+                  </button>
+                </div>
+                <form onSubmit={handleForgotUsername} className="space-y-3">
+                  <div>
+                    <label className="text-xs text-neutral-300">Númer deildar</label>
+                    <input
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fRoomCode}
+                      onChange={(e) => setFRoomCode(e.target.value)}
+                      placeholder="t.d. MAREL-9647"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Lykilorð deildar</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fJoinPassword}
+                      onChange={(e) => setFJoinPassword(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Nafn (valfrjálst - til að sía)</label>
+                    <input
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fDisplayName}
+                      onChange={(e) => setFDisplayName(e.target.value)}
+                      placeholder="t.d. Kári"
+                    />
+                  </div>
+                  {forgotError && (
+                    <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                      {forgotError}
+                    </div>
+                  )}
+                  {forgotSuccess && (
+                    <div className="whitespace-pre-line rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200">
+                      {forgotSuccess}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full rounded-lg bg-neutral-700 px-3 py-1.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-600 disabled:opacity-60"
+                  >
+                    {forgotLoading ? "Leita..." : "Fletta upp username"}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Reset Password Form */}
+            {joinTab === "login" && forgotTab === "password" && (
+              <div className="mt-6 rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Reset-a password</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotTab(null);
+                      setForgotError(null);
+                      setForgotSuccess(null);
+                    }}
+                    className="text-xs text-neutral-400 hover:text-neutral-200"
+                  >
+                    Loka
+                  </button>
+                </div>
+                <form onSubmit={handleResetPassword} className="space-y-3">
+                  <div>
+                    <label className="text-xs text-neutral-300">Númer deildar</label>
+                    <input
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fRoomCode}
+                      onChange={(e) => setFRoomCode(e.target.value)}
+                      placeholder="t.d. MAREL-9647"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Lykilorð deildar</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fJoinPassword}
+                      onChange={(e) => setFJoinPassword(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Username</label>
+                    <input
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fUsername}
+                      onChange={(e) => setFUsername(e.target.value)}
+                      placeholder="t.d. kari"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Nýtt password</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fNewPassword}
+                      onChange={(e) => setFNewPassword(e.target.value)}
+                      placeholder="minnst 6 stafir"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300">Staðfesta nýtt password</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm outline-none focus:border-neutral-500"
+                      value={fNewPasswordConfirm}
+                      onChange={(e) => setFNewPasswordConfirm(e.target.value)}
+                      placeholder="sama password aftur"
+                    />
+                  </div>
+                  {forgotError && (
+                    <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                      {forgotError}
+                    </div>
+                  )}
+                  {forgotSuccess && (
+                    <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200">
+                      {forgotSuccess}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full rounded-lg bg-neutral-700 px-3 py-1.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-600 disabled:opacity-60"
+                  >
+                    {forgotLoading ? "Reset-a..." : "Reset-a password"}
+                  </button>
+                </form>
+              </div>
             )}
 
             {/* Register Form */}

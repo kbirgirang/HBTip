@@ -364,12 +364,12 @@ function BonusAnswerCard({
           ) : (
             <span className="text-neutral-500">Ekkert svar</span>
           )}
-          {correctAnswerLabel != null && (
-            <>
-              <span className="text-neutral-500">·</span>
-              <span className="text-neutral-400">Rétt:</span>
-              <span className="font-semibold text-emerald-400">{String(correctAnswerLabel)}</span>
-            </>
+          <span className="text-neutral-500">·</span>
+          <span className="text-neutral-400">Rétt:</span>
+          {correctAnswerLabel != null ? (
+            <span className="font-semibold text-emerald-400">{String(correctAnswerLabel)}</span>
+          ) : (
+            <span className="text-neutral-500">-</span>
           )}
         </div>
       </div>

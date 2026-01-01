@@ -290,7 +290,7 @@ export default function AdminPage() {
     if (!adminPassword) return setErr("Admin password vantar.");
 
     try {
-      const res = await fetch("/api/admin/match/result", {
+      const res = await fetch("/api/admin/match/set-result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminPassword, matchId, result }),

@@ -9,35 +9,51 @@ export default function ThemeToggle() {
   useEffect(() => {
     setMounted(true);
     // Sækja theme úr localStorage eða nota dark sem default
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    const initial = saved || "dark";
-    setTheme(initial);
-    if (initial === "light") {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("light");
-    } else {
-      document.documentElement.classList.remove("light");
-      document.documentElement.classList.add("dark");
+    try {
+      const saved = localStorage.getItem("theme") as "light" | "dark" | null;
+      const initial = saved || "dark";
+      setTheme(initial);
+      applyTheme(initial);
+    } catch (e) {
+      // Ef localStorage er ekki tiltækt, nota dark
+      applyTheme("dark");
     }
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    
+  function applyTheme(newTheme: "light" | "dark") {
+    const html = document.documentElement;
     if (newTheme === "light") {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("light");
+      html.classList.remove("dark");
+      html.classList.add("light");
     } else {
-      document.documentElement.classList.remove("light");
-      document.documentElement.classList.add("dark");
+      html.classList.remove("light");
+      html.classList.add("dark");
     }
+  }
+
+  const toggleTheme = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const newTheme = theme === "dark" ? "light" : "dark";
+    console.log("Toggling theme from", theme, "to", newTheme);
+    
+    setTheme(newTheme);
+    
+    try {
+      localStorage.setItem("theme", newTheme);
+    } catch (e) {
+      console.error("localStorage error:", e);
+    }
+    
+    applyTheme(newTheme);
+    console.log("Applied theme:", newTheme, "HTML classes:", document.documentElement.className);
   };
 
   if (!mounted) {
     return (
       <button
+        type="button"
         className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-300 bg-white/90 backdrop-blur-sm shadow-md transition hover:bg-white dark:border-neutral-700 dark:bg-neutral-900/90 dark:hover:bg-neutral-800"
         aria-label="Toggle theme"
       >
@@ -48,8 +64,13 @@ export default function ThemeToggle() {
 
   return (
     <button
-      onClick={toggleTheme}
-      className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-300 bg-white/90 backdrop-blur-sm shadow-md transition hover:bg-white dark:border-neutral-700 dark:bg-neutral-900/90 dark:hover:bg-neutral-800"
+      type="button"
+      onClick={(e) => {
+        console.log("Button clicked!");
+        toggleTheme(e);
+      }}
+      onMouseDown={(e) => e.preventDefault()}
+      className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-300 bg-white/90 backdrop-blur-sm shadow-md transition hover:bg-white dark:border-neutral-700 dark:bg-neutral-900/90 dark:hover:bg-neutral-800 cursor-pointer"
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
       {theme === "dark" ? (

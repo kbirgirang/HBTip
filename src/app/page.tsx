@@ -252,28 +252,28 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+    <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mx-auto max-w-5xl px-4 py-10">
         <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight">Evrópukeppnin í handbolta 2026 - Vinnustaðatip</h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-300">
+          <p className="mt-2 text-slate-600 dark:text-neutral-300">
             Búðu til deild fyrir vinnustaðinn eða join-aðu með deildar kóða + lykilorði
           </p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Create */}
-          <section className="rounded-2xl border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-xl font-semibold">Búa til deild</h2>
-            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
               Þú verður owner og færð owner password (geymdu það).
             </p>
 
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
               <div>
-                <label className="text-sm text-neutral-700 dark:text-neutral-200">Nafn deildar</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Nafn deildar</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cRoomName}
                   onChange={(e) => setCRoomName(e.target.value)}
                   placeholder="t.d. Marel"
@@ -281,9 +281,9 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Þitt username</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt username</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cOwnerUsername}
                   onChange={(e) => setCOwnerUsername(e.target.value)}
                   placeholder="t.d. kari"
@@ -291,10 +291,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Þitt password</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt password</label>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cOwnerPassword}
                   onChange={(e) => setCOwnerPassword(e.target.value)}
                   placeholder="minnst 6 stafir"
@@ -302,9 +302,9 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cDisplayName}
                   onChange={(e) => setCDisplayName(e.target.value)}
                   placeholder="t.d. Kári"
@@ -312,10 +312,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 outline-none focus:border-neutral-500"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cJoinPassword}
                   onChange={(e) => setCJoinPassword(e.target.value)}
                   placeholder="minnst 6 stafir"
@@ -330,7 +330,7 @@ export default function HomePage() {
 
               <button
                 disabled={createLoading}
-                className="w-full rounded-xl bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
               >
                 {createLoading ? "Bý til..." : "Búa til deild"}
               </button>
@@ -372,9 +372,9 @@ export default function HomePage() {
           </section>
 
           {/* Join - Register/Login */}
-          <section className="rounded-2xl border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
-            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">Skráðu þig inn eða búðu til nýjan aðgang.</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">Skráðu þig inn eða búðu til nýjan aðgang.</p>
 
             <div className="mt-4 flex gap-2">
               <button
@@ -383,8 +383,8 @@ export default function HomePage() {
                 className={[
                   "rounded-xl px-4 py-2 text-sm font-semibold border transition",
                   joinTab === "login"
-                    ? "border-neutral-300 bg-neutral-100 text-neutral-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
-                    : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
+                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
                 ].join(" ")}
               >
                 Innskráning
@@ -395,8 +395,8 @@ export default function HomePage() {
                 className={[
                   "rounded-xl px-4 py-2 text-sm font-semibold border transition",
                   joinTab === "register"
-                    ? "border-neutral-200 bg-neutral-100 text-neutral-900"
-                    : "border-neutral-800 bg-neutral-950 text-neutral-200 hover:bg-neutral-900/70",
+                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
                 ].join(" ")}
               >
                 Nýr aðgangur
@@ -455,7 +455,7 @@ export default function HomePage() {
 
                 <button
                   disabled={loginLoading}
-                  className="w-full rounded-xl bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
                   {loginLoading ? "Skrái inn..." : "Skrá inn"}
                 </button>
@@ -704,7 +704,7 @@ export default function HomePage() {
 
                 <button
                   disabled={registerLoading}
-                  className="w-full rounded-xl bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
                   {registerLoading ? "Skrái..." : "Búa til aðgang"}
                 </button>

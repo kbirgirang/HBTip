@@ -362,7 +362,7 @@ export default function RoomPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-semibold">Owner stjórnun</h2>
-                <p className="mt-1 text-sm text-neutral-400">Stjórna deildinni með owner password.</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">Stjórna deildinni með owner password.</p>
               </div>
 
               {ownerError && (
@@ -378,25 +378,25 @@ export default function RoomPage() {
               )}
 
               {/* Change Join Password */}
-              <div className="rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
-                <h3 className="text-sm font-semibold">Breyta join password</h3>
-                <p className="mt-1 text-xs text-neutral-400">Breyttu lykilorði sem notendur nota til að skrá sig inná deildina.</p>
+              <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Breyta join password</h3>
+                <p className="mt-1 text-xs text-slate-600 dark:text-neutral-400">Breyttu lykilorði sem notendur nota til að skrá sig inná deildina.</p>
                 <form onSubmit={handleChangeJoinPassword} className="mt-4 space-y-3">
                   <div>
-                    <label className="text-xs text-neutral-300">Owner password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Owner password</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={ownerPassword}
                       onChange={(e) => setOwnerPassword(e.target.value)}
                       placeholder="Owner password"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-300">Nýtt join password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Nýtt join password</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={newJoinPassword}
                       onChange={(e) => setNewJoinPassword(e.target.value)}
                       placeholder="minnst 6 stafir"
@@ -405,7 +405,7 @@ export default function RoomPage() {
                   <button
                     type="submit"
                     disabled={changingPassword}
-                    className="w-full rounded-lg bg-neutral-700 px-3 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-600 disabled:opacity-60"
+                    className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600"
                   >
                     {changingPassword ? "Breyta..." : "Breyta join password"}
                   </button>
@@ -413,29 +413,29 @@ export default function RoomPage() {
               </div>
 
               {/* Members List */}
-              <div className="rounded-xl border border-neutral-700 bg-neutral-950/40 p-4">
-                <h3 className="text-sm font-semibold">Members</h3>
-                <p className="mt-1 text-xs text-neutral-400">Stjórna members í deildinni.</p>
+              <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Members</h3>
+                <p className="mt-1 text-xs text-slate-600 dark:text-neutral-400">Stjórna members í deildinni.</p>
 
                 {loadingMembers ? (
-                  <p className="mt-4 text-sm text-neutral-400">Hleð...</p>
+                  <p className="mt-4 text-sm text-slate-600 dark:text-neutral-400">Hleð...</p>
                 ) : members.length === 0 ? (
-                  <p className="mt-4 text-sm text-neutral-400">Engir members fundust.</p>
+                  <p className="mt-4 text-sm text-slate-600 dark:text-neutral-400">Engir members fundust.</p>
                 ) : (
                   <div className="mt-4 space-y-2">
                     {members.map((m) => (
                       <div
                         key={m.id}
-                        className="flex items-center justify-between rounded-lg border border-neutral-700 bg-neutral-900/40 p-3"
+                        className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/40 p-3"
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{m.display_name}</span>
+                            <span className="text-sm font-medium text-slate-900 dark:text-neutral-100">{m.display_name}</span>
                             {m.is_owner && (
-                              <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-300">Owner</span>
+                              <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-300">Owner</span>
                             )}
                           </div>
-                          <p className="text-xs text-neutral-400">@{m.username}</p>
+                          <p className="text-xs text-slate-500 dark:text-neutral-400">@{m.username}</p>
                         </div>
 
                         {!m.is_owner && (
@@ -444,7 +444,7 @@ export default function RoomPage() {
                               <>
                                 <input
                                   type="text"
-                                  className="w-32 rounded border border-neutral-600 bg-neutral-800 px-2 py-1 text-xs outline-none focus:border-neutral-500"
+                                  className="w-32 rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                                   value={editingMemberName}
                                   onChange={(e) => setEditingMemberName(e.target.value)}
                                   placeholder="Nýtt nafn"
@@ -460,7 +460,7 @@ export default function RoomPage() {
                                     setEditingMemberId(null);
                                     setEditingMemberName("");
                                   }}
-                                  className="rounded bg-neutral-700 px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-600"
+                                  className="rounded bg-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-400 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                                 >
                                   Hætta
                                 </button>
@@ -472,7 +472,7 @@ export default function RoomPage() {
                                     setEditingMemberId(m.id);
                                     setEditingMemberName(m.display_name);
                                   }}
-                                  className="rounded bg-neutral-700 px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-600"
+                                  className="rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                                 >
                                   Breyta nafni
                                 </button>
@@ -493,13 +493,13 @@ export default function RoomPage() {
                 )}
 
                 {!loadingMembers && members.length > 0 && (
-                  <div className="mt-4 rounded-lg border border-neutral-700 bg-neutral-900/20 p-3">
-                    <p className="text-xs text-neutral-400">
+                  <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/20 p-3">
+                    <p className="text-xs text-slate-600 dark:text-neutral-400">
                       <strong>Ath:</strong> Til að breyta nafni eða fjarlægja member, þarftu að setja inn owner password fyrst.
                     </p>
                     <input
                       type="password"
-                      className="mt-2 w-full rounded border border-neutral-600 bg-neutral-800 px-3 py-1.5 text-xs outline-none focus:border-neutral-500"
+                      className="mt-2 w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={ownerPassword}
                       onChange={(e) => setOwnerPassword(e.target.value)}
                       placeholder="Owner password"

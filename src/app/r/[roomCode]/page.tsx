@@ -192,7 +192,12 @@ export default function RoomPage() {
 
                       {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
                       {m.bonus && (
-                        <BonusAnswerCard bonus={m.bonus} matchStartsAt={m.starts_at} onSaved={() => void load()} />
+                        <BonusAnswerCard
+                          bonus={m.bonus}
+                          matchStartsAt={m.starts_at}
+                          matchResult={m.result}
+                          onSaved={() => void load()}
+                        />
                       )}
                     </div>
                   );
@@ -240,10 +245,12 @@ export default function RoomPage() {
 function BonusAnswerCard({
   bonus,
   matchStartsAt,
+  matchResult,
   onSaved,
 }: {
   bonus: NonNullable<ViewData["matches"][number]["bonus"]>;
   matchStartsAt: string; // ISO
+  matchResult: Pick | null;
   onSaved?: () => void;
 }) {
   const [saving, setSaving] = useState(false);
@@ -251,7 +258,7 @@ function BonusAnswerCard({
 
   const started = useMemo(() => new Date(matchStartsAt).getTime() <= Date.now(), [matchStartsAt]);
   const bonusClosed = useMemo(() => new Date(bonus.closes_at).getTime() <= Date.now(), [bonus.closes_at]);
-  const locked = started || bonusClosed;
+  const locked = started || bonusClosed || matchResult != null;
 
   const [answerNumber, setAnswerNumber] = useState<string>(
     bonus.my_answer_number != null ? String(bonus.my_answer_number) : ""
@@ -332,6 +339,44 @@ function BonusAnswerCard({
       ? bonus.my_answer_choice
       : bonus.my_answer_player_id;
 
+  const correctAnswerLabel =
+    bonus.type === "number"
+      ? bonus.correct_number
+      : bonus.type === "choice"
+      ? bonus.correct_choice
+      : bonus.correct_player_id;
+
+  const isCorrect = locked && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
+
+  // Minimalist view when locked
+  if (locked) {
+    return (
+      <div className="mt-3 rounded-lg border border-neutral-800 bg-neutral-950/40 p-2">
+        <div className="text-xs font-medium text-neutral-300">{bonus.title}</div>
+        <div className="mt-1.5 flex items-center gap-2 text-xs">
+          {myAnswerLabel != null && myAnswerLabel !== "" ? (
+            <>
+              <span className="text-neutral-400">Þitt:</span>
+              <span className={isCorrect ? "font-semibold text-emerald-400" : "text-neutral-300"}>
+                {String(myAnswerLabel)}
+              </span>
+            </>
+          ) : (
+            <span className="text-neutral-500">Ekkert svar</span>
+          )}
+          {correctAnswerLabel != null && (
+            <>
+              <span className="text-neutral-500">·</span>
+              <span className="text-neutral-400">Rétt:</span>
+              <span className="font-semibold text-emerald-400">{String(correctAnswerLabel)}</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Full form when open
   return (
     <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950/60 p-3">
       <div className="flex items-start justify-between gap-3">
@@ -342,7 +387,7 @@ function BonusAnswerCard({
       </div>
 
       <div className="mt-1 text-xs text-neutral-400">
-        {locked ? "Lokað" : `Lokar: ${new Date(bonus.closes_at).toLocaleString()}`}
+        Lokar: {new Date(bonus.closes_at).toLocaleString()}
       </div>
 
       {/* ✅ sýna vistað svar ef til */}
@@ -362,8 +407,7 @@ function BonusAnswerCard({
             onChange={(e) => setAnswerNumber(e.target.value)}
             inputMode="decimal"
             placeholder="Skrifaðu tölu..."
-            disabled={locked}
-            className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500 disabled:opacity-60"
+            className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-neutral-500"
           />
         )}
 
@@ -377,7 +421,6 @@ function BonusAnswerCard({
                   value={opt}
                   checked={answerChoice === opt}
                   onChange={() => setAnswerChoice(opt)}
-                  disabled={locked}
                 />
                 <span>{opt}</span>
               </label>
@@ -405,10 +448,10 @@ function BonusAnswerCard({
 
         <button
           onClick={save}
-          disabled={saving || locked}
+          disabled={saving}
           className="w-full rounded-xl bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-white disabled:opacity-60"
         >
-          {locked ? "Bónus lokað" : saving ? "Vistast..." : "Vista bónus svar"}
+          {saving ? "Vistast..." : "Vista bónus svar"}
         </button>
       </div>
     </div>

@@ -542,9 +542,9 @@ export default function AdminPage() {
 
   const headerRight = useMemo(() => {
     return (
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+      <div className="relative z-10 flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-400">Admin password</span>
+          <span className="text-xs text-slate-600 dark:text-neutral-400">Admin password</span>
           <input
             value={adminPassword}
             onChange={(e) => setAdminPassword(e.target.value)}

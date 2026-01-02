@@ -92,6 +92,15 @@ export default function RoomPage() {
   const [showRoomSwitcher, setShowRoomSwitcher] = useState(false);
   const [loadingRooms, setLoadingRooms] = useState(false);
 
+  // Real-time clock for checking if matches have started
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   async function load() {
     setErr(null);
     const res = await fetch("/api/room/view", { cache: "no-store" });
@@ -461,7 +470,6 @@ export default function RoomPage() {
                 <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
               ) : (
                 (() => {
-                  const now = Date.now();
                   const upcomingMatches = data.matches.filter((m) => {
                     const started = new Date(m.starts_at).getTime() <= now;
                     return !started && m.result == null;
@@ -1022,9 +1030,18 @@ function BonusAnswerCard({
 }) {
   const [saving, setSaving] = useState(false);
   const [localErr, setLocalErr] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
 
-  const started = useMemo(() => new Date(matchStartsAt).getTime() <= Date.now(), [matchStartsAt]);
-  const bonusClosed = useMemo(() => new Date(bonus.closes_at).getTime() <= Date.now(), [bonus.closes_at]);
+  // Update now every second to check if match has started
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const started = new Date(matchStartsAt).getTime() <= now;
+  const bonusClosed = new Date(bonus.closes_at).getTime() <= now;
   const locked = started || bonusClosed || matchResult != null;
 
   const [answerNumber, setAnswerNumber] = useState<string>(
@@ -1181,20 +1198,23 @@ function BonusAnswerCard({
             onChange={(e) => setAnswerNumber(e.target.value)}
             inputMode="decimal"
             placeholder="Skrifaðu tölu..."
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+            disabled={locked}
+            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
           />
         )}
 
         {bonus.type === "choice" && (
           <div className="space-y-2">
             {(bonus.choice_options || []).map((opt) => (
-              <label key={opt} className="flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-200">
+              <label key={opt} className={`flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-200 ${locked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
                 <input
                   type="radio"
                   name={`bonus_${bonus.id}`}
                   value={opt}
                   checked={answerChoice === opt}
                   onChange={() => setAnswerChoice(opt)}
+                  disabled={locked}
+                  className="disabled:cursor-not-allowed"
                 />
                 <span>{opt}</span>
               </label>
@@ -1213,7 +1233,8 @@ function BonusAnswerCard({
             <select
               value={answerPlayerName}
               onChange={(e) => setAnswerPlayerName(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+              disabled={locked}
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
             >
               <option value="">— veldu leikmann —</option>
               {(bonus.player_options || []).map((p, i) => (
@@ -1239,10 +1260,10 @@ function BonusAnswerCard({
 
         <button
           onClick={save}
-          disabled={saving}
-          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+          disabled={saving || locked}
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
         >
-          {saving ? "Vistast..." : "Vista bónus svar"}
+          {locked ? "Lokað" : saving ? "Vistast..." : "Vista bónus svar"}
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 type BonusType = "number" | "choice";
 

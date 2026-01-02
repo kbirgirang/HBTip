@@ -392,6 +392,38 @@ export default function AdminPage() {
     }
   }
 
+  async function deleteBonus(bonusId: string) {
+    clearAlerts();
+
+    const matchWithBonus = matchesWithBonus.find((x) => x.bonus?.id === bonusId);
+    const bonus = matchWithBonus?.bonus;
+    const match = matchWithBonus;
+    
+    const ok = confirm(
+      `Eyða bónus spurningu?\n\n${match ? `${match.home_team} vs ${match.away_team}\n` : ""}${bonus ? `Bónus: ${bonus.title}` : bonusId}`
+    );
+    if (!ok) return;
+
+    try {
+      const res = await fetch("/api/admin/bonus/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bonusId }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að eyða bónus spurningu.");
+
+      // Uppfæra lista - fjarlægja bonus úr match
+      setMatchesWithBonus((prev) =>
+        prev.map((m) => (m.bonus?.id === bonusId ? { ...m, bonus: null } : m))
+      );
+      flash("Bónus spurning eytt ✅");
+    } catch {
+      setErr("Tenging klikkaði.");
+    }
+  }
+
   // -----------------------------
   // BONUS LIST
   // -----------------------------
@@ -1180,7 +1212,13 @@ export default function AdminPage() {
                                 onClick={() => prefillBonusFromRow(m)}
                                 className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                               >
-                                Edit
+                                Breyta
+                              </button>
+                              <button
+                                onClick={() => deleteBonus(q.id)}
+                                className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                              >
+                                Eyða
                               </button>
                             </div>
                           </div>

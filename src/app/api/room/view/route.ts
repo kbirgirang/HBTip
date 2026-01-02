@@ -217,8 +217,9 @@ export async function GET() {
         isCorrect = ans.answer_number === question.correct_number;
       } else if (question.type === "choice" && question.correct_choice != null) {
         isCorrect = ans.answer_choice === question.correct_choice;
-      } else if (question.type === "player" && question.correct_player_id != null) {
-        isCorrect = ans.answer_player_id === question.correct_player_id;
+      } else if (question.type === "player" && question.correct_choice != null) {
+        // Fyrir player type er bæði rétt svar og notandans svar í answer_choice/correct_choice (leikmannsnafn)
+        isCorrect = ans.answer_choice === question.correct_choice;
       }
 
       if (isCorrect) {

@@ -76,6 +76,9 @@ export default function RoomPage() {
   const [newMemberPassword, setNewMemberPassword] = useState("");
   const [changingMemberPassword, setChangingMemberPassword] = useState(false);
 
+  // Toggle for "Eldri leikir" section
+  const [showFinishedMatches, setShowFinishedMatches] = useState(false);
+
   async function load() {
     setErr(null);
     const res = await fetch("/api/room/view", { cache: "no-store" });
@@ -437,8 +440,31 @@ export default function RoomPage() {
 
                       {finishedMatches.length > 0 && (
                         <div>
-                          <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-neutral-100">Eldri leikir</h2>
-                          <div className="space-y-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowFinishedMatches(!showFinishedMatches)}
+                            className="mb-3 flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2 text-left hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:bg-neutral-900/60"
+                          >
+                            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                              Eldri leikir ({finishedMatches.length})
+                            </h2>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`h-5 w-5 text-slate-600 transition-transform dark:text-neutral-400 ${
+                                showFinishedMatches ? "rotate-180" : ""
+                              }`}
+                            >
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </button>
+                          {showFinishedMatches && (
+                            <div className="space-y-3">
                             {finishedMatches.map((m) => {
                               const started = new Date(m.starts_at).getTime() <= now;
                               const locked = started || m.result != null;
@@ -547,7 +573,8 @@ export default function RoomPage() {
                                 </div>
                               );
                             })}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </>

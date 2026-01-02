@@ -41,12 +41,26 @@ export async function POST(req: Request) {
   // Athuga hvort username sé þegar til í þessum room
   const { data: existing } = await supabaseServer
     .from("room_members")
-    .select("id")
+    .select("id, password_hash, is_owner")
     .eq("room_id", room.id)
     .ilike("username", username)
     .maybeSingle();
 
-  if (existing) return NextResponse.json({ error: "Notandanafn er þegar til í þessari deild" }, { status: 400 });
+  if (existing) {
+    // Ef notandi er þegar í þessari deild, athuga password og skrá hann inn
+    const passwordOk = await verifyPassword(existing.password_hash, password);
+    if (!passwordOk) {
+      return NextResponse.json({ error: "Rangt lykilorð fyrir þennan notanda í þessari deild" }, { status: 401 });
+    }
+    
+    await setSession({
+      roomId: room.id,
+      memberId: existing.id,
+      roomCode: room.room_code,
+      role: existing.is_owner ? "owner" : "player",
+    });
+    return NextResponse.json({ ok: true, roomCode: room.room_code, alreadyMember: true });
+  }
 
   // Búa til nýjan member með username og password
   const passwordHash = await hashPassword(password);

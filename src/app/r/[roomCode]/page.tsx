@@ -470,14 +470,10 @@ export default function RoomPage() {
                 <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
               ) : (
                 (() => {
-                  const upcomingMatches = data.matches.filter((m) => {
-                    const started = new Date(m.starts_at).getTime() <= now;
-                    return !started && m.result == null;
-                  });
-                  const finishedMatches = data.matches.filter((m) => {
-                    const started = new Date(m.starts_at).getTime() <= now;
-                    return started || m.result != null;
-                  });
+                  // Kommandi leikir: allir leikir sem ekki hafa niðurstöðu (sama hvort byrjaðir eða ekki)
+                  const upcomingMatches = data.matches.filter((m) => m.result == null);
+                  // Eldri leikir: allir leikir sem hafa niðurstöðu
+                  const finishedMatches = data.matches.filter((m) => m.result != null);
 
                   return (
                     <>

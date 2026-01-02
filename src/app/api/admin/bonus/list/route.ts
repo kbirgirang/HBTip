@@ -33,8 +33,32 @@ export async function GET() {
 
     if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
 
+    // Fetch player names for correct_player_id
+    const playerIds = new Set<string>();
+    for (const q of bonus ?? []) {
+      if (q.correct_player_id) playerIds.add(q.correct_player_id);
+    }
+    let playersMap = new Map<string, { id: string; full_name: string }>();
+    if (playerIds.size > 0) {
+      const { data: players, error: pErr } = await supabaseServer
+        .from("players")
+        .select("id, full_name")
+        .in("id", Array.from(playerIds));
+      if (!pErr && players) {
+        for (const p of players) {
+          playersMap.set(p.id, p);
+        }
+      }
+    }
+
     const bonusByMatchId = new Map<string, any>();
-    for (const q of bonus ?? []) bonusByMatchId.set(q.match_id, q);
+    for (const q of bonus ?? []) {
+      const correctPlayer = q.correct_player_id ? playersMap.get(q.correct_player_id) : null;
+      bonusByMatchId.set(q.match_id, {
+        ...q,
+        correct_player_name: correctPlayer?.full_name ?? null,
+      });
+    }
 
     const out = (matches ?? []).map((m) => ({
       ...m,

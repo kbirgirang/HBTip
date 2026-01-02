@@ -6,6 +6,7 @@ type Body = {
   questionId: string;
   answerNumber?: number | null;
   answerChoice?: string | null; // ef type=choice
+  answerPlayerId?: string | null; // ef type=player
 };
 
 export async function POST(req: Request) {
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
 
   let answer_number: number | null = null;
   let answer_choice: string | null = null;
+  let answer_player_id: string | null = null;
 
   if (q.type === "number") {
     if (body.answerNumber === undefined || body.answerNumber === null || Number.isNaN(Number(body.answerNumber))) {
@@ -56,6 +58,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "answerChoice er krafist" }, { status: 400 });
     }
     answer_choice = body.answerChoice.trim();
+  } else if (q.type === "player") {
+    if (!body.answerPlayerId || typeof body.answerPlayerId !== "string" || body.answerPlayerId.trim() === "") {
+      return NextResponse.json({ error: "answerPlayerId er krafist" }, { status: 400 });
+    }
+    answer_player_id = body.answerPlayerId.trim();
+    // Verify player exists
+    const { data: player, error: pErr } = await supabaseServer
+      .from("players")
+      .select("id")
+      .eq("id", answer_player_id)
+      .single();
+    if (pErr || !player) {
+      return NextResponse.json({ error: "Leikmaður fannst ekki" }, { status: 404 });
+    }
   } else {
     return NextResponse.json({ error: "Óþekktur gerð bónusspurningar" }, { status: 400 });
   }
@@ -70,7 +86,7 @@ export async function POST(req: Request) {
         question_id: q.id,
         answer_number,
         answer_choice,
-        answer_player_id: null,
+        answer_player_id,
       },
       { onConflict: "member_id,question_id" }
     );

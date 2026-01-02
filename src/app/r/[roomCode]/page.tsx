@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { getTeamFlag } from "@/lib/teamFlags";
 
 type Pick = "1" | "X" | "2";
-type BonusType = "number" | "choice";
+type BonusType = "number" | "choice" | "player";
 
 type ViewData = {
   room: { code: string; name: string };
@@ -38,9 +38,15 @@ type ViewData = {
       choice_options?: string[] | null;
       correct_choice?: string | null;
 
+      // player
+      correct_player_id?: string | null;
+      correct_player_name?: string | null; // For display
+
       // my existing answer (from DB)
       my_answer_number?: number | null;
       my_answer_choice?: string | null;
+      my_answer_player_id?: string | null;
+      my_answer_player_name?: string | null; // For display
     };
   }>;
   leaderboard: Array<{ memberId: string; displayName: string; username: string; points: number; correct1x2: number; bonusPoints: number }>;
@@ -997,12 +1003,30 @@ function BonusAnswerCard({
     bonus.my_answer_number != null ? String(bonus.my_answer_number) : ""
   );
   const [answerChoice, setAnswerChoice] = useState<string>(bonus.my_answer_choice || "");
+  const [answerPlayerId, setAnswerPlayerId] = useState<string>(bonus.my_answer_player_id || "");
+  const [players, setPlayers] = useState<Array<{ id: string; full_name: string; team: string | null }>>([]);
+  const [loadingPlayers, setLoadingPlayers] = useState(false);
+
+  // Load players if player type
+  useEffect(() => {
+    if (bonus.type === "player") {
+      setLoadingPlayers(true);
+      fetch("/api/players/list")
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.players) setPlayers(json.players);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingPlayers(false));
+    }
+  }, [bonus.type]);
 
   // ✅ mikilvægt: ef load() kemur með ný gögn, sync-a state
   useEffect(() => {
     setAnswerNumber(bonus.my_answer_number != null ? String(bonus.my_answer_number) : "");
     setAnswerChoice(bonus.my_answer_choice || "");
-  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice]);
+    setAnswerPlayerId(bonus.my_answer_player_id || "");
+  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice, bonus.my_answer_player_id]);
 
   async function save() {
     setLocalErr(null);
@@ -1026,6 +1050,9 @@ function BonusAnswerCard({
       if (!options.includes(answerChoice)) return setLocalErr("Valið er ekki í listanum.");
     }
 
+    if (bonus.type === "player") {
+      if (!answerPlayerId) return setLocalErr("Veldu leikmann.");
+    }
 
     setSaving(true);
     try {
@@ -1033,6 +1060,7 @@ function BonusAnswerCard({
 
       if (bonus.type === "number") payload.answerNumber = Number(answerNumber);
       if (bonus.type === "choice") payload.answerChoice = answerChoice;
+      if (bonus.type === "player") payload.answerPlayerId = answerPlayerId;
 
       const res = await fetch("/api/bonus/answer/set", {
         method: "POST",
@@ -1049,6 +1077,7 @@ function BonusAnswerCard({
       // ✅ sýna strax (án þess að bíða eftir reload)
       if (bonus.type === "number") setAnswerNumber(String(Number(answerNumber)));
       if (bonus.type === "choice") setAnswerChoice(answerChoice);
+      if (bonus.type === "player") setAnswerPlayerId(answerPlayerId);
 
       onSaved?.();
     } catch {
@@ -1059,9 +1088,14 @@ function BonusAnswerCard({
   }
 
   const myAnswerLabel =
-    bonus.type === "number" ? bonus.my_answer_number : bonus.my_answer_choice;
+    bonus.type === "number" ? bonus.my_answer_number : 
+    bonus.type === "choice" ? bonus.my_answer_choice : 
+    bonus.type === "player" ? bonus.my_answer_player_name : null;
 
-  const correctAnswerLabel = bonus.type === "number" ? bonus.correct_number : bonus.correct_choice;
+  const correctAnswerLabel = 
+    bonus.type === "number" ? bonus.correct_number : 
+    bonus.type === "choice" ? bonus.correct_choice : 
+    bonus.type === "player" ? bonus.correct_player_name : null;
 
   const isCorrect = locked && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
   const isWrong = locked && myAnswerLabel != null && correctAnswerLabel != null && !isCorrect;
@@ -1157,6 +1191,25 @@ function BonusAnswerCard({
           </div>
         )}
 
+        {bonus.type === "player" && (
+          <select
+            value={answerPlayerId}
+            onChange={(e) => setAnswerPlayerId(e.target.value)}
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+          >
+            <option value="">— veldu leikmann —</option>
+            {loadingPlayers ? (
+              <option disabled>Hleð leikmönnum...</option>
+            ) : (
+              players.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name}
+                  {p.team ? ` (${p.team})` : ""}
+                </option>
+              ))
+            )}
+          </select>
+        )}
 
         {localErr && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">

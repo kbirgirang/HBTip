@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { requireAdminSession } from "@/lib/adminAuth";
 
-type BonusType = "number" | "choice";
+type BonusType = "number" | "choice" | "player";
 
 function normalizeType(v: any): BonusType | null {
   const s = String(v || "").toLowerCase().trim();
-  if (s === "number" || s === "choice") return s;
+  if (s === "number" || s === "choice" || s === "player") return s;
   return null;
 }
 
@@ -50,6 +50,7 @@ export async function POST(req: Request) {
     // Correct fields (valfrjálst)
     const correctNumber = body?.correctNumber != null ? Number(body.correctNumber) : null;
     const correctChoice = body?.correctChoice ? String(body.correctChoice).trim() : null;
+    const correctPlayerId = body?.correctPlayerId ? String(body.correctPlayerId).trim() : null;
 
     if (!matchId) {
       return NextResponse.json({ error: "matchId vantar." }, { status: 400 });
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Stig þurfa að vera 0 eða hærra." }, { status: 400 });
     }
     if (!type) {
-      return NextResponse.json({ error: "Type þarf að vera 'number' eða 'choice'." }, { status: 400 });
+      return NextResponse.json({ error: "Type þarf að vera 'number', 'choice' eða 'player'." }, { status: 400 });
     }
 
     // Sækjum match til að fá tournament_id + starts_at
@@ -110,6 +111,20 @@ export async function POST(req: Request) {
     if (type === "choice" && correctChoice && choiceOptions && !choiceOptions.includes(correctChoice)) {
       return NextResponse.json({ error: "correctChoice er ekki í valmöguleikum." }, { status: 400 });
     }
+    if (type === "player" && !correctPlayerId) {
+      return NextResponse.json({ error: "correctPlayerId vantar fyrir player type." }, { status: 400 });
+    }
+    if (type === "player" && correctPlayerId) {
+      // Verify player exists
+      const { data: player, error: pErr } = await supabaseServer
+        .from("players")
+        .select("id")
+        .eq("id", correctPlayerId)
+        .single();
+      if (pErr || !player) {
+        return NextResponse.json({ error: "Leikmaður fannst ekki." }, { status: 404 });
+      }
+    }
 
     // Upsert per match (1 bónus per match)
     const payload: any = {
@@ -123,7 +138,7 @@ export async function POST(req: Request) {
       // Correct fields (set úr body eða null)
       correct_number: type === "number" ? correctNumber : null,
       correct_choice: type === "choice" ? correctChoice : null,
-      correct_player_id: null,
+      correct_player_id: type === "player" ? correctPlayerId : null,
 
       // Choice
       choice_options: choiceOptions,

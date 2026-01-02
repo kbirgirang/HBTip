@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getTeamFlag } from "@/lib/teamFlags";
 import ThemeToggle from "@/components/ThemeToggle";
 
-type BonusType = "number" | "choice";
+type BonusType = "number" | "choice" | "player";
 
 type MatchRow = {
   id: string;
@@ -471,6 +471,12 @@ export default function AdminPage() {
     // correct fields
     setCorrectNumber(q.correct_number != null ? String(q.correct_number) : "");
     setCorrectChoice(q.correct_choice || "");
+    setCorrectPlayerId(q.correct_player_id || "");
+
+    // Load players ef player type
+    if (q.type === "player") {
+      void loadPlayers();
+    }
 
     flash("Bónus sett í form (Breyta) ✏️");
   }
@@ -519,6 +525,14 @@ export default function AdminPage() {
   // ✅ correct answer inputs
   const [correctNumber, setCorrectNumber] = useState<string>("");
   const [correctChoice, setCorrectChoice] = useState<string>("");
+  const [correctPlayerId, setCorrectPlayerId] = useState<string>("");
+
+  // Players state
+  const [players, setPlayers] = useState<Array<{ id: string; full_name: string; team: string | null }>>([]);
+  const [loadingPlayers, setLoadingPlayers] = useState(false);
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerTeam, setNewPlayerTeam] = useState("");
+  const [creatingPlayer, setCreatingPlayer] = useState(false);
 
   const [savingBonus, setSavingBonus] = useState(false);
 
@@ -529,8 +543,56 @@ export default function AdminPage() {
       setCorrectChoice("");
     }
     if (bonusType !== "number") setCorrectNumber("");
+    if (bonusType !== "player") setCorrectPlayerId("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bonusType]);
+
+  async function loadPlayers() {
+    setLoadingPlayers(true);
+    try {
+      const res = await fetch("/api/admin/players/list", { cache: "no-store" });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.players) {
+        setPlayers(json.players);
+      }
+    } catch {
+      // Silent fail
+    } finally {
+      setLoadingPlayers(false);
+    }
+  }
+
+  async function createPlayer() {
+    if (!newPlayerName.trim()) return;
+    setCreatingPlayer(true);
+    try {
+      const res = await fetch("/api/admin/players/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName: newPlayerName, team: newPlayerTeam || null }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.player) {
+        setPlayers((prev) => [...prev, json.player].sort((a, b) => a.full_name.localeCompare(b.full_name)));
+        setNewPlayerName("");
+        setNewPlayerTeam("");
+        flash("Leikmaður búinn til ✅");
+      } else {
+        setErr(json.error || "Ekki tókst að búa til leikmann");
+      }
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setCreatingPlayer(false);
+    }
+  }
+
+  useEffect(() => {
+    if (tab === "results" && bonusType === "player") {
+      void loadPlayers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, bonusType]);
 
   // derived choice options list
   const parsedChoiceOptions = useMemo(() => {
@@ -568,6 +630,7 @@ export default function AdminPage() {
 
     setCorrectNumber("");
     setCorrectChoice("");
+    setCorrectPlayerId("");
   }
 
   async function saveBonus(e: React.FormEvent) {
@@ -605,6 +668,10 @@ export default function AdminPage() {
       if (!Number.isFinite(n)) return setErr("Rétt tala er ógild.");
     }
 
+    if (bonusType === "player" && !correctPlayerId) {
+      return setErr("Veldu leikmann sem rétt svar.");
+    }
+
     setSavingBonus(true);
     try {
       const payload: any = {
@@ -617,6 +684,7 @@ export default function AdminPage() {
         // correct fields (optional)
         correctNumber: bonusType === "number" && correctNumber.trim() ? Number(correctNumber) : null,
         correctChoice: bonusType === "choice" && correctChoice ? correctChoice : null,
+        correctPlayerId: bonusType === "player" && correctPlayerId ? correctPlayerId : null,
       };
 
       const res = await fetch("/api/admin/bonus/create", {
@@ -1024,6 +1092,7 @@ export default function AdminPage() {
                         >
                           <option value="number">Tala</option>
                           <option value="choice">Krossa</option>
+                          <option value="player">Leikmaður</option>
                         </select>
                       </div>
 
@@ -1084,6 +1153,73 @@ export default function AdminPage() {
                       </div>
                     )}
 
+                    {bonusType === "player" && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm text-slate-700 dark:text-neutral-300">Bæta við leikmanni</label>
+                          <div className="mt-1 flex gap-2">
+                            <input
+                              value={newPlayerName}
+                              onChange={(e) => setNewPlayerName(e.target.value)}
+                              placeholder="Nafn leikmanns"
+                              className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  void createPlayer();
+                                }
+                              }}
+                            />
+                            <input
+                              value={newPlayerTeam}
+                              onChange={(e) => setNewPlayerTeam(e.target.value)}
+                              placeholder="Lið (valfrjálst)"
+                              className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  void createPlayer();
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void createPlayer()}
+                              disabled={creatingPlayer || !newPlayerName.trim()}
+                              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            >
+                              {creatingPlayer ? "..." : "Bæta við"}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-sm text-slate-700 dark:text-neutral-300">Rétt leikmaður (krafist)</label>
+                          <select
+                            value={correctPlayerId}
+                            onChange={(e) => setCorrectPlayerId(e.target.value)}
+                            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                          >
+                            <option value="">— veldu leikmann —</option>
+                            {loadingPlayers ? (
+                              <option disabled>Hleð leikmönnum...</option>
+                            ) : (
+                              players.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.full_name}
+                                  {p.team ? ` (${p.team})` : ""}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                          {players.length === 0 && !loadingPlayers && (
+                            <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                              Engir leikmenn til staðar. Bættu við leikmanni hér að ofan.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex flex-col gap-2">
                       <button
@@ -1181,7 +1317,7 @@ export default function AdminPage() {
                               <div className="flex items-center justify-between gap-3">
                                 <div className="font-semibold text-slate-900 dark:text-neutral-100">Bónus: {q.title}</div>
                                 <div className="text-xs text-slate-600 dark:text-neutral-300">
-                                  +{q.points} stig · {q.type === "number" ? "tala" : "krossa"}
+                                  +{q.points} stig · {q.type === "number" ? "tala" : q.type === "choice" ? "krossa" : "leikmaður"}
                                 </div>
                               </div>
 
@@ -1203,6 +1339,13 @@ export default function AdminPage() {
                               {q.type === "choice" && q.correct_choice && (
                                 <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
                                   Rétt val: <span className="font-semibold">{q.correct_choice}</span>
+                                </div>
+                              )}
+                              {q.type === "player" && q.correct_player_id && (
+                                <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                                  Rétt leikmaður: <span className="font-semibold">
+                                    {(q as any).correct_player_name || q.correct_player_id}
+                                  </span>
                                 </div>
                               )}
                             </div>

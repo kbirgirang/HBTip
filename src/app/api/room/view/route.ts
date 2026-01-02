@@ -35,11 +35,11 @@ export async function GET() {
 
   if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
 
-  // 4) Bonus questions PER MATCH (1 per match) + choice fields
+  // 4) Bonus questions PER MATCH (1 per match) + choice fields + player fields
   const { data: bonusQs, error: bErr } = await supabaseServer
     .from("bonus_questions")
     .select(
-      "id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice"
+      "id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice, correct_player_id"
     )
     .eq("tournament_id", room.tournament_id);
 
@@ -52,13 +52,35 @@ export async function GET() {
   if (qIds.length > 0) {
     const { data: ans, error: aErr } = await supabaseServer
       .from("bonus_answers")
-      .select("question_id, answer_number, answer_choice")
+      .select("question_id, answer_number, answer_choice, answer_player_id")
       .eq("room_id", room.id)
       .eq("member_id", session.memberId)
       .in("question_id", qIds);
 
     if (aErr) return NextResponse.json({ error: aErr.message }, { status: 500 });
     myBonusAnswers = ans ?? [];
+  }
+
+  // 4c) Fetch player names for correct_player_id and answer_player_id
+  const playerIds = new Set<string>();
+  for (const q of bonusQs ?? []) {
+    if (q.correct_player_id) playerIds.add(q.correct_player_id);
+  }
+  for (const a of myBonusAnswers) {
+    if (a.answer_player_id) playerIds.add(a.answer_player_id);
+  }
+  
+  let playersMap = new Map<string, { id: string; full_name: string }>();
+  if (playerIds.size > 0) {
+    const { data: players, error: pErr } = await supabaseServer
+      .from("players")
+      .select("id, full_name")
+      .in("id", Array.from(playerIds));
+    if (!pErr && players) {
+      for (const p of players) {
+        playersMap.set(p.id, p);
+      }
+    }
   }
 
   const myAnswerByQid = new Map<string, any>();
@@ -95,12 +117,30 @@ export async function GET() {
   if (qIds.length > 0) {
     const { data: allAns, error: allAErr } = await supabaseServer
       .from("bonus_answers")
-      .select("member_id, question_id, answer_number, answer_choice")
+      .select("member_id, question_id, answer_number, answer_choice, answer_player_id")
       .eq("room_id", room.id)
       .in("question_id", qIds);
 
     if (allAErr) return NextResponse.json({ error: allAErr.message }, { status: 500 });
     allBonusAnswers = allAns ?? [];
+    
+    // Add player IDs to playersMap
+    for (const a of allBonusAnswers) {
+      if (a.answer_player_id) playerIds.add(a.answer_player_id);
+    }
+    
+    // Fetch all players needed
+    if (playerIds.size > 0) {
+      const { data: players, error: pErr } = await supabaseServer
+        .from("players")
+        .select("id, full_name")
+        .in("id", Array.from(playerIds));
+      if (!pErr && players) {
+        for (const p of players) {
+          playersMap.set(p.id, p);
+        }
+      }
+    }
   }
 
   // --- Lookup maps
@@ -112,10 +152,16 @@ export async function GET() {
   for (const q of bonusQs ?? []) {
     const mine = myAnswerByQid.get(q.id);
     bonusById.set(q.id, q);
+    const correctPlayer = q.correct_player_id ? playersMap.get(q.correct_player_id) : null;
+    const myAnswerPlayer = mine?.answer_player_id ? playersMap.get(mine.answer_player_id) : null;
     bonusByMatchId.set(q.match_id, {
       ...q,
       my_answer_number: mine?.answer_number ?? null,
       my_answer_choice: mine?.answer_choice ?? null,
+      my_answer_player_id: mine?.answer_player_id ?? null,
+      my_answer_player_name: myAnswerPlayer?.full_name ?? null,
+      correct_player_id: q.correct_player_id ?? null,
+      correct_player_name: correctPlayer?.full_name ?? null,
     });
   }
 
@@ -156,6 +202,8 @@ export async function GET() {
         isCorrect = ans.answer_number === question.correct_number;
       } else if (question.type === "choice" && question.correct_choice != null) {
         isCorrect = ans.answer_choice === question.correct_choice;
+      } else if (question.type === "player" && question.correct_player_id != null) {
+        isCorrect = ans.answer_player_id === question.correct_player_id;
       }
 
       if (isCorrect) {

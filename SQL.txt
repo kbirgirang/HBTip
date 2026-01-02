@@ -164,9 +164,9 @@ create table public.players (
 create index idx_players_tournament on public.players(tournament_id);
 
 -- -------------------------
--- 8) Bonus questions (PER MATCH) + CHOICE (UPPFÆRT: bara number og choice)
+-- 8) Bonus questions (PER MATCH) + CHOICE + PLAYER
 -- -------------------------
-create type public.bonus_type as enum ('number', 'choice');
+create type public.bonus_type as enum ('number', 'choice', 'player');
 
 create table public.bonus_questions (
   id uuid primary key default gen_random_uuid(),
@@ -195,6 +195,8 @@ create table public.bonus_questions (
     (type = 'number' and correct_number is not null and correct_player_id is null and correct_choice is null)
     or
     (type = 'choice' and correct_choice is not null and correct_number is null and correct_player_id is null)
+    or
+    (type = 'player' and correct_player_id is not null and correct_number is null and correct_choice is null)
   ),
 
   check (
@@ -237,6 +239,8 @@ create table public.bonus_answers (
     (answer_number is not null and answer_player_id is null and answer_choice is null)
     or
     (answer_choice is not null and answer_number is null and answer_player_id is null)
+    or
+    (answer_player_id is not null and answer_number is null and answer_choice is null)
   )
 );
 

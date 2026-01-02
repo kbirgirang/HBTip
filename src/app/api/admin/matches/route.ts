@@ -20,7 +20,7 @@ export async function GET() {
     .from("matches")
     .select("id, stage, match_no, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier")
     .eq("tournament_id", t.id)
-    .order("starts_at", { ascending: true });
+    .order("match_no", { ascending: true, nullsFirst: false });
 
   if (mErr) {
     return NextResponse.json({ error: mErr.message }, { status: 500 });

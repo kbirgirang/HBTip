@@ -80,6 +80,11 @@ export default function RoomPage() {
   // Toggle for "Eldri leikir" section
   const [showFinishedMatches, setShowFinishedMatches] = useState(false);
 
+  // Room switcher
+  const [myRooms, setMyRooms] = useState<Array<{ roomId: string; roomCode: string; roomName: string; isCurrentRoom: boolean }>>([]);
+  const [showRoomSwitcher, setShowRoomSwitcher] = useState(false);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+
   async function load() {
     setErr(null);
     const res = await fetch("/api/room/view", { cache: "no-store" });
@@ -94,6 +99,7 @@ export default function RoomPage() {
 
   useEffect(() => {
     void load();
+    void loadMyRooms();
     
     // Auto-refresh every 10 seconds
     const interval = setInterval(() => {
@@ -102,6 +108,38 @@ export default function RoomPage() {
     
     return () => clearInterval(interval);
   }, []);
+
+  const roomSwitcherRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Loka dropdown þegar notandi klikkar utan um hann
+    function handleClickOutside(event: MouseEvent) {
+      if (showRoomSwitcher && roomSwitcherRef.current && !roomSwitcherRef.current.contains(event.target as Node)) {
+        setShowRoomSwitcher(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showRoomSwitcher]);
+
+  async function loadMyRooms() {
+    setLoadingRooms(true);
+    try {
+      const res = await fetch("/api/room/list-my-rooms", { cache: "no-store" });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.rooms) {
+        setMyRooms(json.rooms);
+      }
+    } catch {
+      // Silent fail
+    } finally {
+      setLoadingRooms(false);
+    }
+  }
+
+  function switchRoom(roomCode: string) {
+    window.location.href = `/r/${encodeURIComponent(roomCode)}`;
+  }
 
   async function loadMembers() {
     if (!data?.me.is_owner) return;
@@ -258,9 +296,44 @@ export default function RoomPage() {
     if (!data) return null;
     return (
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">
-          {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">
+            {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
+          </h1>
+          {myRooms.length > 1 && (
+            <div className="relative" ref={roomSwitcherRef}>
+              <button
+                type="button"
+                onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:bg-neutral-900/60"
+              >
+                {loadingRooms ? "Hleð..." : `Skipta deild (${myRooms.length})`}
+              </button>
+              {showRoomSwitcher && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
+                  <div className="p-2">
+                    <div className="mb-2 text-xs font-semibold text-slate-600 dark:text-neutral-400">Deildir sem þú ert í:</div>
+                    {myRooms.map((room) => (
+                      <button
+                        key={room.roomId}
+                        type="button"
+                        onClick={() => switchRoom(room.roomCode)}
+                        className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
+                          room.isCurrentRoom
+                            ? "bg-blue-50 text-blue-900 dark:bg-blue-900/20 dark:text-blue-300"
+                            : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        }`}
+                      >
+                        <div className="font-semibold">{room.roomName}</div>
+                        <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
           <span className="font-semibold">{data.me.display_name}</span>{" "}
           <span className="font-mono">(@{data.me.username})</span>
@@ -282,7 +355,7 @@ export default function RoomPage() {
         </p>
       </div>
     );
-  }, [data]);
+  }, [data, myRooms, showRoomSwitcher, loadingRooms]);
 
   return (
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">

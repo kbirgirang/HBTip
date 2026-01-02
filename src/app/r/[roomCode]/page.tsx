@@ -251,6 +251,7 @@ export default function RoomPage() {
           {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
+          <span className="font-semibold">{data.me.display_name}</span>{" "}
           <span className="font-mono">(@{data.me.username})</span>
           {(() => {
             const myRank = data.leaderboard.findIndex((p) => p.memberId === data.me.id) + 1;

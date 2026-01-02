@@ -186,6 +186,9 @@ create table public.bonus_questions (
   choice_options text[] null,
   correct_choice text null,
 
+  -- Player options (JSON array of {name: string, team?: string})
+  player_options jsonb null,
+
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 

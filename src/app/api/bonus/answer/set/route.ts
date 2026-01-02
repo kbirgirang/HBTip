@@ -6,7 +6,7 @@ type Body = {
   questionId: string;
   answerNumber?: number | null;
   answerChoice?: string | null; // ef type=choice
-  answerPlayerId?: string | null; // ef type=player
+  answerPlayerName?: string | null; // ef type=player
 };
 
 export async function POST(req: Request) {
@@ -59,19 +59,36 @@ export async function POST(req: Request) {
     }
     answer_choice = body.answerChoice.trim();
   } else if (q.type === "player") {
-    if (!body.answerPlayerId || typeof body.answerPlayerId !== "string" || body.answerPlayerId.trim() === "") {
-      return NextResponse.json({ error: "answerPlayerId er krafist" }, { status: 400 });
+    if (!body.answerPlayerName || typeof body.answerPlayerName !== "string" || body.answerPlayerName.trim() === "") {
+      return NextResponse.json({ error: "answerPlayerName er krafist" }, { status: 400 });
     }
-    answer_player_id = body.answerPlayerId.trim();
-    // Verify player exists
-    const { data: player, error: pErr } = await supabaseServer
-      .from("players")
-      .select("id")
-      .eq("id", answer_player_id)
+    const answerPlayerName = body.answerPlayerName.trim();
+    
+    // Get player_options from question
+    const { data: questionWithOptions, error: qOptErr } = await supabaseServer
+      .from("bonus_questions")
+      .select("player_options")
+      .eq("id", body.questionId)
       .single();
-    if (pErr || !player) {
-      return NextResponse.json({ error: "Leikmaður fannst ekki" }, { status: 404 });
+    
+    if (qOptErr || !questionWithOptions) {
+      return NextResponse.json({ error: "Bónusspurning fannst ekki" }, { status: 404 });
     }
+    
+    const playerOptions = questionWithOptions.player_options as Array<{ name: string; team?: string }> | null;
+    if (!playerOptions || !Array.isArray(playerOptions)) {
+      return NextResponse.json({ error: "player_options fannst ekki í bónusspurningu" }, { status: 400 });
+    }
+    
+    // Verify player name is in options
+    const playerNames = playerOptions.map((p) => p.name.trim().toLowerCase());
+    if (!playerNames.includes(answerPlayerName.toLowerCase())) {
+      return NextResponse.json({ error: "Leikmaður er ekki í valmöguleikum" }, { status: 400 });
+    }
+    
+    // Store player name as text (we'll use answer_choice field for player name since answer_player_id is for UUID)
+    answer_choice = answerPlayerName;
+    answer_player_id = null;
   } else {
     return NextResponse.json({ error: "Óþekktur gerð bónusspurningar" }, { status: 400 });
   }

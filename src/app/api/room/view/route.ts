@@ -39,7 +39,7 @@ export async function GET() {
   const { data: bonusQs, error: bErr } = await supabaseServer
     .from("bonus_questions")
     .select(
-      "id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice, correct_player_id"
+      "id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice, correct_player_id, player_options"
     )
     .eq("tournament_id", room.tournament_id);
 
@@ -154,14 +154,29 @@ export async function GET() {
     bonusById.set(q.id, q);
     const correctPlayer = q.correct_player_id ? playersMap.get(q.correct_player_id) : null;
     const myAnswerPlayer = mine?.answer_player_id ? playersMap.get(mine.answer_player_id) : null;
+    
+    // For player type, answer_choice contains player name
+    let myAnswerPlayerName = null;
+    if (q.type === "player") {
+      myAnswerPlayerName = mine?.answer_choice ?? null;
+    } else if (mine?.answer_player_id) {
+      myAnswerPlayerName = myAnswerPlayer?.full_name ?? null;
+    }
+    
+    // For player type, correct_choice contains the correct player name
+    let correctPlayerName = correctPlayer?.full_name ?? null;
+    if (q.type === "player" && q.correct_choice) {
+      correctPlayerName = q.correct_choice;
+    }
+    
     bonusByMatchId.set(q.match_id, {
       ...q,
       my_answer_number: mine?.answer_number ?? null,
       my_answer_choice: mine?.answer_choice ?? null,
       my_answer_player_id: mine?.answer_player_id ?? null,
-      my_answer_player_name: myAnswerPlayer?.full_name ?? null,
+      my_answer_player_name: myAnswerPlayerName,
       correct_player_id: q.correct_player_id ?? null,
-      correct_player_name: correctPlayer?.full_name ?? null,
+      correct_player_name: correctPlayerName,
     });
   }
 

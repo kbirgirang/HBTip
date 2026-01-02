@@ -27,7 +27,7 @@ export async function GET() {
     const { data: bonus, error: bErr } = await supabaseServer
       .from("bonus_questions")
       .select(
-        "id, match_id, title, type, points, closes_at, choice_options, correct_number, correct_choice, correct_player_id"
+        "id, match_id, title, type, points, closes_at, choice_options, correct_number, correct_choice, correct_player_id, player_options"
       )
       .eq("tournament_id", t.id);
 
@@ -54,9 +54,14 @@ export async function GET() {
     const bonusByMatchId = new Map<string, any>();
     for (const q of bonus ?? []) {
       const correctPlayer = q.correct_player_id ? playersMap.get(q.correct_player_id) : null;
+      // For player type, correct_choice contains the correct player name
+      let correctPlayerName = correctPlayer?.full_name ?? null;
+      if (q.type === "player" && q.correct_choice) {
+        correctPlayerName = q.correct_choice;
+      }
       bonusByMatchId.set(q.match_id, {
         ...q,
-        correct_player_name: correctPlayer?.full_name ?? null,
+        correct_player_name: correctPlayerName,
       });
     }
 

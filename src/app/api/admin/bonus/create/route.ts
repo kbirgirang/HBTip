@@ -50,7 +50,8 @@ export async function POST(req: Request) {
     // Correct fields (valfrjálst)
     const correctNumber = body?.correctNumber != null ? Number(body.correctNumber) : null;
     const correctChoice = body?.correctChoice ? String(body.correctChoice).trim() : null;
-    const correctPlayerId = body?.correctPlayerId ? String(body.correctPlayerId).trim() : null;
+    const correctPlayerName = body?.correctPlayerName ? String(body.correctPlayerName).trim() : null;
+    const playerOptions = body?.playerOptions;
 
     if (!matchId) {
       return NextResponse.json({ error: "matchId vantar." }, { status: 400 });
@@ -111,18 +112,26 @@ export async function POST(req: Request) {
     if (type === "choice" && correctChoice && choiceOptions && !choiceOptions.includes(correctChoice)) {
       return NextResponse.json({ error: "correctChoice er ekki í valmöguleikum." }, { status: 400 });
     }
-    if (type === "player" && !correctPlayerId) {
-      return NextResponse.json({ error: "correctPlayerId vantar fyrir player type." }, { status: 400 });
-    }
-    if (type === "player" && correctPlayerId) {
-      // Verify player exists
-      const { data: player, error: pErr } = await supabaseServer
-        .from("players")
-        .select("id")
-        .eq("id", correctPlayerId)
-        .single();
-      if (pErr || !player) {
-        return NextResponse.json({ error: "Leikmaður fannst ekki." }, { status: 404 });
+    let playerOptionsJson: any = null;
+    if (type === "player") {
+      if (!playerOptions || !Array.isArray(playerOptions) || playerOptions.length === 0) {
+        return NextResponse.json({ error: "playerOptions er krafist fyrir player type." }, { status: 400 });
+      }
+      // Validate player options structure
+      for (const p of playerOptions) {
+        if (!p || typeof p.name !== "string" || !p.name.trim()) {
+          return NextResponse.json({ error: "Hver leikmaður verður að hafa 'name' field." }, { status: 400 });
+        }
+      }
+      playerOptionsJson = playerOptions;
+      
+      if (!correctPlayerName) {
+        return NextResponse.json({ error: "correctPlayerName er krafist fyrir player type." }, { status: 400 });
+      }
+      // Verify correct player name is in options
+      const playerNames = playerOptions.map((p: any) => p.name.trim().toLowerCase());
+      if (!playerNames.includes(correctPlayerName.toLowerCase())) {
+        return NextResponse.json({ error: "correctPlayerName verður að vera í playerOptions listanum." }, { status: 400 });
       }
     }
 
@@ -137,11 +146,14 @@ export async function POST(req: Request) {
 
       // Correct fields (set úr body eða null)
       correct_number: type === "number" ? correctNumber : null,
-      correct_choice: type === "choice" ? correctChoice : null,
-      correct_player_id: type === "player" ? correctPlayerId : null,
+      correct_choice: type === "choice" ? correctChoice : (type === "player" ? correctPlayerName : null), // For player type, store correct name in correct_choice
+      correct_player_id: null, // Not used anymore for player type with JSON options
 
       // Choice
       choice_options: choiceOptions,
+      
+      // Player options (JSON) - stores array of {name, team?}
+      player_options: type === "player" ? playerOptionsJson : null,
     };
 
     const { data: saved, error: upErr } = await supabaseServer

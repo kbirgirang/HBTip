@@ -39,13 +39,12 @@ type ViewData = {
       correct_choice?: string | null;
 
       // player
-      correct_player_id?: string | null;
+      player_options?: Array<{ name: string; team?: string }> | null;
       correct_player_name?: string | null; // For display
 
       // my existing answer (from DB)
       my_answer_number?: number | null;
       my_answer_choice?: string | null;
-      my_answer_player_id?: string | null;
       my_answer_player_name?: string | null; // For display
     };
   }>;
@@ -1003,30 +1002,14 @@ function BonusAnswerCard({
     bonus.my_answer_number != null ? String(bonus.my_answer_number) : ""
   );
   const [answerChoice, setAnswerChoice] = useState<string>(bonus.my_answer_choice || "");
-  const [answerPlayerId, setAnswerPlayerId] = useState<string>(bonus.my_answer_player_id || "");
-  const [players, setPlayers] = useState<Array<{ id: string; full_name: string; team: string | null }>>([]);
-  const [loadingPlayers, setLoadingPlayers] = useState(false);
-
-  // Load players if player type
-  useEffect(() => {
-    if (bonus.type === "player") {
-      setLoadingPlayers(true);
-      fetch("/api/players/list")
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.players) setPlayers(json.players);
-        })
-        .catch(() => {})
-        .finally(() => setLoadingPlayers(false));
-    }
-  }, [bonus.type]);
+  const [answerPlayerName, setAnswerPlayerName] = useState<string>(bonus.my_answer_player_name || "");
 
   // ✅ mikilvægt: ef load() kemur með ný gögn, sync-a state
   useEffect(() => {
     setAnswerNumber(bonus.my_answer_number != null ? String(bonus.my_answer_number) : "");
     setAnswerChoice(bonus.my_answer_choice || "");
-    setAnswerPlayerId(bonus.my_answer_player_id || "");
-  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice, bonus.my_answer_player_id]);
+    setAnswerPlayerName(bonus.my_answer_player_name || "");
+  }, [bonus.id, bonus.my_answer_number, bonus.my_answer_choice, bonus.my_answer_player_name]);
 
   async function save() {
     setLocalErr(null);
@@ -1051,7 +1034,12 @@ function BonusAnswerCard({
     }
 
     if (bonus.type === "player") {
-      if (!answerPlayerId) return setLocalErr("Veldu leikmann.");
+      if (!answerPlayerName.trim()) return setLocalErr("Skrifaðu inn nafn leikmanns.");
+      const playerOptions = bonus.player_options || [];
+      const playerNames = playerOptions.map((p) => p.name.trim().toLowerCase());
+      if (!playerNames.includes(answerPlayerName.trim().toLowerCase())) {
+        return setLocalErr("Leikmaður verður að vera í valmöguleikum.");
+      }
     }
 
     setSaving(true);
@@ -1060,7 +1048,7 @@ function BonusAnswerCard({
 
       if (bonus.type === "number") payload.answerNumber = Number(answerNumber);
       if (bonus.type === "choice") payload.answerChoice = answerChoice;
-      if (bonus.type === "player") payload.answerPlayerId = answerPlayerId;
+      if (bonus.type === "player") payload.answerPlayerName = answerPlayerName.trim();
 
       const res = await fetch("/api/bonus/answer/set", {
         method: "POST",
@@ -1077,7 +1065,7 @@ function BonusAnswerCard({
       // ✅ sýna strax (án þess að bíða eftir reload)
       if (bonus.type === "number") setAnswerNumber(String(Number(answerNumber)));
       if (bonus.type === "choice") setAnswerChoice(answerChoice);
-      if (bonus.type === "player") setAnswerPlayerId(answerPlayerId);
+      if (bonus.type === "player") setAnswerPlayerName(answerPlayerName.trim());
 
       onSaved?.();
     } catch {
@@ -1192,23 +1180,26 @@ function BonusAnswerCard({
         )}
 
         {bonus.type === "player" && (
-          <select
-            value={answerPlayerId}
-            onChange={(e) => setAnswerPlayerId(e.target.value)}
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-          >
-            <option value="">— veldu leikmann —</option>
-            {loadingPlayers ? (
-              <option disabled>Hleð leikmönnum...</option>
-            ) : (
-              players.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name}
+          <div className="space-y-2">
+            <select
+              value={answerPlayerName}
+              onChange={(e) => setAnswerPlayerName(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+            >
+              <option value="">— veldu leikmann —</option>
+              {(bonus.player_options || []).map((p, i) => (
+                <option key={i} value={p.name}>
+                  {p.name}
                   {p.team ? ` (${p.team})` : ""}
                 </option>
-              ))
+              ))}
+            </select>
+            {bonus.player_options && bonus.player_options.length === 0 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Engir leikmenn í valmöguleikum.
+              </p>
             )}
-          </select>
+          </div>
         )}
 
         {localErr && (

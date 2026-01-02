@@ -471,11 +471,25 @@ export default function AdminPage() {
     // correct fields
     setCorrectNumber(q.correct_number != null ? String(q.correct_number) : "");
     setCorrectChoice(q.correct_choice || "");
-    setCorrectPlayerId(q.correct_player_id || "");
-
-    // Load players ef player type
+    
+    // Player options from JSON
     if (q.type === "player") {
-      void loadPlayers();
+      const playerOpts = (q as any).player_options;
+      if (playerOpts && Array.isArray(playerOpts)) {
+        setPlayerOptionsJson(JSON.stringify(playerOpts, null, 2));
+        setParsedPlayerOptions(playerOpts);
+      } else {
+        setPlayerOptionsJson("");
+        setParsedPlayerOptions([]);
+      }
+      // Set correct player name (from player_options or correct_player_id)
+      if ((q as any).correct_player_name) {
+        setCorrectPlayerName((q as any).correct_player_name);
+      } else if (q.correct_player_id) {
+        setCorrectPlayerName(q.correct_player_id);
+      } else {
+        setCorrectPlayerName("");
+      }
     }
 
     flash("Bónus sett í form (Breyta) ✏️");
@@ -521,20 +535,35 @@ export default function AdminPage() {
   const [bonusType, setBonusType] = useState<BonusType>("number");
   const [bonusPoints, setBonusPoints] = useState<number>(5);
   const [bonusOptionsText, setBonusOptionsText] = useState<string>("");
+  const [playerOptionsJson, setPlayerOptionsJson] = useState<string>("");
 
   // ✅ correct answer inputs
   const [correctNumber, setCorrectNumber] = useState<string>("");
   const [correctChoice, setCorrectChoice] = useState<string>("");
-  const [correctPlayerId, setCorrectPlayerId] = useState<string>("");
+  const [correctPlayerName, setCorrectPlayerName] = useState<string>("");
 
-  // Players state
-  const [players, setPlayers] = useState<Array<{ id: string; full_name: string; team: string | null }>>([]);
-  const [loadingPlayers, setLoadingPlayers] = useState(false);
-  const [newPlayerName, setNewPlayerName] = useState("");
-  const [newPlayerTeam, setNewPlayerTeam] = useState("");
-  const [creatingPlayer, setCreatingPlayer] = useState(false);
+  // Players state (from JSON)
+  const [parsedPlayerOptions, setParsedPlayerOptions] = useState<Array<{ name: string; team?: string }>>([]);
 
   const [savingBonus, setSavingBonus] = useState(false);
+
+  // Parse player options JSON
+  useEffect(() => {
+    if (bonusType === "player" && playerOptionsJson.trim()) {
+      try {
+        const parsed = JSON.parse(playerOptionsJson);
+        if (Array.isArray(parsed)) {
+          setParsedPlayerOptions(parsed.filter((p: any) => p && typeof p.name === "string"));
+        } else {
+          setParsedPlayerOptions([]);
+        }
+      } catch {
+        setParsedPlayerOptions([]);
+      }
+    } else {
+      setParsedPlayerOptions([]);
+    }
+  }, [bonusType, playerOptionsJson]);
 
   // þegar type skiptir: hreinsa óviðkomandi correct fields
   useEffect(() => {
@@ -543,56 +572,13 @@ export default function AdminPage() {
       setCorrectChoice("");
     }
     if (bonusType !== "number") setCorrectNumber("");
-    if (bonusType !== "player") setCorrectPlayerId("");
+    if (bonusType !== "player") {
+      setPlayerOptionsJson("");
+      setCorrectPlayerName("");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bonusType]);
 
-  async function loadPlayers() {
-    setLoadingPlayers(true);
-    try {
-      const res = await fetch("/api/admin/players/list", { cache: "no-store" });
-      const json = await res.json().catch(() => ({}));
-      if (res.ok && json.players) {
-        setPlayers(json.players);
-      }
-    } catch {
-      // Silent fail
-    } finally {
-      setLoadingPlayers(false);
-    }
-  }
-
-  async function createPlayer() {
-    if (!newPlayerName.trim()) return;
-    setCreatingPlayer(true);
-    try {
-      const res = await fetch("/api/admin/players/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName: newPlayerName, team: newPlayerTeam || null }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (res.ok && json.player) {
-        setPlayers((prev) => [...prev, json.player].sort((a, b) => a.full_name.localeCompare(b.full_name)));
-        setNewPlayerName("");
-        setNewPlayerTeam("");
-        flash("Leikmaður búinn til ✅");
-      } else {
-        setErr(json.error || "Ekki tókst að búa til leikmann");
-      }
-    } catch {
-      setErr("Tenging klikkaði.");
-    } finally {
-      setCreatingPlayer(false);
-    }
-  }
-
-  useEffect(() => {
-    if (tab === "results" && bonusType === "player") {
-      void loadPlayers();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, bonusType]);
 
   // derived choice options list
   const parsedChoiceOptions = useMemo(() => {
@@ -630,7 +616,8 @@ export default function AdminPage() {
 
     setCorrectNumber("");
     setCorrectChoice("");
-    setCorrectPlayerId("");
+    setCorrectPlayerName("");
+    setPlayerOptionsJson("");
   }
 
   async function saveBonus(e: React.FormEvent) {
@@ -668,8 +655,32 @@ export default function AdminPage() {
       if (!Number.isFinite(n)) return setErr("Rétt tala er ógild.");
     }
 
-    if (bonusType === "player" && !correctPlayerId) {
-      return setErr("Veldu leikmann sem rétt svar.");
+    if (bonusType === "player") {
+      if (!playerOptionsJson.trim()) {
+        return setErr("Skrifaðu inn leikmenn í JSON field.");
+      }
+      try {
+        const parsed = JSON.parse(playerOptionsJson);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          return setErr("player_options verður að vera array með að minnsta kosti einum leikmanni.");
+        }
+        for (const p of parsed) {
+          if (!p || typeof p.name !== "string" || !p.name.trim()) {
+            return setErr("Hver leikmaður verður að hafa 'name' field.");
+          }
+        }
+      } catch (e) {
+        return setErr(`Ógildur JSON: ${e instanceof Error ? e.message : String(e)}`);
+      }
+      if (!correctPlayerName.trim()) {
+        return setErr("Skrifaðu inn nafn rétts leikmanns.");
+      }
+      // Verify correct player name is in options
+      const parsed = JSON.parse(playerOptionsJson);
+      const playerNames = parsed.map((p: any) => p.name.trim().toLowerCase());
+      if (!playerNames.includes(correctPlayerName.trim().toLowerCase())) {
+        return setErr("Réttur leikmaður verður að vera í player_options listanum.");
+      }
     }
 
     setSavingBonus(true);
@@ -684,7 +695,8 @@ export default function AdminPage() {
         // correct fields (optional)
         correctNumber: bonusType === "number" && correctNumber.trim() ? Number(correctNumber) : null,
         correctChoice: bonusType === "choice" && correctChoice ? correctChoice : null,
-        correctPlayerId: bonusType === "player" && correctPlayerId ? correctPlayerId : null,
+        correctPlayerName: bonusType === "player" && correctPlayerName ? correctPlayerName.trim() : null,
+        playerOptions: bonusType === "player" && playerOptionsJson.trim() ? JSON.parse(playerOptionsJson) : null,
       };
 
       const res = await fetch("/api/admin/bonus/create", {
@@ -1156,67 +1168,47 @@ export default function AdminPage() {
                     {bonusType === "player" && (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-sm text-slate-700 dark:text-neutral-300">Bæta við leikmanni</label>
-                          <div className="mt-1 flex gap-2">
-                            <input
-                              value={newPlayerName}
-                              onChange={(e) => setNewPlayerName(e.target.value)}
-                              placeholder="Nafn leikmanns"
-                              className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  void createPlayer();
-                                }
-                              }}
-                            />
-                            <input
-                              value={newPlayerTeam}
-                              onChange={(e) => setNewPlayerTeam(e.target.value)}
-                              placeholder="Lið (valfrjálst)"
-                              className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  void createPlayer();
-                                }
-                              }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => void createPlayer()}
-                              disabled={creatingPlayer || !newPlayerName.trim()}
-                              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                            >
-                              {creatingPlayer ? "..." : "Bæta við"}
-                            </button>
-                          </div>
+                          <label className="text-sm text-slate-700 dark:text-neutral-300">
+                            Leikmenn (JSON array) - krafist
+                          </label>
+                          <textarea
+                            value={playerOptionsJson}
+                            onChange={(e) => setPlayerOptionsJson(e.target.value)}
+                            rows={8}
+                            placeholder={`[\n  { "name": "Atli", "team": "Iceland" },\n  { "name": "Jón", "team": "Iceland" },\n  { "name": "Pétur" }\n]`}
+                            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                          />
+                          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                            JSON array með leikmönnum. Hver leikmaður verður að hafa "name" field. "team" er valfrjálst.
+                          </p>
+                          {parsedPlayerOptions.length > 0 && (
+                            <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-neutral-700 dark:bg-neutral-900/40">
+                              <p className="text-xs font-semibold text-slate-700 dark:text-neutral-300">
+                                {parsedPlayerOptions.length} leikmaður{parsedPlayerOptions.length !== 1 ? "ir" : ""} greindir:
+                              </p>
+                              <ul className="mt-1 space-y-1">
+                                {parsedPlayerOptions.map((p, i) => (
+                                  <li key={i} className="text-xs text-slate-600 dark:text-neutral-400">
+                                    • {p.name}
+                                    {p.team ? ` (${p.team})` : ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
 
                         <div>
                           <label className="text-sm text-slate-700 dark:text-neutral-300">Rétt leikmaður (krafist)</label>
-                          <select
-                            value={correctPlayerId}
-                            onChange={(e) => setCorrectPlayerId(e.target.value)}
+                          <input
+                            value={correctPlayerName}
+                            onChange={(e) => setCorrectPlayerName(e.target.value)}
+                            placeholder="Nafn rétts leikmanns"
                             className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                          >
-                            <option value="">— veldu leikmann —</option>
-                            {loadingPlayers ? (
-                              <option disabled>Hleð leikmönnum...</option>
-                            ) : (
-                              players.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                  {p.full_name}
-                                  {p.team ? ` (${p.team})` : ""}
-                                </option>
-                              ))
-                            )}
-                          </select>
-                          {players.length === 0 && !loadingPlayers && (
-                            <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
-                              Engir leikmenn til staðar. Bættu við leikmanni hér að ofan.
-                            </p>
-                          )}
+                          />
+                          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                            Nafn leikmanns sem er rétt svar. Verður að vera í player_options listanum.
+                          </p>
                         </div>
                       </div>
                     )}

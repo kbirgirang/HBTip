@@ -71,6 +71,11 @@ export default function RoomPage() {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editingMemberName, setEditingMemberName] = useState("");
 
+  // Change member password
+  const [changingPasswordMemberId, setChangingPasswordMemberId] = useState<string | null>(null);
+  const [newMemberPassword, setNewMemberPassword] = useState("");
+  const [changingMemberPassword, setChangingMemberPassword] = useState(false);
+
   async function load() {
     setErr(null);
     const res = await fetch("/api/room/view", { cache: "no-store" });
@@ -203,6 +208,38 @@ export default function RoomPage() {
       void load(); // Reload main data to update leaderboard
     } catch {
       setOwnerError("Tenging klikkaði");
+    }
+  }
+
+  async function handleChangeMemberPassword(memberId: string) {
+    if (!ownerPassword) return setOwnerError("Lykilorð stjórnanda vantar");
+    if (newMemberPassword.length < 6) return setOwnerError("Nýtt lykilorð þarf að vera amk 6 stafir");
+
+    setOwnerError(null);
+    setOwnerSuccess(null);
+    setChangingMemberPassword(true);
+
+    try {
+      const res = await fetch("/api/room/owner/change-member-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerPassword, memberId, newPassword: newMemberPassword }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setOwnerError(json.error || "Ekki tókst að breyta lykilorði");
+        return;
+      }
+
+      setOwnerSuccess("Lykilorð breytt ✅");
+      setChangingPasswordMemberId(null);
+      setNewMemberPassword("");
+      void loadMembers();
+    } catch {
+      setOwnerError("Tenging klikkaði");
+    } finally {
+      setChangingMemberPassword(false);
     }
   }
 
@@ -462,9 +499,35 @@ export default function RoomPage() {
                         </div>
 
                         {!m.is_owner && (
-                          <div className="flex gap-2">
-                            {editingMemberId === m.id ? (
-                              <>
+                          <div className="flex flex-col gap-2">
+                            {changingPasswordMemberId === m.id ? (
+                              <div className="flex gap-2">
+                                <input
+                                  type="password"
+                                  className="w-32 rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  value={newMemberPassword}
+                                  onChange={(e) => setNewMemberPassword(e.target.value)}
+                                  placeholder="Nýtt lykilorð"
+                                />
+                                <button
+                                  onClick={() => handleChangeMemberPassword(m.id)}
+                                  disabled={changingMemberPassword}
+                                  className="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-500 disabled:opacity-60"
+                                >
+                                  {changingMemberPassword ? "Vista..." : "Vista"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setChangingPasswordMemberId(null);
+                                    setNewMemberPassword("");
+                                  }}
+                                  className="rounded bg-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-400 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
+                                >
+                                  Hætta
+                                </button>
+                              </div>
+                            ) : editingMemberId === m.id ? (
+                              <div className="flex gap-2">
                                 <input
                                   type="text"
                                   className="w-32 rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -487,9 +550,9 @@ export default function RoomPage() {
                                 >
                                   Hætta
                                 </button>
-                              </>
+                              </div>
                             ) : (
-                              <>
+                              <div className="flex gap-2">
                                 <button
                                   onClick={() => {
                                     setEditingMemberId(m.id);
@@ -500,13 +563,22 @@ export default function RoomPage() {
                                   Breyta nafni
                                 </button>
                                 <button
+                                  onClick={() => {
+                                    setChangingPasswordMemberId(m.id);
+                                    setNewMemberPassword("");
+                                  }}
+                                  className="rounded bg-amber-600 px-2 py-1 text-xs text-white hover:bg-amber-700 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
+                                >
+                                  Breyta lykilorði
+                                </button>
+                                <button
                                   onClick={() => handleRemoveMember(m.id)}
                                   disabled={removingMemberId === m.id}
                                   className="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-500 disabled:opacity-60"
                                 >
                                   {removingMemberId === m.id ? "Fjarlægi..." : "Fjarlægja"}
                                 </button>
-                              </>
+                              </div>
                             )}
                           </div>
                         )}

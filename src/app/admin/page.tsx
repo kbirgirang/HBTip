@@ -1185,9 +1185,43 @@ export default function AdminPage() {
                     {bonusType === "player" && (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-sm text-slate-700 dark:text-neutral-300">
-                            Leikmenn (JSON array) - krafist
-                          </label>
+                          <div className="flex items-center justify-between">
+                            <label className="text-sm text-slate-700 dark:text-neutral-300">
+                              Leikmenn (JSON array) - krafist
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const icelandTeam = [
+                                  { "name": "Viktor Gísli Hallgrímsson", "team": "Iceland" },
+                                  { "name": "Björgvin Páll Gústavsson", "team": "Iceland" },
+                                  { "name": "Gísli Þorgeir Kristjánsson", "team": "Iceland" },
+                                  { "name": "Ómar Ingi Magnússon", "team": "Iceland" },
+                                  { "name": "Bjarki Már Elísson", "team": "Iceland" },
+                                  { "name": "Sigvaldi Björn Guðjónsson", "team": "Iceland" },
+                                  { "name": "Ýmir Örn Gíslason", "team": "Iceland" },
+                                  { "name": "Elliði Snær Viðarsson", "team": "Iceland" },
+                                  { "name": "Elvar Örn Jónsson", "team": "Iceland" },
+                                  { "name": "Viggó Kristjánsson", "team": "Iceland" },
+                                  { "name": "Janus Daði Smárason", "team": "Iceland" },
+                                  { "name": "Haukur Þrastarson", "team": "Iceland" },
+                                  { "name": "Arnór Snær Óskarsson", "team": "Iceland" },
+                                  { "name": "Stiven Tobar Valencia", "team": "Iceland" },
+                                  { "name": "Orri Freyr Þorkelsson", "team": "Iceland" },
+                                  { "name": "Óðinn Þór Ríkharðsson", "team": "Iceland" },
+                                  { "name": "Arnar Freyr Arnarsson", "team": "Iceland" },
+                                  { "name": "Þorsteinn Leó Gunnarsson", "team": "Iceland" },
+                                  { "name": "Einar Þorsteinn Ólafsson", "team": "Iceland" },
+                                  { "name": "Daníel Þór Ingason", "team": "Iceland" }
+                                ];
+                                setPlayerOptionsJson(JSON.stringify(icelandTeam, null, 2));
+                                flash("Íslenska landsliðið sett inn ✅");
+                              }}
+                              className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-500/20 dark:text-blue-400 dark:hover:bg-blue-500/15"
+                            >
+                              🇮🇸 Setja inn íslenska landsliðið
+                            </button>
+                          </div>
                           <textarea
                             value={playerOptionsJson}
                             onChange={(e) => setPlayerOptionsJson(e.target.value)}

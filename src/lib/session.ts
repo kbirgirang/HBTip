@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 const COOKIE_NAME = "ehf_pool_session";
+const ADMIN_COOKIE_NAME = "ehf_pool_admin_session";
 
 const secretString = process.env.APP_SESSION_SECRET;
 if (!secretString) {
@@ -14,6 +15,11 @@ export type SessionPayload = {
   memberId: string;
   roomCode: string;
   role: "player" | "owner";
+};
+
+export type AdminSessionPayload = {
+  role: "admin";
+  loggedInAt: number;
 };
 
 export async function setSession(payload: SessionPayload) {
@@ -49,4 +55,44 @@ export async function getSession(): Promise<SessionPayload | null> {
 
 export async function clearSession() {
   (await cookies()).delete(COOKIE_NAME);
+}
+
+// Admin session management
+export async function setAdminSession() {
+  const payload: AdminSessionPayload = {
+    role: "admin",
+    loggedInAt: Date.now(),
+  };
+
+  const token = await new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("24h") // Admin sessions expire after 24 hours
+    .sign(secret);
+
+  (await cookies()).set({
+    name: ADMIN_COOKIE_NAME,
+    value: token,
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24, // 24 hours
+  });
+}
+
+export async function getAdminSession(): Promise<AdminSessionPayload | null> {
+  const token = (await cookies()).get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) return null;
+
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    return payload as unknown as AdminSessionPayload;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearAdminSession() {
+  (await cookies()).delete(ADMIN_COOKIE_NAME);
 }

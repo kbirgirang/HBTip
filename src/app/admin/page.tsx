@@ -44,8 +44,10 @@ type Tab = "create" | "results" | "settings";
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("create");
 
-  // Shared admin password for all actions
-  const [adminPassword, setAdminPassword] = useState("");
+  // Authentication state
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null); // null = checking
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
 
   // Global message/error
   const [msg, setMsg] = useState<string | null>(null);
@@ -60,6 +62,63 @@ export default function AdminPage() {
     setMsg(null);
   }
 
+  // Check authentication on mount
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/admin/check-auth");
+        const json = await res.json();
+        setAuthenticated(json.authenticated === true);
+      } catch {
+        setAuthenticated(false);
+      }
+    }
+    checkAuth();
+  }, []);
+
+  // Login handler
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    clearAlerts();
+
+    if (!loginPassword.trim()) {
+      return setErr("Admin lykilorð vantar.");
+    }
+
+    setLoggingIn(true);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminPassword: loginPassword }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return setErr(json?.error || "Rangt admin lykilorð.");
+      }
+
+      setAuthenticated(true);
+      setLoginPassword("");
+      flash("Innskráning tókst ✅");
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoggingIn(false);
+    }
+  }
+
+  // Logout handler
+  async function handleLogout() {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+      setAuthenticated(false);
+      flash("Útskráning tókst ✅");
+    } catch {
+      // Ignore errors on logout
+    }
+  }
+
   // -----------------------------
   // SETTINGS
   // -----------------------------
@@ -71,7 +130,6 @@ export default function AdminPage() {
     e.preventDefault();
     clearAlerts();
 
-    if (!adminPassword) return setErr("Admin password vantar.");
     if (!Number.isFinite(pointsPer1x2) || pointsPer1x2 < 0) return setErr("Stig þurfa að vera 0 eða hærra.");
     if (pointsPerX != null && (!Number.isFinite(pointsPerX) || pointsPerX < 0)) {
       return setErr("X stig þurfa að vera 0 eða hærra eða tómur.");
@@ -83,7 +141,6 @@ export default function AdminPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          adminPassword,
           pointsPerCorrect1x2: pointsPer1x2,
           pointsPerCorrectX: pointsPerX === null || pointsPerX === 0 ? null : pointsPerX,
         }),
@@ -115,7 +172,6 @@ export default function AdminPage() {
     e.preventDefault();
     clearAlerts();
 
-    if (!adminPassword) return setErr("Admin password vantar.");
     if (!homeTeam.trim() || !awayTeam.trim()) return setErr("Vantar lið.");
     if (!startsAtLocal) return setErr("Vantar dagsetningu/tíma.");
 
@@ -127,7 +183,6 @@ export default function AdminPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          adminPassword,
           stage: stage.trim() || null,
           homeTeam: homeTeam.trim(),
           awayTeam: awayTeam.trim(),
@@ -216,7 +271,6 @@ export default function AdminPage() {
 
   async function bulkCreate() {
     clearAlerts();
-    if (!adminPassword) return setErr("Admin password vantar.");
 
     let rows: ReturnType<typeof parseBulkLines>;
     try {
@@ -238,7 +292,6 @@ export default function AdminPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            adminPassword,
             stage: r.stage,
             homeTeam: r.homeTeam,
             awayTeam: r.awayTeam,
@@ -293,13 +346,12 @@ export default function AdminPage() {
 
   async function setResult(matchId: string, result: "1" | "X" | "2" | null) {
     clearAlerts();
-    if (!adminPassword) return setErr("Admin password vantar.");
 
     try {
       const res = await fetch("/api/admin/match/set-result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminPassword, matchId, result }),
+        body: JSON.stringify({ matchId, result }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -314,7 +366,6 @@ export default function AdminPage() {
 
   async function deleteMatch(matchId: string) {
     clearAlerts();
-    if (!adminPassword) return setErr("Admin password vantar.");
 
     const m = matches.find((x) => x.id === matchId);
     const ok = confirm(
@@ -326,7 +377,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/match/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminPassword, matchId }),
+        body: JSON.stringify({ matchId }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -490,7 +541,6 @@ export default function AdminPage() {
     e.preventDefault();
     clearAlerts();
 
-    if (!adminPassword) return setErr("Admin password vantar.");
     if (!bonusMatchId) return setErr("Veldu leik.");
     if (!bonusTitle.trim()) return setErr("Bónus spurning vantar.");
     if (!Number.isFinite(bonusPoints) || bonusPoints <= 0) return setErr("Points þarf að vera > 0.");
@@ -525,7 +575,6 @@ export default function AdminPage() {
     setSavingBonus(true);
     try {
       const payload: any = {
-        adminPassword,
         matchId: bonusMatchId,
         title: bonusTitle.trim(),
         type: bonusType,
@@ -559,25 +608,87 @@ export default function AdminPage() {
   }
 
   const headerRight = useMemo(() => {
+    if (!authenticated) return null;
     return (
       <div className="relative z-50 flex flex-col gap-2 md:flex-row md:items-center md:justify-end pr-16">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-600 dark:text-neutral-400">Admin password</span>
-          <input
-            value={adminPassword}
-            onChange={(e) => setAdminPassword(e.target.value)}
-            type="password"
-            placeholder="••••••••"
-            className="w-56 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-          />
-        </div>
+        <button
+          onClick={handleLogout}
+          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+        >
+          Útskrá
+        </button>
       </div>
     );
-  }, [adminPassword]);
+  }, [authenticated]);
 
   const bonusCount = useMemo(() => {
     return (matchesWithBonus || []).reduce((acc, m) => acc + (m.bonus ? 1 : 0), 0);
   }, [matchesWithBonus]);
+
+  // Show login form if not authenticated
+  if (authenticated === null) {
+    return (
+      <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
+        <div className="mx-auto max-w-md px-4 py-20">
+          <div className="text-center">
+            <p className="text-slate-600 dark:text-neutral-400">Athuga innskráningu...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
+        <div className="mx-auto max-w-md px-4 py-20">
+          <div className="rounded-3xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/30 p-8">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">Admin Innskráning</h1>
+            <p className="mt-2 text-sm text-slate-600 dark:text-neutral-400">
+              Skráðu inn admin lykilorð til að komast inn á stjórnborðið.
+            </p>
+
+            <form onSubmit={handleLogin} className="mt-6 space-y-4">
+              <div>
+                <label className="text-sm text-slate-700 dark:text-neutral-300">Admin lykilorð</label>
+                <input
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  autoFocus
+                />
+              </div>
+
+              {(err || msg) && (
+                <div className="space-y-2">
+                  {err && (
+                    <div className="whitespace-pre-wrap rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                      {err}
+                    </div>
+                  )}
+                  {msg && (
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                      {msg}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loggingIn}
+                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+              >
+                {loggingIn ? "Innskráning..." : "Innskrá"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">

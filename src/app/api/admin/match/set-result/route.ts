@@ -1,9 +1,9 @@
 // src/app/api/admin/match/set-result/route.ts
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 type Body = {
-  adminPassword?: string;
   matchId?: string;
   result?: "1" | "X" | "2" | null; // null = clear result
 };
@@ -14,15 +14,11 @@ function isValidResult(v: any): v is "1" | "X" | "2" | null {
 
 export async function POST(req: Request) {
   try {
+    // Check admin session
+    const authError = await requireAdminSession();
+    if (authError) return authError;
+
     const body = (await req.json().catch(() => ({}))) as Body;
-
-    if (!process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ error: "ADMIN_PASSWORD not set" }, { status: 500 });
-    }
-
-    if (!body.adminPassword || body.adminPassword !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     if (!body.matchId || typeof body.matchId !== "string") {
       return NextResponse.json({ error: "matchId required" }, { status: 400 });

@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 type Body = {
-  adminPassword: string;
   pointsPerCorrect1x2: number;
   pointsPerCorrectX?: number | null;
 };
 
 export async function POST(req: Request) {
+  // Check admin session
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   let body: Body;
   try {
     body = (await req.json()) as Body;
@@ -15,21 +19,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const adminPassword = (body.adminPassword || "").trim();
   const points = body.pointsPerCorrect1x2;
   const pointsX = body.pointsPerCorrectX != null ? Number(body.pointsPerCorrectX) : null;
 
-  if (!adminPassword) return NextResponse.json({ error: "Admin password vantar." }, { status: 400 });
   if (!Number.isFinite(points) || points <= 0 || points > 100) {
     return NextResponse.json({ error: "pointsPerCorrect1x2 þarf að vera 1–100." }, { status: 400 });
   }
   if (pointsX != null && (!Number.isFinite(pointsX) || pointsX <= 0 || pointsX > 100)) {
     return NextResponse.json({ error: "pointsPerCorrectX þarf að vera 1–100 eða tómur." }, { status: 400 });
   }
-
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return NextResponse.json({ error: "ADMIN_PASSWORD is not set in .env.local" }, { status: 500 });
-  if (adminPassword !== expected) return NextResponse.json({ error: "Wrong admin password" }, { status: 401 });
 
   const { data: tournament, error: tErr } = await supabaseServer
     .from("tournaments")

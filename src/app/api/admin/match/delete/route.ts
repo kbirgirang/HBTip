@@ -1,25 +1,18 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 export async function POST(req: Request) {
   try {
+    // Check admin session
+    const authError = await requireAdminSession();
+    if (authError) return authError;
+
     const body = await req.json().catch(() => ({}));
-    const adminPassword = String(body?.adminPassword || "");
     const matchId = String(body?.matchId || "");
 
-    if (!adminPassword) {
-      return NextResponse.json({ error: "Admin password vantar." }, { status: 400 });
-    }
     if (!matchId) {
       return NextResponse.json({ error: "matchId vantar." }, { status: 400 });
-    }
-
-    const expected = process.env.ADMIN_PASSWORD;
-    if (!expected) {
-      return NextResponse.json({ error: "ADMIN_PASSWORD er ekki sett í .env.local" }, { status: 500 });
-    }
-    if (adminPassword !== expected) {
-      return NextResponse.json({ error: "Rangt admin password." }, { status: 401 });
     }
 
     // Delete match (should cascade delete predictions + bonus_questions if FK on delete cascade)

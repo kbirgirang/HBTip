@@ -33,7 +33,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
 
-    const adminPassword = String(body?.adminPassword || "");
+    // Check admin session
+    const authError = await requireAdminSession();
+    if (authError) return authError;
+
     const matchId = String(body?.matchId || "");
     const title = String(body?.title || "").trim();
     const points = Number(body?.points ?? 5);
@@ -47,9 +50,6 @@ export async function POST(req: Request) {
     const correctNumber = body?.correctNumber != null ? Number(body.correctNumber) : null;
     const correctChoice = body?.correctChoice ? String(body.correctChoice).trim() : null;
 
-    if (!adminPassword) {
-      return NextResponse.json({ error: "Admin password vantar." }, { status: 400 });
-    }
     if (!matchId) {
       return NextResponse.json({ error: "matchId vantar." }, { status: 400 });
     }
@@ -61,14 +61,6 @@ export async function POST(req: Request) {
     }
     if (!type) {
       return NextResponse.json({ error: "Type þarf að vera 'number' eða 'choice'." }, { status: 400 });
-    }
-
-    const expected = process.env.ADMIN_PASSWORD;
-    if (!expected) {
-      return NextResponse.json({ error: "ADMIN_PASSWORD er ekki sett á server." }, { status: 500 });
-    }
-    if (adminPassword !== expected) {
-      return NextResponse.json({ error: "Rangt admin password." }, { status: 401 });
     }
 
     // Sækjum match til að fá tournament_id + starts_at

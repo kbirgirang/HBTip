@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 type Body = {
-  adminPassword: string;
   stage?: string;
   homeTeam: string;
   awayTeam: string;
@@ -12,14 +12,11 @@ type Body = {
 };
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as Body;
+  // Check admin session
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
-  if (!process.env.ADMIN_PASSWORD) {
-    return NextResponse.json({ error: "ADMIN_PASSWORD not set" }, { status: 500 });
-  }
-  if (body.adminPassword !== process.env.ADMIN_PASSWORD) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const body = (await req.json()) as Body;
 
   const homeTeam = (body.homeTeam || "").trim();
   const awayTeam = (body.awayTeam || "").trim();

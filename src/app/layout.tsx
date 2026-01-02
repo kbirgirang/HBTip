@@ -16,12 +16,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Í handbolta 2026 – Vinnustaðakeppni",
   description: "Spáðu í úrslit EM í handbolta 2026",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon.png", type: "image/png" },
-    ],
-  },
 };
 
 export default function RootLayout({

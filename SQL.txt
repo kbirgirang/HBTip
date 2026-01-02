@@ -199,7 +199,7 @@ create table public.bonus_questions (
     or
     (type = 'choice' and correct_choice is not null and correct_number is null and correct_player_id is null)
     or
-    (type = 'player' and correct_player_id is not null and correct_number is null and correct_choice is null)
+    (type = 'player' and correct_choice is not null and correct_number is null and correct_player_id is null)
   ),
 
   check (

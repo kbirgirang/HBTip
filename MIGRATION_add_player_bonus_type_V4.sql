@@ -46,6 +46,7 @@ drop type if exists public.bonus_type;
 alter type public.bonus_type_new rename to bonus_type;
 
 -- 5) Bæta constraints aftur við
+-- Ath: Fyrir player type, notum við correct_choice til að geyma leikmannsnafn (ekki correct_player_id)
 alter table public.bonus_questions 
   add constraint bonus_questions_check check (
     (correct_number is null and correct_player_id is null and correct_choice is null)
@@ -54,7 +55,7 @@ alter table public.bonus_questions
     or
     (type = 'choice' and correct_choice is not null and correct_number is null and correct_player_id is null)
     or
-    (type = 'player' and correct_player_id is not null and correct_number is null and correct_choice is null)
+    (type = 'player' and correct_choice is not null and correct_number is null and correct_player_id is null)
   );
 
 -- Bæta við constraint fyrir choice_options

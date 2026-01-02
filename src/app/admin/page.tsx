@@ -1500,7 +1500,7 @@ export default function AdminPage() {
                             onClick={() => setResult(m.id, null)}
                             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           >
-                            Clear
+                            Hreinsa
                           </button>
 
                           <button

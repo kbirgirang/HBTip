@@ -137,8 +137,31 @@ export default function RoomPage() {
     }
   }
 
-  function switchRoom(roomCode: string) {
-    window.location.href = `/r/${encodeURIComponent(roomCode)}`;
+  async function switchRoom(roomCode: string) {
+    if (!roomCode) {
+      console.error("Room code is empty");
+      return;
+    }
+    
+    // Uppfæra session fyrst
+    try {
+      const res = await fetch("/api/room/switch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomCode }),
+      });
+      
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(json.error || "Ekki tókst að skipta deild");
+        return;
+      }
+      
+      // Fara í nýju deildina
+      window.location.href = `/r/${encodeURIComponent(roomCode)}`;
+    } catch {
+      alert("Tenging klikkaði. Prófaðu aftur.");
+    }
   }
 
   async function loadMembers() {

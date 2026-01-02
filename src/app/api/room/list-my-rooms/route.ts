@@ -38,18 +38,21 @@ export async function GET() {
   if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
 
   // Sameina member og room upplýsingar
-  const roomsWithInfo = (allMyMembers ?? []).map((member: any) => {
-    const room = (rooms ?? []).find((r: any) => r.id === member.room_id);
-    return {
-      roomId: member.room_id,
-      roomCode: room?.room_code || "",
-      roomName: room?.room_name || "",
-      displayName: member.display_name,
-      isOwner: member.is_owner,
-      memberId: member.id,
-      isCurrentRoom: member.room_id === session.roomId,
-    };
-  });
+  const roomsWithInfo = (allMyMembers ?? [])
+    .map((member: any) => {
+      const room = (rooms ?? []).find((r: any) => r.id === member.room_id);
+      if (!room) return null; // Skip ef room fannst ekki
+      return {
+        roomId: member.room_id,
+        roomCode: room.room_code,
+        roomName: room.room_name,
+        displayName: member.display_name,
+        isOwner: member.is_owner,
+        memberId: member.id,
+        isCurrentRoom: member.room_id === session.roomId,
+      };
+    })
+    .filter((r: any) => r !== null); // Fjarlægja null entries
 
   return NextResponse.json({ rooms: roomsWithInfo });
 }

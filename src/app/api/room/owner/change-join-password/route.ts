@@ -11,14 +11,14 @@ type Body = {
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
-  if (session.role !== "owner") return NextResponse.json({ error: "Not owner" }, { status: 403 });
+  if (session.role !== "owner") return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
 
   const body = (await req.json()) as Body;
 
   const ownerPassword = (body.ownerPassword || "").trim();
   const newJoinPassword = (body.newJoinPassword || "").trim();
 
-  if (!ownerPassword) return NextResponse.json({ error: "Owner password vantar" }, { status: 400 });
+  if (!ownerPassword) return NextResponse.json({ error: "Lykilorð stjórnanda vantar" }, { status: 400 });
   if (newJoinPassword.length < 6) return NextResponse.json({ error: "Nýtt join password þarf að vera amk 6 stafir" }, { status: 400 });
 
   // Sækja room með owner_password_hash
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   // Athuga owner password
   const ok = await verifyPassword(room.owner_password_hash, ownerPassword);
-  if (!ok) return NextResponse.json({ error: "Wrong owner password" }, { status: 401 });
+  if (!ok) return NextResponse.json({ error: "Rangt lykilorð stjórnanda" }, { status: 401 });
 
   // Uppfæra join password
   const newJoinPasswordHash = await hashPassword(newJoinPassword);

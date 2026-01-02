@@ -11,14 +11,14 @@ type Body = {
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
-  if (session.role !== "owner") return NextResponse.json({ error: "Not owner" }, { status: 403 });
+  if (session.role !== "owner") return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
 
   const body = (await req.json()) as Body;
 
   const ownerPassword = (body.ownerPassword || "").trim();
   const memberId = (body.memberId || "").trim();
 
-  if (!ownerPassword) return NextResponse.json({ error: "Owner password vantar" }, { status: 400 });
+  if (!ownerPassword) return NextResponse.json({ error: "Lykilorð stjórnanda vantar" }, { status: 400 });
   if (!memberId) return NextResponse.json({ error: "memberId vantar" }, { status: 400 });
 
   // Sækja room með owner_password_hash
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   // Athuga owner password
   const ok = await verifyPassword(room.owner_password_hash, ownerPassword);
-  if (!ok) return NextResponse.json({ error: "Wrong owner password" }, { status: 401 });
+  if (!ok) return NextResponse.json({ error: "Rangt lykilorð stjórnanda" }, { status: 401 });
 
   // Athuga hvort member sé í sömu room
   const { data: member, error: mErr } = await supabaseServer
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   if (mErr || !member) return NextResponse.json({ error: "Member not found" }, { status: 404 });
 
   // Ekki hægt að fjarlægja owner sjálfan
-  if (member.is_owner) return NextResponse.json({ error: "Ekki hægt að fjarlægja owner" }, { status: 400 });
+  if (member.is_owner) return NextResponse.json({ error: "Ekki hægt að fjarlægja stjórnanda" }, { status: 400 });
 
   // Fjarlægja member (cascade eyðir predictions og bonus answers)
   const { error: deleteErr } = await supabaseServer

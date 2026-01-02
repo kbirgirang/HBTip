@@ -117,7 +117,7 @@ export default function RoomPage() {
     setOwnerError(null);
     setOwnerSuccess(null);
 
-    if (!ownerPassword) return setOwnerError("Owner password vantar");
+    if (!ownerPassword) return setOwnerError("Lykilorð stjórnanda vantar");
     if (newJoinPassword.length < 6) return setOwnerError("Nýtt join password þarf að vera amk 6 stafir");
 
     setChangingPassword(true);
@@ -145,7 +145,7 @@ export default function RoomPage() {
   }
 
   async function handleRemoveMember(memberId: string) {
-    if (!ownerPassword) return setOwnerError("Owner password vantar");
+    if (!ownerPassword) return setOwnerError("Lykilorð stjórnanda vantar");
     if (!confirm("Ertu viss um að þú viljir fjarlægja þennan member?")) return;
 
     setRemovingMemberId(memberId);
@@ -176,7 +176,7 @@ export default function RoomPage() {
   }
 
   async function handleChangeMemberName(memberId: string) {
-    if (!ownerPassword) return setOwnerError("Owner password vantar");
+    if (!ownerPassword) return setOwnerError("Lykilorð stjórnanda vantar");
     if (editingMemberName.trim().length < 2) return setOwnerError("Display name þarf að vera amk 2 stafir");
 
     setOwnerError(null);
@@ -235,7 +235,7 @@ export default function RoomPage() {
           </TabButton>
           {data?.me.is_owner && (
             <TabButton active={tab === "owner"} onClick={() => setTab("owner")}>
-              Owner
+              Stjórnandi
             </TabButton>
           )}
         </div>
@@ -370,8 +370,8 @@ export default function RoomPage() {
           {data && tab === "owner" && data.me.is_owner && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-semibold">Owner stjórnun</h2>
-                <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">Stjórna deildinni með owner password.</p>
+                <h2 className="text-lg font-semibold">Stjórnandi stjórnun</h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">Stjórna deildinni með lykilorði stjórnanda.</p>
               </div>
 
               {ownerError && (
@@ -387,18 +387,18 @@ export default function RoomPage() {
               )}
 
               {/* Change Join Password */}
-              <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
+              <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Breyta join password</h3>
                 <p className="mt-1 text-xs text-slate-600 dark:text-neutral-400">Breyttu lykilorði sem notendur nota til að skrá sig inná deildina.</p>
                 <form onSubmit={handleChangeJoinPassword} className="mt-4 space-y-3">
                   <div>
-                    <label className="text-xs text-slate-700 dark:text-neutral-300">Owner password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Lykilorð stjórnanda</label>
                     <input
                       type="password"
                       className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={ownerPassword}
                       onChange={(e) => setOwnerPassword(e.target.value)}
-                      placeholder="Owner password"
+                      placeholder="Lykilorð stjórnanda"
                     />
                   </div>
                   <div>
@@ -422,7 +422,7 @@ export default function RoomPage() {
               </div>
 
               {/* Members List */}
-              <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
+              <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Members</h3>
                 <p className="mt-1 text-xs text-slate-600 dark:text-neutral-400">Stjórna members í deildinni.</p>
 
@@ -435,13 +435,13 @@ export default function RoomPage() {
                     {members.map((m) => (
                       <div
                         key={m.id}
-                        className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/40 p-3"
+                        className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-3"
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-slate-900 dark:text-neutral-100">{m.display_name}</span>
                             {m.is_owner && (
-                              <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-300">Owner</span>
+                              <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-300">Stjórnandi</span>
                             )}
                           </div>
                           <p className="text-xs text-slate-500 dark:text-neutral-400">@{m.username}</p>
@@ -502,16 +502,16 @@ export default function RoomPage() {
                 )}
 
                 {!loadingMembers && members.length > 0 && (
-                  <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/20 p-3">
+                  <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/20 p-3">
                     <p className="text-xs text-slate-600 dark:text-neutral-400">
-                      <strong>Ath:</strong> Til að breyta nafni eða fjarlægja member, þarftu að setja inn owner password fyrst.
+                      <strong>Ath:</strong> Til að breyta nafni eða fjarlægja member, þarftu að setja inn lykilorð stjórnanda fyrst.
                     </p>
                     <input
                       type="password"
                       className="mt-2 w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={ownerPassword}
                       onChange={(e) => setOwnerPassword(e.target.value)}
-                      placeholder="Owner password"
+                      placeholder="Lykilorð stjórnanda"
                     />
                   </div>
                 )}

@@ -12,7 +12,7 @@ type Body = {
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
-  if (session.role !== "owner") return NextResponse.json({ error: "Not owner" }, { status: 403 });
+  if (session.role !== "owner") return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
 
   const body = (await req.json()) as Body;
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const memberId = (body.memberId || "").trim();
   const newDisplayName = (body.newDisplayName || "").trim();
 
-  if (!ownerPassword) return NextResponse.json({ error: "Owner password vantar" }, { status: 400 });
+  if (!ownerPassword) return NextResponse.json({ error: "Lykilorð stjórnanda vantar" }, { status: 400 });
   if (!memberId) return NextResponse.json({ error: "memberId vantar" }, { status: 400 });
   if (newDisplayName.length < 2) return NextResponse.json({ error: "Display name þarf að vera amk 2 stafir" }, { status: 400 });
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
   // Athuga owner password
   const ok = await verifyPassword(room.owner_password_hash, ownerPassword);
-  if (!ok) return NextResponse.json({ error: "Wrong owner password" }, { status: 401 });
+  if (!ok) return NextResponse.json({ error: "Rangt lykilorð stjórnanda" }, { status: 401 });
 
   // Athuga hvort member sé í sömu room
   const { data: member, error: mErr } = await supabaseServer

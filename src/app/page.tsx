@@ -266,7 +266,7 @@ export default function HomePage() {
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-xl font-semibold">Búa til deild</h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
-              Þú verður owner og færð owner password (geymdu það).
+              Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
             </p>
 
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
@@ -342,7 +342,7 @@ export default function HomePage() {
                   <span className="font-semibold">Númer deildar:</span> {created.roomCode}
                 </p>
                 <p className="mt-2 text-sm text-emerald-100">
-                  <span className="font-semibold">Owner password (geymdu):</span>{" "}
+                  <span className="font-semibold">Lykilorð stjórnanda (geymdu):</span>{" "}
                   <span className="font-mono">{created.ownerPassword}</span>
                 </p>
                 <div className="mt-4 flex gap-3">
@@ -356,7 +356,7 @@ export default function HomePage() {
                     className="rounded-xl border border-emerald-400/40 px-4 py-2 font-semibold text-emerald-100 hover:bg-emerald-500/10"
                     onClick={async () => {
                       await navigator.clipboard.writeText(
-                        `Númer deildar: ${created.roomCode}\nJoin password: (þú valdir)\nOwner password: ${created.ownerPassword}`
+                        `Númer deildar: ${created.roomCode}\nJoin password: (þú valdir)\nLykilorð stjórnanda: ${created.ownerPassword}`
                       );
                       alert("Afritað í clipboard (ath: join password er ekki vistað hér).");
                     }}
@@ -365,7 +365,7 @@ export default function HomePage() {
                   </button>
                 </div>
                 <p className="mt-3 text-xs text-emerald-100/80">
-                  Ath: Join passwordið er það sem þú slóst inn. Owner password birtist bara hér, einu sinni.
+                  Ath: Join passwordið er það sem þú slóst inn. Lykilorð stjórnanda birtist bara hér, einu sinni.
                 </p>
               </div>
             )}

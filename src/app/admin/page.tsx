@@ -1228,9 +1228,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        <p className="mt-8 text-xs text-slate-500 dark:text-neutral-600">
-          MVP: admin password er bara hjá þér. Seinna getum við læst admin með session role eða Supabase RLS.
-        </p>
       </div>
     </main>
   );

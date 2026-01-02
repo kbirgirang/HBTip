@@ -240,7 +240,7 @@ export default function RoomPage() {
           )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow-sm">
           {!data && !err && <p className="text-slate-600 dark:text-neutral-300">Hleð...</p>}
 
           {err && (
@@ -252,7 +252,11 @@ export default function RoomPage() {
           {data && tab === "matches" && (
             <div className="space-y-3">
               {data.matches.length === 0 ? (
-                <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-3">⚽</div>
+                  <p className="text-slate-600 dark:text-neutral-300 font-medium">Engir leikir komnir inn ennþá</p>
+                  <p className="text-sm text-slate-500 dark:text-neutral-400 mt-1">Admin setur inn leiki</p>
+                </div>
               ) : (
                 data.matches.map((m) => {
                   const started = new Date(m.starts_at).getTime() <= Date.now();
@@ -283,29 +287,49 @@ export default function RoomPage() {
                   }
 
                   return (
-                    <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <div className="font-semibold">
-                            <span className="inline-flex items-center gap-1">
-                              {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                              {m.home_team}
-                            </span>{" "}
-                            vs{" "}
-                            <span className="inline-flex items-center gap-1">
-                              {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                              {m.away_team}
-                            </span>{" "}
-                            {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                    <div key={m.id} className="rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:shadow-lg p-5">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {m.match_no != null && (
+                              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/20 px-2 py-0.5 rounded">
+                                #{m.match_no}
+                              </span>
+                            )}
+                            {m.stage && (
+                              <span className="text-xs text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900/40 px-2 py-0.5 rounded">
+                                {m.stage}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-lg font-bold mb-1">
+                            <span className="inline-flex items-center gap-1.5">
+                              {getTeamFlag(m.home_team) && <span className="text-xl">{getTeamFlag(m.home_team)}</span>}
+                              <span>{m.home_team}</span>
+                            </span>
+                            <span className="mx-2 text-slate-400 dark:text-neutral-500 font-normal">vs</span>
+                            <span className="inline-flex items-center gap-1.5">
+                              {getTeamFlag(m.away_team) && <span className="text-xl">{getTeamFlag(m.away_team)}</span>}
+                              <span>{m.away_team}</span>
+                            </span>
+                            {!m.allow_draw && (
+                              <span className="ml-3 text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/20 px-2 py-0.5 rounded">
+                                X óvirkt
+                              </span>
+                            )}
                           </div>
                           <div className="text-xs text-slate-500 dark:text-neutral-400">
-                            {m.stage ? `${m.stage} · ` : ""}
-                            {new Date(m.starts_at).toLocaleString()}
-                            {m.match_no != null ? ` · #${m.match_no}` : ""}
+                            {new Date(m.starts_at).toLocaleString("is-IS", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 justify-center md:justify-end">
                           <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
                             1
                           </PickButton>
@@ -322,34 +346,48 @@ export default function RoomPage() {
                         </div>
                       </div>
 
-                      <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
-                        <span>
-                          Úrslit:{" "}
-                          <span className="rounded-lg border border-slate-300 bg-slate-100 px-2 py-1 font-mono text-slate-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100">
-                            {m.result ?? "-"}
-                          </span>
-                        </span>
+                      {(m.result != null || m.myPick) && (
+                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-neutral-800 flex items-center gap-4 flex-wrap">
+                          {m.result != null && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-slate-600 dark:text-neutral-400">Úrslit:</span>
+                              <span className="rounded-lg border-2 border-slate-300 bg-slate-100 px-3 py-1.5 font-bold text-lg text-slate-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100">
+                                {m.result}
+                              </span>
+                            </div>
+                          )}
 
-                        {m.myPick && (
-                          <span className="text-xs">
-                            Þín spá:{" "}
-                            <span
-                              className={[
-                                "font-mono px-2 py-0.5 rounded",
-                                m.result != null
-                                  ? m.myPick === m.result
-                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                    : "bg-red-500/20 text-red-400 border border-red-500/30"
-                                  : "text-slate-500 dark:text-neutral-400",
-                              ].join(" ")}
-                            >
-                              {m.myPick}
+                          {m.myPick && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-slate-600 dark:text-neutral-400">Þín spá:</span>
+                              <span
+                                className={[
+                                  "font-bold text-lg px-3 py-1.5 rounded-lg border-2",
+                                  m.result != null
+                                    ? m.myPick === m.result
+                                      ? "bg-emerald-500/20 text-emerald-700 border-emerald-500/50 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-400"
+                                      : "bg-red-500/20 text-red-700 border-red-500/50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-400"
+                                    : "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400",
+                                ].join(" ")}
+                              >
+                                {m.myPick}
+                              </span>
+                              {m.result != null && m.myPick === m.result && (
+                                <span className="text-emerald-600 dark:text-emerald-400 text-sm font-medium">✓ Rétt!</span>
+                              )}
+                              {m.result != null && m.myPick !== m.result && (
+                                <span className="text-red-600 dark:text-red-400 text-sm font-medium">✗ Rangt</span>
+                              )}
+                            </div>
+                          )}
+
+                          {locked && !m.result && (
+                            <span className="text-xs text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-900 px-2 py-1 rounded">
+                              Lokað
                             </span>
-                          </span>
-                        )}
-
-                        {locked && <span className="text-xs text-slate-500 dark:text-neutral-400">(lokað)</span>}
-                      </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
                       {m.bonus && (
@@ -520,27 +558,59 @@ export default function RoomPage() {
           )}
 
           {data && tab === "leaderboard" && (
-            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800">
+            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm dark:border-neutral-800">
               <table className="w-full text-sm">
                 <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
                   <tr>
-                    <th className="px-3 py-2 text-left">#</th>
-                    <th className="px-3 py-2 text-left">Nafn</th>
-                    <th className="px-3 py-2 text-right">Stig</th>
-                    <th className="px-3 py-2 text-right">1X2</th>
-                    <th className="px-3 py-2 text-right">Bónus</th>
+                    <th className="px-4 py-3 text-left font-semibold">#</th>
+                    <th className="px-4 py-3 text-left font-semibold">Nafn</th>
+                    <th className="px-4 py-3 text-right font-semibold">Stig</th>
+                    <th className="px-4 py-3 text-right font-semibold">1X2</th>
+                    <th className="px-4 py-3 text-right font-semibold">Bónus</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.leaderboard.map((p, idx) => (
-                    <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
-                      <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{idx + 1}</td>
-                      <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
-                      <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
-                      <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
-                      <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
-                    </tr>
-                  ))}
+                  {data.leaderboard.map((p, idx) => {
+                    const isTop3 = idx < 3;
+                    const isCurrentUser = p.memberId === data.me.id;
+                    return (
+                      <tr
+                        key={p.memberId}
+                        className={[
+                          "border-t border-slate-200 transition-colors dark:border-neutral-800",
+                          isCurrentUser
+                            ? "bg-blue-50 dark:bg-blue-500/10 border-l-4 border-l-blue-500"
+                            : isTop3
+                            ? "bg-slate-50 dark:bg-neutral-900/60"
+                            : "bg-white dark:bg-neutral-950/40 hover:bg-slate-50 dark:hover:bg-neutral-900/60",
+                        ].join(" ")}
+                      >
+                        <td className="px-4 py-3">
+                          {isTop3 ? (
+                            <span className="text-lg font-bold">
+                              {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
+                            </span>
+                          ) : (
+                            <span className="text-slate-600 dark:text-neutral-400 font-medium">{idx + 1}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={[
+                            "font-medium",
+                            isCurrentUser ? "text-blue-700 dark:text-blue-300" : "text-slate-900 dark:text-neutral-100"
+                          ].join(" ")}>
+                            {p.displayName}
+                            {isCurrentUser && <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">(Þú)</span>}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="text-lg font-bold text-slate-900 dark:text-neutral-100">{p.points}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-400 font-medium">{p.correct1x2}</td>
+                        <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-400 font-medium">{p.bonusPoints || 0}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -802,12 +872,12 @@ function PickButton({
       disabled={disabled}
       onClick={onClick}
       className={[
-        "h-10 w-10 rounded-lg border text-sm font-bold transition",
+        "h-12 w-12 rounded-xl border-2 text-base font-bold transition-all duration-200 shadow-sm",
         disabled
-          ? "border-neutral-300 bg-neutral-100 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
+          ? "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
           : selected
-          ? "border-blue-500 bg-blue-100 text-blue-700 dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950"
-          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
+          ? "border-blue-500 bg-blue-500 text-white shadow-md scale-105 dark:border-blue-400 dark:bg-blue-500 dark:text-white"
+          : "border-slate-300 bg-white text-slate-700 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md active:scale-95 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-blue-500/20 dark:hover:border-blue-500",
       ].join(" ")}
     >
       {children}

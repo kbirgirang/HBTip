@@ -627,19 +627,25 @@ export default function RoomPage() {
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-4">
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Kommandi leikir</h2>
-                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900/40">
-                              {data.pointsPerCorrectX != null ? (
-                                <span className="text-slate-700 dark:text-neutral-300">
-                                  <span className="font-semibold">1/2:</span> {data.pointsPerCorrect1x2} stig{" "}
-                                  <span className="mx-1 text-slate-400 dark:text-neutral-500">·</span>{" "}
-                                  <span className="font-semibold">X:</span> {data.pointsPerCorrectX} stig
+                            <div className="flex flex-col items-end gap-1">
+                              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900/40">
+                                {data.pointsPerCorrectX != null ? (
+                                  <span className="text-slate-700 dark:text-neutral-300">
+                                    <span className="font-semibold">1/2:</span> {data.pointsPerCorrect1x2} stig{" "}
+                                    <span className="mx-1 text-slate-400 dark:text-neutral-500">·</span>{" "}
+                                    <span className="font-semibold">X:</span> {data.pointsPerCorrectX} stig
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-700 dark:text-neutral-300">
+                                    <span className="font-semibold">1X2:</span> {data.pointsPerCorrect1x2} stig
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-500 dark:text-neutral-400">
+                                <span className="inline-flex items-center gap-1">
+                                  🎯 = Underdog (margfaldar stig ef rétt)
                                 </span>
-                              ) : (
-                                <span className="text-slate-700 dark:text-neutral-300" title="1 = heimalið vinnur, X = jafntefli, 2 = útilið vinnur">
-                                  <span className="font-semibold">1X2:</span> {data.pointsPerCorrect1x2} stig{" "}
-                                  <span className="ml-1 text-xs text-slate-500 dark:text-neutral-400">(1 = heimalið, X = jafntefli, 2 = útilið)</span>
-                                </span>
-                              )}
+                              </p>
                             </div>
                           </div>
                           <div className="space-y-3">

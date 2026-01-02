@@ -45,14 +45,76 @@ export async function POST(req: Request) {
     .single();
 
   if (mErr || !member) {
-    // Athuga hvort notandi sé í annarri deild
-    const { data: otherRoomMember } = await supabaseServer
+    // Athuga hvort notandi sé í annarri deild með sama username og password
+    const { data: otherRoomMembers } = await supabaseServer
       .from("room_members")
-      .select("room_id")
-      .ilike("username", username)
-      .maybeSingle();
+      .select("id, room_id, password_hash, is_owner")
+      .ilike("username", username);
     
-    if (otherRoomMember) {
+    if (otherRoomMembers && otherRoomMembers.length > 0) {
+      // Prófa að finna notanda með sama password í annarri deild
+      for (const otherMember of otherRoomMembers) {
+        const passwordOk = await verifyPassword(otherMember.password_hash, password);
+        if (passwordOk) {
+          // Sækja display_name úr annarri deildinni
+          const { data: otherMemberFull } = await supabaseServer
+            .from("room_members")
+            .select("display_name")
+            .eq("id", otherMember.id)
+            .single();
+          
+          // Notandi er í annarri deild með sama username og password
+          // Búa til nýjan member í nýju deildinni með sama username, password og display_name
+          const { data: newMember, error: newMemberErr } = await supabaseServer
+            .from("room_members")
+            .insert({
+              room_id: room.id,
+              username,
+              password_hash: otherMember.password_hash, // Nota sama password hash
+              display_name: otherMemberFull?.display_name || username, // Nota sama display_name
+              is_owner: false,
+            })
+            .select("id")
+            .single();
+          
+          if (newMemberErr || !newMember) {
+            // Ef unique constraint error, þá er notandi þegar í þessari deild
+            if (newMemberErr?.code === "23505" || newMemberErr?.message?.includes("unique")) {
+              // Notandi er þegar í þessari deild, skrá hann inn
+              const { data: existingMember } = await supabaseServer
+                .from("room_members")
+                .select("id, password_hash, is_owner")
+                .eq("room_id", room.id)
+                .ilike("username", username)
+                .single();
+              
+              if (existingMember) {
+                await setSession({
+                  roomId: room.id,
+                  memberId: existingMember.id,
+                  roomCode: room.room_code,
+                  role: existingMember.is_owner ? "owner" : "player",
+                });
+                return NextResponse.json({ ok: true, roomCode: room.room_code });
+              }
+            }
+            return NextResponse.json({ 
+              error: "Ekki tókst að joina deild. Notaðu 'Nýr aðgangur' til að búa til nýjan aðgang í þessari deild." 
+            }, { status: 500 });
+          }
+          
+          // Nýr member búinn til, skrá hann inn
+          await setSession({
+            roomId: room.id,
+            memberId: newMember.id,
+            roomCode: room.room_code,
+            role: "player",
+          });
+          return NextResponse.json({ ok: true, roomCode: room.room_code, autoJoined: true });
+        }
+      }
+      
+      // Notandi er í annarri deild en password er ekki rétt
       return NextResponse.json({ 
         error: "Notandanafn er ekki í þessari deild. Notaðu 'Nýr aðgangur' til að joina þessari deild." 
       }, { status: 401 });

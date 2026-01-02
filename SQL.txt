@@ -94,7 +94,7 @@ create table public.room_members (
   is_owner boolean not null default false,
 
   created_at timestamptz not null default now(),
-  unique (room_id, username)
+  unique (room_id, username)  -- Notandi getur bara verið í einni deild í einu með sama username
 );
 
 create index idx_room_members_room on public.room_members(room_id);

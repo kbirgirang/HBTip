@@ -64,14 +64,14 @@ export async function POST(req: Request) {
 
   // Búa til nýjan member með username og password
   // Athuga fyrst hvort notandi sé í annarri deild með sama username
-  const { data: otherRoomMember } = await supabaseServer
+  const { data: otherRoomMembers } = await supabaseServer
     .from("room_members")
     .select("id, room_id")
-    .ilike("username", username)
-    .maybeSingle();
+    .ilike("username", username);
 
   // Ef notandi er í annarri deild, leyfum honum samt að joina nýja deild
   // (hann verður búinn til sem nýr member í nýju deildinni)
+  // unique (room_id, username) constraint tryggir að hann getur ekki verið tvisvar í sömu deild
   const passwordHash = await hashPassword(password);
 
   const { data: member, error: mErr } = await supabaseServer

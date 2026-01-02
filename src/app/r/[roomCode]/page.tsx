@@ -94,6 +94,13 @@ export default function RoomPage() {
 
   useEffect(() => {
     void load();
+    
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(() => {
+      void load();
+    }, 10000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   async function loadMembers() {

@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     .ilike("room_code", roomCode)
     .single();
 
-  if (rErr || !room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
   const joinOk = await verifyPassword(room.join_password_hash, joinPassword);
   if (!joinOk) return NextResponse.json({ error: "Wrong join password" }, { status: 401 });
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
 
   if (!members || members.length === 0) {
-    return NextResponse.json({ error: "No members found" }, { status: 404 });
+    return NextResponse.json({ error: "Engir meðlimir fundust" }, { status: 404 });
   }
 
   // Returna username(s) - ekki password (það er hashað)

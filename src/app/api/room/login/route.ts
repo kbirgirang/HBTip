@@ -20,8 +20,8 @@ export async function POST(req: Request) {
 
   if (!roomCode) return NextResponse.json({ error: "roomCode is required" }, { status: 400 });
   if (!joinPassword) return NextResponse.json({ error: "Join password is required" }, { status: 400 });
-  if (!username) return NextResponse.json({ error: "Username is required" }, { status: 400 });
-  if (!password) return NextResponse.json({ error: "Password is required" }, { status: 400 });
+  if (!username) return NextResponse.json({ error: "Notandanafn er krafist" }, { status: 400 });
+  if (!password) return NextResponse.json({ error: "Lykilorð er krafist" }, { status: 400 });
 
   // Sækja room með join_password_hash
   const { data: room, error: rErr } = await supabaseServer
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     .ilike("room_code", roomCode)
     .single();
 
-  if (rErr || !room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
   // Athuga join password
   const joinOk = await verifyPassword(room.join_password_hash, joinPassword);
@@ -44,11 +44,11 @@ export async function POST(req: Request) {
     .ilike("username", username)
     .single();
 
-  if (mErr || !member) return NextResponse.json({ error: "Wrong username or password" }, { status: 401 });
+  if (mErr || !member) return NextResponse.json({ error: "Rangt notandanafn eða lykilorð" }, { status: 401 });
 
   // Athuga password
   const ok = await verifyPassword(member.password_hash, password);
-  if (!ok) return NextResponse.json({ error: "Wrong username or password" }, { status: 401 });
+  if (!ok) return NextResponse.json({ error: "Rangt notandanafn eða lykilorð" }, { status: 401 });
 
   await setSession({
     roomId: room.id,

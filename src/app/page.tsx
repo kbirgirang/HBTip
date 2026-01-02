@@ -56,9 +56,9 @@ export default function HomePage() {
     setCreateError(null);
     setCreated(null);
 
-    if (cRoomName.trim().length < 2) return setCreateError("Room name þarf að vera amk 2 stafir.");
-    if (cOwnerUsername.trim().length < 3) return setCreateError("Username þarf að vera amk 3 stafir.");
-    if (cOwnerPassword.trim().length < 6) return setCreateError("Password þarf að vera amk 6 stafir.");
+    if (cRoomName.trim().length < 2) return setCreateError("Nafn deildar þarf að vera amk 2 stafir.");
+    if (cOwnerUsername.trim().length < 3) return setCreateError("Notandanafn þarf að vera amk 3 stafir.");
+    if (cOwnerPassword.trim().length < 6) return setCreateError("Lykilorð þarf að vera amk 6 stafir.");
     if (cDisplayName.trim().length < 2) return setCreateError("Nafn þarf að vera amk 2 stafir.");
     if (cJoinPassword.trim().length < 6) return setCreateError("Join password þarf að vera amk 6 stafir.");
 
@@ -97,10 +97,10 @@ export default function HomePage() {
     e.preventDefault();
     setRegisterError(null);
 
-    if (rRoomCode.trim().length < 2) return setRegisterError("Room code vantar.");
+    if (rRoomCode.trim().length < 2) return setRegisterError("Númer deildar vantar.");
     if (rJoinPassword.trim().length < 1) return setRegisterError("Join password vantar.");
-    if (rUsername.trim().length < 3) return setRegisterError("Username þarf að vera amk 3 stafir.");
-    if (rPassword.trim().length < 6) return setRegisterError("Password þarf að vera amk 6 stafir.");
+    if (rUsername.trim().length < 3) return setRegisterError("Notandanafn þarf að vera amk 3 stafir.");
+    if (rPassword.trim().length < 6) return setRegisterError("Lykilorð þarf að vera amk 6 stafir.");
     if (rDisplayName.trim().length < 2) return setRegisterError("Nafn þarf að vera amk 2 stafir.");
 
     setRegisterLoading(true);
@@ -136,10 +136,10 @@ export default function HomePage() {
     e.preventDefault();
     setLoginError(null);
 
-    if (lRoomCode.trim().length < 2) return setLoginError("Room code vantar.");
+    if (lRoomCode.trim().length < 2) return setLoginError("Númer deildar vantar.");
     if (lJoinPassword.trim().length < 1) return setLoginError("Join password vantar.");
-    if (lUsername.trim().length < 1) return setLoginError("Username vantar.");
-    if (lPassword.trim().length < 1) return setLoginError("Password vantar.");
+    if (lUsername.trim().length < 1) return setLoginError("Notandanafn vantar.");
+    if (lPassword.trim().length < 1) return setLoginError("Lykilorð vantar.");
 
     setLoginLoading(true);
     try {
@@ -174,7 +174,7 @@ export default function HomePage() {
     setForgotError(null);
     setForgotSuccess(null);
 
-    if (fRoomCode.trim().length < 2) return setForgotError("Room code vantar.");
+    if (fRoomCode.trim().length < 2) return setForgotError("Númer deildar vantar.");
     if (fJoinPassword.trim().length < 1) return setForgotError("Join password vantar.");
 
     setForgotLoading(true);
@@ -192,15 +192,15 @@ export default function HomePage() {
       const data = (await res.json()) as { usernames?: Array<{ username: string; displayName: string }>; error?: string };
 
       if (!res.ok || "error" in data) {
-        setForgotError("error" in data && data.error ? data.error : "Ekki tókst að finna username.");
+        setForgotError("error" in data && data.error ? data.error : "Ekki tókst að finna notandanafn.");
         return;
       }
 
       if (data.usernames && data.usernames.length > 0) {
         const usernamesList = data.usernames.map((u) => `${u.displayName}: ${u.username}`).join("\n");
-        setForgotSuccess(`Username(s) fundust:\n${usernamesList}`);
+        setForgotSuccess(`Notandanöfn fundust:\n${usernamesList}`);
       } else {
-        setForgotError("Engin username fundust.");
+        setForgotError("Engin notandanöfn fundust.");
       }
     } catch {
       setForgotError("Tenging klikkaði. Prófaðu aftur.");
@@ -214,11 +214,11 @@ export default function HomePage() {
     setForgotError(null);
     setForgotSuccess(null);
 
-    if (fRoomCode.trim().length < 2) return setForgotError("Room code vantar.");
+    if (fRoomCode.trim().length < 2) return setForgotError("Númer deildar vantar.");
     if (fJoinPassword.trim().length < 1) return setForgotError("Join password vantar.");
-    if (fUsername.trim().length < 1) return setForgotError("Username vantar.");
-    if (fNewPassword.trim().length < 6) return setForgotError("Nýtt password þarf að vera amk 6 stafir.");
-    if (fNewPassword !== fNewPasswordConfirm) return setForgotError("Password-in passa ekki saman.");
+    if (fUsername.trim().length < 1) return setForgotError("Notandanafn vantar.");
+    if (fNewPassword.trim().length < 6) return setForgotError("Nýtt lykilorð þarf að vera amk 6 stafir.");
+    if (fNewPassword !== fNewPasswordConfirm) return setForgotError("Lykilorðin passa ekki saman.");
 
     setForgotLoading(true);
     try {
@@ -236,11 +236,11 @@ export default function HomePage() {
       const data = (await res.json()) as { ok?: boolean; error?: string };
 
       if (!res.ok || "error" in data) {
-        setForgotError("error" in data && data.error ? data.error : "Ekki tókst að reset-a password.");
+        setForgotError("error" in data && data.error ? data.error : "Ekki tókst að endursetja lykilorð.");
         return;
       }
 
-      setForgotSuccess("Password hefur verið reset-að! Þú getur nú skráð þig inn með nýja password-inu.");
+      setForgotSuccess("Lykilorð hefur verið endursett! Þú getur nú skráð þig inn með nýja lykilorðinu.");
       // Clear password fields
       setFNewPassword("");
       setFNewPasswordConfirm("");
@@ -281,7 +281,7 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt username</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt notandanafn</label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cOwnerUsername}
@@ -291,7 +291,7 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt password</label>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt lykilorð</label>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -356,7 +356,7 @@ export default function HomePage() {
                     className="rounded-xl border border-emerald-400/40 px-4 py-2 font-semibold text-emerald-100 hover:bg-emerald-500/10"
                     onClick={async () => {
                       await navigator.clipboard.writeText(
-                        `Room code: ${created.roomCode}\nJoin password: (þú valdir)\nOwner password: ${created.ownerPassword}`
+                        `Númer deildar: ${created.roomCode}\nJoin password: (þú valdir)\nOwner password: ${created.ownerPassword}`
                       );
                       alert("Afritað í clipboard (ath: join password er ekki vistað hér).");
                     }}
@@ -428,7 +428,7 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Username</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Notandanafn</label>
                 <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lUsername}
@@ -438,7 +438,7 @@ export default function HomePage() {
               </div>
 
               <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Password</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð</label>
                 <input
                   type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -470,7 +470,7 @@ export default function HomePage() {
                     }}
                     className="text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200 underline"
                   >
-                    Gleymdir þú username?
+                    Gleymdir þú notandanafni?
                   </button>
                   <span className="text-slate-400 dark:text-neutral-600">·</span>
                   <button
@@ -483,7 +483,7 @@ export default function HomePage() {
                     }}
                     className="text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200 underline"
                   >
-                    Gleymdir þú password?
+                    Gleymdir þú lykilorði?
                   </button>
                 </div>
               </form>
@@ -493,7 +493,7 @@ export default function HomePage() {
             {joinTab === "login" && forgotTab === "username" && (
               <div className="mt-6 rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Fletta upp username</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Fletta upp notandanafn</h3>
                   <button
                     type="button"
                     onClick={() => {
@@ -549,7 +549,7 @@ export default function HomePage() {
                     disabled={forgotLoading}
                     className="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600"
                   >
-                    {forgotLoading ? "Leita..." : "Fletta upp username"}
+                    {forgotLoading ? "Leita..." : "Fletta upp notandanafn"}
                   </button>
                 </form>
               </div>
@@ -559,7 +559,7 @@ export default function HomePage() {
             {joinTab === "login" && forgotTab === "password" && (
               <div className="mt-6 rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-950/40 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Reset-a password</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Endursetja lykilorð</h3>
                   <button
                     type="button"
                     onClick={() => {
@@ -592,7 +592,7 @@ export default function HomePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-700 dark:text-neutral-300">Username</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Notandanafn</label>
                     <input
                       className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={fUsername}
@@ -601,7 +601,7 @@ export default function HomePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-700 dark:text-neutral-300">Nýtt password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Nýtt lykilorð</label>
                     <input
                       type="password"
                       className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -611,7 +611,7 @@ export default function HomePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-700 dark:text-neutral-300">Staðfesta nýtt password</label>
+                    <label className="text-xs text-slate-700 dark:text-neutral-300">Staðfesta nýtt lykilorð</label>
                     <input
                       type="password"
                       className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -635,7 +635,7 @@ export default function HomePage() {
                     disabled={forgotLoading}
                     className="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600"
                   >
-                    {forgotLoading ? "Reset-a..." : "Reset-a password"}
+                    {forgotLoading ? "Endursetja..." : "Endursetja lykilorð"}
                   </button>
                 </form>
               </div>
@@ -666,7 +666,7 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Username</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Notandanafn</label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rUsername}
@@ -676,7 +676,7 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Password</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð</label>
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -714,7 +714,7 @@ export default function HomePage() {
         </div>
 
         <footer className="mt-10 text-xs text-neutral-500">
-          MVP: handvirk úrslit + global bónusspurningar. Rooms eru fyrir vinnustaði.
+          MVP: handvirk úrslit + global bónusspurningar. Deildir eru fyrir vinnustaði.
         </footer>
       </div>
     </main>

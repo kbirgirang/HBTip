@@ -15,7 +15,7 @@ export async function GET() {
     .eq("id", session.roomId)
     .single();
 
-  if (rErr || !room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
   // 2) Current member
   const { data: me, error: meErr } = await supabaseServer

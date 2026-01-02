@@ -31,13 +31,13 @@ export async function POST(req: Request) {
   const ownerPassword = (body.ownerPassword || "").trim() || generateOwnerPassword();
 
   if (roomName.length < 2) {
-    return NextResponse.json({ error: "roomName is required" }, { status: 400 });
+    return NextResponse.json({ error: "Nafn deildar er krafist" }, { status: 400 });
   }
   if (ownerUsername.length < 3) {
-    return NextResponse.json({ error: "Owner username þarf að vera amk 3 stafir" }, { status: 400 });
+    return NextResponse.json({ error: "Notandanafn eiganda þarf að vera amk 3 stafir" }, { status: 400 });
   }
   if (ownerPassword_user.length < 6) {
-    return NextResponse.json({ error: "Owner password þarf að vera amk 6 stafir" }, { status: 400 });
+    return NextResponse.json({ error: "Lykilorð eiganda þarf að vera amk 6 stafir" }, { status: 400 });
   }
   if (displayName.length < 2) {
     return NextResponse.json({ error: "displayName is required" }, { status: 400 });
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     .single();
 
   if (rErr || !room) {
-    return NextResponse.json({ error: rErr?.message || "Failed to create room" }, { status: 500 });
+    return NextResponse.json({ error: rErr?.message || "Ekki tókst að búa til deild" }, { status: 500 });
   }
 
   const ownerPasswordHash = await hashPassword(ownerPassword_user);

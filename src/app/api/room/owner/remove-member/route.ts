@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     .eq("id", session.roomId)
     .single();
 
-  if (rErr || !room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
   // Athuga owner password
   const ok = await verifyPassword(room.owner_password_hash, ownerPassword);

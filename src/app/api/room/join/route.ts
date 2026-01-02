@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     .ilike("room_code", roomCode)
     .single();
 
-  if (rErr || !room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
   const ok = await verifyPassword(room.join_password_hash, joinPassword);
   if (!ok) return NextResponse.json({ error: "Wrong join password" }, { status: 401 });
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     .single();
 
   if (mErr || !member) {
-    return NextResponse.json({ error: mErr?.message || "Failed to join room" }, { status: 400 });
+    return NextResponse.json({ error: mErr?.message || "Ekki tókst að skrá sig í deild" }, { status: 400 });
   }
 
   await setSession({

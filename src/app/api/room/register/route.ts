@@ -22,8 +22,8 @@ export async function POST(req: Request) {
 
   if (!roomCode) return NextResponse.json({ error: "roomCode is required" }, { status: 400 });
   if (!joinPassword) return NextResponse.json({ error: "joinPassword is required" }, { status: 400 });
-  if (username.length < 3) return NextResponse.json({ error: "Username þarf að vera amk 3 stafir" }, { status: 400 });
-  if (password.length < 6) return NextResponse.json({ error: "Password þarf að vera amk 6 stafir" }, { status: 400 });
+  if (username.length < 3) return NextResponse.json({ error: "Notandanafn þarf að vera amk 3 stafir" }, { status: 400 });
+  if (password.length < 6) return NextResponse.json({ error: "Lykilorð þarf að vera amk 6 stafir" }, { status: 400 });
   if (displayName.length < 2) return NextResponse.json({ error: "Display name þarf að vera amk 2 stafir" }, { status: 400 });
 
   // Athuga room og join password
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     .ilike("room_code", roomCode)
     .single();
 
-  if (rErr || !room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
   const ok = await verifyPassword(room.join_password_hash, joinPassword);
   if (!ok) return NextResponse.json({ error: "Wrong join password" }, { status: 401 });
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     .ilike("username", username)
     .maybeSingle();
 
-  if (existing) return NextResponse.json({ error: "Username er þegar til í þessum room" }, { status: 400 });
+  if (existing) return NextResponse.json({ error: "Notandanafn er þegar til í þessari deild" }, { status: 400 });
 
   // Búa til nýjan member með username og password
   const passwordHash = await hashPassword(password);

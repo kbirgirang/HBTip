@@ -537,7 +537,7 @@ export default function RoomPage() {
             </div>
           )}
 
-          {!data && !err && roomCode && <p className="mt-4 text-xs text-neutral-500">Room param: {roomCode}</p>}
+          {!data && !err && roomCode && <p className="mt-4 text-xs text-slate-500 dark:text-neutral-500">Deild param: {roomCode}</p>}
         </div>
       </div>
     </main>

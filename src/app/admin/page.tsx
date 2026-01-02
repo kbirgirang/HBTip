@@ -103,7 +103,7 @@ export default function AdminPage() {
   // -----------------------------
   // CREATE MATCH (single)
   // -----------------------------
-  const [stage, setStage] = useState("Group A");
+  const [stage, setStage] = useState("Riðill A");
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
   const [startsAtLocal, setStartsAtLocal] = useState(""); // datetime-local
@@ -158,9 +158,9 @@ export default function AdminPage() {
   // -----------------------------
   const [bulkText, setBulkText] = useState(
     [
-      "Group A | Iceland | Sweden | 2026-01-16 15:00 | draw | 1",
-      "Group A | Denmark | Germany | 2026-01-21 16:00 | draw | 2",
-      "Knockout | Iceland | Finland | 2026-01-22 15:23 | nodraw | 3",
+      "Riðill A | Ísland | Svíþjóð | 2026-01-16 15:00 | draw | 1",
+      "Riðill A | Danmörk | Þýskaland | 2026-01-21 16:00 | draw | 2",
+      "Útsláttur | Ísland | Finnland | 2026-01-22 15:23 | nodraw | 3",
     ].join("\n")
   );
   const [bulkLoading, setBulkLoading] = useState(false);
@@ -388,7 +388,7 @@ export default function AdminPage() {
     setCorrectNumber(q.correct_number != null ? String(q.correct_number) : "");
     setCorrectChoice(q.correct_choice || "");
 
-    flash("Bónus sett í form (Edit) ✏️");
+    flash("Bónus sett í form (Breyta) ✏️");
   }
 
   // Check if ADMIN_PASSWORD is configured on mount and load settings
@@ -623,7 +623,7 @@ export default function AdminPage() {
             <Card title="Búa til leik (stakur)" subtitle="Fljótleg leið fyrir einn leik í einu.">
               <form onSubmit={createMatch} className="space-y-4">
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-300">Stage</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Riðill</label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={stage}
@@ -633,7 +633,7 @@ export default function AdminPage() {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="text-sm text-slate-700 dark:text-neutral-300">Home</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Heimalið</label>
                     <input
                       className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={homeTeam}
@@ -642,19 +642,19 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-slate-700 dark:text-neutral-300">Away</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Útilið</label>
                     <input
                       className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       value={awayTeam}
                       onChange={(e) => setAwayTeam(e.target.value)}
-                      placeholder="Sweden"
+                      placeholder="Svíþjóð"
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="text-sm text-slate-700 dark:text-neutral-300">Starts at</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Byrjar</label>
                     <input
                       type="datetime-local"
                       className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -665,7 +665,7 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-slate-700 dark:text-neutral-300">Match no (valfrjálst)</label>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Nr. leiks (valfrjálst)</label>
                     <input
                       type="number"
                       className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -677,7 +677,7 @@ export default function AdminPage() {
 
                 <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-300">
                   <input type="checkbox" checked={allowDraw} onChange={(e) => setAllowDraw(e.target.checked)} />
-                  Allow draw (X) — riðlar ✅ / útsláttur ❌
+                  Leyfa jafntefli (X) — riðlar ✅ / útsláttur ❌
                 </label>
 
                 <button
@@ -692,9 +692,9 @@ export default function AdminPage() {
             <Card title="Setja inn marga leiki (bulk)" subtitle="Límdu inn línur — einn leikur per lína.">
               <div className="space-y-3">
                 <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 p-3">
-                  <div className="text-xs text-slate-600 dark:text-neutral-400">Format:</div>
+                  <div className="text-xs text-slate-600 dark:text-neutral-400">Snið:</div>
                   <div className="mt-1 font-mono text-xs text-slate-900 dark:text-neutral-200">
-                    Stage | Home | Away | YYYY-MM-DD HH:mm | draw/nodraw | matchNo?
+                    Riðill | Heimalið | Útilið | YYYY-MM-DD HH:mm | draw/nodraw | matchNo?
                   </div>
                 </div>
 
@@ -732,8 +732,8 @@ export default function AdminPage() {
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <div className="space-y-6">
               <Card
-                title={editingBonusId ? "Edit bónus" : "Setja bónus (eitt field)"}
-                subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa á match start."
+                title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
+                subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
                 right={
                   <button
                     onClick={() => {
@@ -868,11 +868,11 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => {
                             resetBonusForm();
-                            flash("Hætti í Edit");
+                            flash("Hætti við breytingu");
                           }}
                           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                         >
-                          Hætta í Edit
+                          Hætta við breytingu
                         </button>
                       )}
                     </div>
@@ -886,7 +886,7 @@ export default function AdminPage() {
 
               <Card
                 title={`Bónus spurningar (í gangi) · ${bonusCount}`}
-                subtitle="Sjáðu hvaða leikir eru með bónus. Edit setur í formið."
+                subtitle="Sjáðu hvaða leikir eru með bónus. Breyta setur í formið."
                 right={
                   <button
                     onClick={() => loadBonusList()}
@@ -993,7 +993,7 @@ export default function AdminPage() {
               </Card>
             </div>
 
-            <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Delete.">
+            <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Eyða.">
               {matches.length === 0 ? (
                 <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
               ) : (
@@ -1050,7 +1050,7 @@ export default function AdminPage() {
                           onClick={() => deleteMatch(m.id)}
                           className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
                         >
-                          Delete
+                          Eyða
                         </button>
                       </div>
                     </div>
@@ -1111,7 +1111,7 @@ export default function AdminPage() {
               <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-neutral-300">
                 <li>Settu inn alla leiki í einu með “bulk”.</li>
                 <li>Settu bónus með því að velja leik og skrifa spurningu.</li>
-                <li>Ef þú setur tvítekningar: Delete í úrslita listanum.</li>
+                <li>Ef þú setur tvítekningar: Eyða í úrslita listanum.</li>
               </ul>
             </Card>
           </div>

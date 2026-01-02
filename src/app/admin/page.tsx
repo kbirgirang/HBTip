@@ -548,20 +548,30 @@ export default function AdminPage() {
   const [savingBonus, setSavingBonus] = useState(false);
 
   // Parse player options JSON
+  const [jsonError, setJsonError] = useState<string | null>(null);
   useEffect(() => {
     if (bonusType === "player" && playerOptionsJson.trim()) {
       try {
         const parsed = JSON.parse(playerOptionsJson);
         if (Array.isArray(parsed)) {
-          setParsedPlayerOptions(parsed.filter((p: any) => p && typeof p.name === "string"));
+          const valid = parsed.filter((p: any) => p && typeof p.name === "string");
+          setParsedPlayerOptions(valid);
+          setJsonError(null);
+          // Warn if some entries were invalid
+          if (valid.length !== parsed.length) {
+            setJsonError(`${parsed.length - valid.length} ógild(ur) leikmaður(ir) í listanum`);
+          }
         } else {
           setParsedPlayerOptions([]);
+          setJsonError("JSON verður að vera array");
         }
-      } catch {
+      } catch (e) {
         setParsedPlayerOptions([]);
+        setJsonError(e instanceof Error ? e.message : "Ógildur JSON");
       }
     } else {
       setParsedPlayerOptions([]);
+      setJsonError(null);
     }
   }, [bonusType, playerOptionsJson]);
 
@@ -706,7 +716,14 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) return setErr(json?.error || "Ekki tókst að vista bónus.");
+      if (!res.ok) {
+        const errorMsg = json?.error || "Ekki tókst að vista bónus.";
+        // Check if it's the enum error and provide helpful message
+        if (errorMsg.includes("invalid input value for enum bonus_type") || errorMsg.includes("player")) {
+          return setErr("Villa: 'player' er ekki í bonus_type enum í gagnagrunninum.\n\nKeyrðu MIGRATION_add_player_bonus_type.sql í Supabase SQL Editor.\n\n" + errorMsg);
+        }
+        return setErr(errorMsg);
+      }
 
       flash(editingBonusId ? "Bónus uppfærð ✅" : "Bónus vistuð ✅");
       setEditingBonusId(null);

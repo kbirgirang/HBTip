@@ -163,6 +163,12 @@ export async function POST(req: Request) {
       .single();
 
     if (upErr) {
+      // Check if it's the enum error
+      if (upErr.message?.includes("invalid input value for enum bonus_type") || upErr.message?.includes("player")) {
+        return NextResponse.json({ 
+          error: `Villa: 'player' er ekki í bonus_type enum. Keyrðu MIGRATION_add_player_bonus_type.sql í Supabase SQL Editor. Upprunaleg villa: ${upErr.message}` 
+        }, { status: 500 });
+      }
       return NextResponse.json({ error: upErr.message }, { status: 500 });
     }
 

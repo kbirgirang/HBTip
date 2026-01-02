@@ -465,13 +465,19 @@ export default function RoomPage() {
 
                       {upcomingMatches.length > 0 && (
                         <div>
-                          <div className="mb-3 flex items-center justify-between">
+                          <div className="mb-4 flex items-center justify-between gap-4">
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Kommandi leikir</h2>
-                            <div className="text-sm text-slate-600 dark:text-neutral-400">
+                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900/40">
                               {data.pointsPerCorrectX != null ? (
-                                <>1/2: {data.pointsPerCorrect1x2} stig · X: {data.pointsPerCorrectX} stig</>
+                                <span className="text-slate-700 dark:text-neutral-300">
+                                  <span className="font-semibold">1/2:</span> {data.pointsPerCorrect1x2} stig{" "}
+                                  <span className="mx-1 text-slate-400 dark:text-neutral-500">·</span>{" "}
+                                  <span className="font-semibold">X:</span> {data.pointsPerCorrectX} stig
+                                </span>
                               ) : (
-                                <>1X2: {data.pointsPerCorrect1x2} stig</>
+                                <span className="text-slate-700 dark:text-neutral-300">
+                                  <span className="font-semibold">1X2:</span> {data.pointsPerCorrect1x2} stig
+                                </span>
                               )}
                             </div>
                           </div>

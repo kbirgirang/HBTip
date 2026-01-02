@@ -20,11 +20,11 @@ export async function POST(req: Request) {
   const password = (body.password || "").trim();
   const displayName = (body.displayName || "").trim();
 
-  if (!roomCode) return NextResponse.json({ error: "roomCode is required" }, { status: 400 });
-  if (!joinPassword) return NextResponse.json({ error: "joinPassword is required" }, { status: 400 });
+  if (!roomCode) return NextResponse.json({ error: "Númer deildar er krafist" }, { status: 400 });
+  if (!joinPassword) return NextResponse.json({ error: "Join password er krafist" }, { status: 400 });
   if (username.length < 3) return NextResponse.json({ error: "Notandanafn þarf að vera amk 3 stafir" }, { status: 400 });
   if (password.length < 6) return NextResponse.json({ error: "Lykilorð þarf að vera amk 6 stafir" }, { status: 400 });
-  if (displayName.length < 2) return NextResponse.json({ error: "Display name þarf að vera amk 2 stafir" }, { status: 400 });
+  if (displayName.length < 2) return NextResponse.json({ error: "Nafn þarf að vera amk 2 stafir" }, { status: 400 });
 
   // Athuga room og join password
   const { data: room, error: rErr } = await supabaseServer
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     .single();
 
   if (mErr || !member) {
-    return NextResponse.json({ error: mErr?.message || "Failed to register" }, { status: 500 });
+    return NextResponse.json({ error: mErr?.message || "Ekki tókst að skrá sig" }, { status: 500 });
   }
 
   await setSession({

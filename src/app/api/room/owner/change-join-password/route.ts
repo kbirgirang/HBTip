@@ -10,7 +10,7 @@ type Body = {
 
 export async function POST(req: Request) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
   if (session.role !== "owner") return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
 
   const body = (await req.json()) as Body;

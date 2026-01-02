@@ -6,7 +6,7 @@ type Pick = "1" | "X" | "2";
 
 export async function GET() {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
 
   // 1) Room + tournament
   const { data: room, error: rErr } = await supabaseServer
@@ -24,7 +24,7 @@ export async function GET() {
     .eq("id", session.memberId)
     .single();
 
-  if (meErr || !me) return NextResponse.json({ error: "Member not found" }, { status: 404 });
+  if (meErr || !me) return NextResponse.json({ error: "Meðlimur fannst ekki" }, { status: 404 });
 
   // 3) Matches
   const { data: matches, error: mErr } = await supabaseServer

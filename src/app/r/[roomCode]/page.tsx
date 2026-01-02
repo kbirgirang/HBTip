@@ -165,7 +165,7 @@ export default function RoomPage() {
         return;
       }
 
-      setOwnerSuccess("Member hefur verið fjarlægður");
+      setOwnerSuccess("Meðlimur hefur verið fjarlægður");
       setOwnerPassword("");
       void loadMembers();
     } catch {
@@ -177,7 +177,7 @@ export default function RoomPage() {
 
   async function handleChangeMemberName(memberId: string) {
     if (!ownerPassword) return setOwnerError("Lykilorð stjórnanda vantar");
-    if (editingMemberName.trim().length < 2) return setOwnerError("Display name þarf að vera amk 2 stafir");
+    if (editingMemberName.trim().length < 2) return setOwnerError("Nafn þarf að vera amk 2 stafir");
 
     setOwnerError(null);
     setOwnerSuccess(null);
@@ -191,11 +191,11 @@ export default function RoomPage() {
 
       const json = await res.json();
       if (!res.ok) {
-        setOwnerError(json.error || "Ekki tókst að breyta display name");
+        setOwnerError(json.error || "Ekki tókst að breyta nafni");
         return;
       }
 
-      setOwnerSuccess("Display name hefur verið breytt");
+      setOwnerSuccess("Nafn hefur verið breytt");
       setOwnerPassword("");
       setEditingMemberId(null);
       setEditingMemberName("");
@@ -423,13 +423,13 @@ export default function RoomPage() {
 
               {/* Members List */}
               <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Members</h3>
-                <p className="mt-1 text-xs text-slate-600 dark:text-neutral-400">Stjórna members í deildinni.</p>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Meðlimir</h3>
+                <p className="mt-1 text-xs text-slate-600 dark:text-neutral-400">Stjórna meðlimum í deildinni.</p>
 
                 {loadingMembers ? (
                   <p className="mt-4 text-sm text-slate-600 dark:text-neutral-400">Hleð...</p>
                 ) : members.length === 0 ? (
-                  <p className="mt-4 text-sm text-slate-600 dark:text-neutral-400">Engir members fundust.</p>
+                  <p className="mt-4 text-sm text-slate-600 dark:text-neutral-400">Engir meðlimir fundust.</p>
                 ) : (
                   <div className="mt-4 space-y-2">
                     {members.map((m) => (
@@ -504,7 +504,7 @@ export default function RoomPage() {
                 {!loadingMembers && members.length > 0 && (
                   <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/20 p-3">
                     <p className="text-xs text-slate-600 dark:text-neutral-400">
-                      <strong>Ath:</strong> Til að breyta nafni eða fjarlægja member, þarftu að setja inn lykilorð stjórnanda fyrst.
+                      <strong>Ath:</strong> Til að breyta nafni eða fjarlægja meðlim, þarftu að setja inn lykilorð stjórnanda fyrst.
                     </p>
                     <input
                       type="password"

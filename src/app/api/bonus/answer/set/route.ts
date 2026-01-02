@@ -10,10 +10,10 @@ type Body = {
 
 export async function POST(req: Request) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
 
   const body = (await req.json()) as Body;
-  if (!body.questionId) return NextResponse.json({ error: "questionId required" }, { status: 400 });
+  if (!body.questionId) return NextResponse.json({ error: "questionId er krafist" }, { status: 400 });
 
   // 1) Fetch question with match_id
   const { data: q, error: qErr } = await supabaseServer
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     .eq("id", body.questionId)
     .single();
 
-  if (qErr || !q) return NextResponse.json({ error: "Question not found" }, { status: 404 });
+  if (qErr || !q) return NextResponse.json({ error: "Bónusspurning fannst ekki" }, { status: 404 });
 
   // 2) Fetch match to check starts_at and result
   const { data: match, error: mErr } = await supabaseServer
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     .eq("id", q.match_id)
     .single();
 
-  if (mErr || !match) return NextResponse.json({ error: "Match not found" }, { status: 404 });
+  if (mErr || !match) return NextResponse.json({ error: "Leikur fannst ekki" }, { status: 404 });
 
   // 3) Lock check: match started OR bonus closed OR result is set
   const now = Date.now();
@@ -48,16 +48,16 @@ export async function POST(req: Request) {
 
   if (q.type === "number") {
     if (body.answerNumber === undefined || body.answerNumber === null || Number.isNaN(Number(body.answerNumber))) {
-      return NextResponse.json({ error: "answerNumber required" }, { status: 400 });
+      return NextResponse.json({ error: "answerNumber er krafist" }, { status: 400 });
     }
     answer_number = Number(body.answerNumber);
   } else if (q.type === "choice") {
     if (!body.answerChoice || typeof body.answerChoice !== "string" || body.answerChoice.trim() === "") {
-      return NextResponse.json({ error: "answerChoice required" }, { status: 400 });
+      return NextResponse.json({ error: "answerChoice er krafist" }, { status: 400 });
     }
     answer_choice = body.answerChoice.trim();
   } else {
-    return NextResponse.json({ error: "Unknown bonus question type" }, { status: 400 });
+    return NextResponse.json({ error: "Óþekktur gerð bónusspurningar" }, { status: 400 });
   }
 
   // Upsert svar (ein röð per member/question)

@@ -10,12 +10,12 @@ type Body = {
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+    return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
   }
 
   const body = (await req.json()) as Body;
   if (!body.matchId || !body.pick) {
-    return NextResponse.json({ error: "matchId and pick required" }, { status: 400 });
+    return NextResponse.json({ error: "matchId og pick eru krafist" }, { status: 400 });
   }
 
   // Fetch match to check start time, result, and allow_draw
@@ -26,12 +26,12 @@ export async function POST(req: Request) {
     .single();
 
   if (mErr || !match) {
-    return NextResponse.json({ error: "Match not found" }, { status: 404 });
+    return NextResponse.json({ error: "Leikur fannst ekki" }, { status: 404 });
   }
 
   // Cannot pick draw if not allowed
   if (body.pick === "X" && !match.allow_draw) {
-    return NextResponse.json({ error: "Draw not allowed for this match" }, { status: 400 });
+    return NextResponse.json({ error: "Jafntefli er ekki leyft í þessum leik" }, { status: 400 });
   }
 
   // Lock check: match started OR result is set

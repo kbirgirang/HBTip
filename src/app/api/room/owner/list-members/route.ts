@@ -4,8 +4,8 @@ import { getSession } from "@/lib/session";
 
 export async function GET() {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
-  if (session.role !== "owner") return NextResponse.json({ error: "Not owner" }, { status: 403 });
+  if (!session) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
+  if (session.role !== "owner") return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
 
   // Sækja allar members í room
   const { data: members, error: mErr } = await supabaseServer

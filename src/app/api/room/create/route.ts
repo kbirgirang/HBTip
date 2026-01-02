@@ -40,10 +40,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Lykilorð eiganda þarf að vera amk 6 stafir" }, { status: 400 });
   }
   if (displayName.length < 2) {
-    return NextResponse.json({ error: "displayName is required" }, { status: 400 });
+    return NextResponse.json({ error: "Nafn er krafist" }, { status: 400 });
   }
   if (joinPassword.length < 6) {
-    return NextResponse.json({ error: "joinPassword must be at least 6 characters" }, { status: 400 });
+    return NextResponse.json({ error: "Join password þarf að vera amk 6 stafir" }, { status: 400 });
   }
 
   const { data: tournament, error: tErr } = await supabaseServer
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     .single();
 
   if (mErr || !member) {
-    return NextResponse.json({ error: mErr?.message || "Failed to create owner member" }, { status: 500 });
+    return NextResponse.json({ error: mErr?.message || "Ekki tókst að búa til stjórnanda" }, { status: 500 });
   }
 
   await setSession({

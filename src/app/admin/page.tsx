@@ -482,11 +482,11 @@ export default function AdminPage() {
         setPlayerOptionsJson("");
         setParsedPlayerOptions([]);
       }
-      // Set correct player name (from player_options or correct_player_id)
-      if ((q as any).correct_player_name) {
+      // Set correct player name (from correct_choice for player type)
+      if (q.correct_choice) {
+        setCorrectPlayerName(q.correct_choice);
+      } else if ((q as any).correct_player_name) {
         setCorrectPlayerName((q as any).correct_player_name);
-      } else if (q.correct_player_id) {
-        setCorrectPlayerName(q.correct_player_id);
       } else {
         setCorrectPlayerName("");
       }
@@ -1217,15 +1217,27 @@ export default function AdminPage() {
 
                         <div>
                           <label className="text-sm text-slate-700 dark:text-neutral-300">Rétt leikmaður (krafist)</label>
-                          <input
+                          <select
                             value={correctPlayerName}
                             onChange={(e) => setCorrectPlayerName(e.target.value)}
-                            placeholder="Nafn rétts leikmanns"
                             className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                          />
+                          >
+                            <option value="">— veldu leikmann —</option>
+                            {parsedPlayerOptions.map((p, i) => (
+                              <option key={i} value={p.name}>
+                                {p.name}
+                                {p.team ? ` (${p.team})` : ""}
+                              </option>
+                            ))}
+                          </select>
                           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
-                            Nafn leikmanns sem er rétt svar. Verður að vera í player_options listanum.
+                            Veldu leikmann sem er rétt svar úr listanum hér að ofan.
                           </p>
+                          {parsedPlayerOptions.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                              Engir leikmenn í JSON. Bættu við leikmönnum í JSON field hér að ofan.
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}

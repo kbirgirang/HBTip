@@ -11,6 +11,7 @@ type ViewData = {
   room: { code: string; name: string };
   me: { id: string; display_name: string; is_owner: boolean; username: string };
   pointsPerCorrect1x2: number;
+  pointsPerCorrectX: number | null;
   matches: Array<{
     id: string;
     match_no: number | null;
@@ -400,20 +401,29 @@ export default function RoomPage() {
                                       </div>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
-                                        1
-                                      </PickButton>
-
-                                      {m.allow_draw && (
-                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                                          X
+                                    <div className="flex flex-col items-end gap-1">
+                                      <div className="flex gap-2">
+                                        <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                          1
                                         </PickButton>
-                                      )}
 
-                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
-                                        2
-                                      </PickButton>
+                                        {m.allow_draw && (
+                                          <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                            X
+                                          </PickButton>
+                                        )}
+
+                                        <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                          2
+                                        </PickButton>
+                                      </div>
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
+                                        {m.allow_draw && data.pointsPerCorrectX != null ? (
+                                          <>1/2: {data.pointsPerCorrect1x2} stig · X: {data.pointsPerCorrectX} stig</>
+                                        ) : (
+                                          <>1X2: {data.pointsPerCorrect1x2} stig</>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
 
@@ -517,20 +527,29 @@ export default function RoomPage() {
                                       </div>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
-                                        1
-                                      </PickButton>
-
-                                      {m.allow_draw && (
-                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                                          X
+                                    <div className="flex flex-col items-end gap-1">
+                                      <div className="flex gap-2">
+                                        <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                          1
                                         </PickButton>
-                                      )}
 
-                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
-                                        2
-                                      </PickButton>
+                                        {m.allow_draw && (
+                                          <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                            X
+                                          </PickButton>
+                                        )}
+
+                                        <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                          2
+                                        </PickButton>
+                                      </div>
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
+                                        {m.allow_draw && data.pointsPerCorrectX != null ? (
+                                          <>1/2: {data.pointsPerCorrect1x2} stig · X: {data.pointsPerCorrectX} stig</>
+                                        ) : (
+                                          <>1X2: {data.pointsPerCorrect1x2} stig</>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
 

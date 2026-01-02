@@ -183,6 +183,7 @@ export async function GET() {
     room: { code: room.room_code, name: room.room_name },
     me,
     pointsPerCorrect1x2: pointsPer,
+    pointsPerCorrectX: pointsPerX,
     matches: matchesOut,
     leaderboard,
   });

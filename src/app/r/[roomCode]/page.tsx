@@ -635,8 +635,9 @@ export default function RoomPage() {
                                   <span className="font-semibold">X:</span> {data.pointsPerCorrectX} stig
                                 </span>
                               ) : (
-                                <span className="text-slate-700 dark:text-neutral-300">
-                                  <span className="font-semibold">1X2:</span> {data.pointsPerCorrect1x2} stig
+                                <span className="text-slate-700 dark:text-neutral-300" title="1 = heimalið vinnur, X = jafntefli, 2 = útilið vinnur">
+                                  <span className="font-semibold">1X2:</span> {data.pointsPerCorrect1x2} stig{" "}
+                                  <span className="ml-1 text-xs text-slate-500 dark:text-neutral-400">(1 = heimalið, X = jafntefli, 2 = útilið)</span>
                                 </span>
                               )}
                             </div>

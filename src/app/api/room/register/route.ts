@@ -63,6 +63,15 @@ export async function POST(req: Request) {
   }
 
   // Búa til nýjan member með username og password
+  // Athuga fyrst hvort notandi sé í annarri deild með sama username
+  const { data: otherRoomMember } = await supabaseServer
+    .from("room_members")
+    .select("id, room_id")
+    .ilike("username", username)
+    .maybeSingle();
+
+  // Ef notandi er í annarri deild, leyfum honum samt að joina nýja deild
+  // (hann verður búinn til sem nýr member í nýju deildinni)
   const passwordHash = await hashPassword(password);
 
   const { data: member, error: mErr } = await supabaseServer
@@ -78,6 +87,31 @@ export async function POST(req: Request) {
     .single();
 
   if (mErr || !member) {
+    // Ef unique constraint error, þá er notandi þegar í þessari deild
+    if (mErr?.code === "23505" || mErr?.message?.includes("unique")) {
+      // Notandi er þegar í þessari deild, prófum að skrá hann inn
+      const { data: existingMember } = await supabaseServer
+        .from("room_members")
+        .select("id, password_hash, is_owner")
+        .eq("room_id", room.id)
+        .ilike("username", username)
+        .single();
+      
+      if (existingMember) {
+        const passwordOk = await verifyPassword(existingMember.password_hash, password);
+        if (passwordOk) {
+          await setSession({
+            roomId: room.id,
+            memberId: existingMember.id,
+            roomCode: room.room_code,
+            role: existingMember.is_owner ? "owner" : "player",
+          });
+          return NextResponse.json({ ok: true, roomCode: room.room_code, alreadyMember: true });
+        } else {
+          return NextResponse.json({ error: "Rangt lykilorð fyrir þennan notanda í þessari deild" }, { status: 401 });
+        }
+      }
+    }
     return NextResponse.json({ error: mErr?.message || "Ekki tókst að skrá sig" }, { status: 500 });
   }
 

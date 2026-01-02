@@ -44,7 +44,21 @@ export async function POST(req: Request) {
     .ilike("username", username)
     .single();
 
-  if (mErr || !member) return NextResponse.json({ error: "Rangt notandanafn eða lykilorð" }, { status: 401 });
+  if (mErr || !member) {
+    // Athuga hvort notandi sé í annarri deild
+    const { data: otherRoomMember } = await supabaseServer
+      .from("room_members")
+      .select("room_id")
+      .ilike("username", username)
+      .maybeSingle();
+    
+    if (otherRoomMember) {
+      return NextResponse.json({ 
+        error: "Notandanafn er ekki í þessari deild. Notaðu 'Nýr aðgangur' til að joina þessari deild." 
+      }, { status: 401 });
+    }
+    return NextResponse.json({ error: "Rangt notandanafn eða lykilorð" }, { status: 401 });
+  }
 
   // Athuga password
   const ok = await verifyPassword(member.password_hash, password);

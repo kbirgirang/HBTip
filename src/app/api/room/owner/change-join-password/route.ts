@@ -21,17 +21,28 @@ export async function POST(req: Request) {
   if (!ownerPassword) return NextResponse.json({ error: "Lykilorð stjórnanda vantar" }, { status: 400 });
   if (newJoinPassword.length < 6) return NextResponse.json({ error: "Nýtt join password þarf að vera amk 6 stafir" }, { status: 400 });
 
-  // Sækja room með owner_password_hash
+  // Sækja room
   const { data: room, error: rErr } = await supabaseServer
     .from("rooms")
-    .select("id, owner_password_hash")
+    .select("id")
     .eq("id", session.roomId)
     .single();
 
   if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
 
-  // Athuga owner password
-  const ok = await verifyPassword(room.owner_password_hash, ownerPassword);
+  // Sækja owner member og athuga password
+  const { data: owner, error: oErr } = await supabaseServer
+    .from("room_members")
+    .select("id, password_hash, is_owner")
+    .eq("id", session.memberId)
+    .eq("room_id", room.id)
+    .single();
+
+  if (oErr || !owner) return NextResponse.json({ error: "Stjórnandi fannst ekki" }, { status: 404 });
+  if (!owner.is_owner) return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
+
+  // Athuga owner password (password frá room_members)
+  const ok = await verifyPassword(owner.password_hash, ownerPassword);
   if (!ok) return NextResponse.json({ error: "Rangt lykilorð stjórnanda" }, { status: 401 });
 
   // Uppfæra join password

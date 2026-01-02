@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getTeamFlag } from "@/lib/teamFlags";
 
 type BonusType = "number" | "choice";
 
@@ -914,7 +915,15 @@ export default function AdminPage() {
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <div className="font-semibold">
-                                  {m.home_team} vs {m.away_team}{" "}
+                                  <span className="inline-flex items-center gap-1">
+                                    {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                    {m.home_team}
+                                  </span>{" "}
+                                  vs{" "}
+                                  <span className="inline-flex items-center gap-1">
+                                    {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                                    {m.away_team}
+                                  </span>{" "}
                                   {m.match_no != null ? (
                                     <span className="text-xs text-slate-500 dark:text-neutral-400">· #{m.match_no}</span>
                                   ) : null}
@@ -996,7 +1005,15 @@ export default function AdminPage() {
                     >
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-neutral-100">
-                          {m.home_team} vs {m.away_team}
+                          <span className="inline-flex items-center gap-1">
+                            {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                            {m.home_team}
+                          </span>{" "}
+                          vs{" "}
+                          <span className="inline-flex items-center gap-1">
+                            {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                            {m.away_team}
+                          </span>
                           {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
                         </div>
                         <div className="text-xs text-slate-600 dark:text-neutral-400">

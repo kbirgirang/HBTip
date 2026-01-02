@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { getTeamFlag } from "@/lib/teamFlags";
 
 type Pick = "1" | "X" | "2";
 type BonusType = "number" | "choice";
@@ -286,7 +287,15 @@ export default function RoomPage() {
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <div className="font-semibold">
-                            {m.home_team} vs {m.away_team}{" "}
+                            <span className="inline-flex items-center gap-1">
+                              {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                              {m.home_team}
+                            </span>{" "}
+                            vs{" "}
+                            <span className="inline-flex items-center gap-1">
+                              {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                              {m.away_team}
+                            </span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
                           <div className="text-xs text-slate-500 dark:text-neutral-400">

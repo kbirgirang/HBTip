@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function ThemeToggle() {
+  const pathname = usePathname();
+  
+  // Hide on admin page (admin page has its own inline toggle)
+  if (pathname === "/admin") {
+    return null;
+  }
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
 

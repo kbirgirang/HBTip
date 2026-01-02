@@ -20,7 +20,7 @@ export async function GET() {
   // 2) Current member
   const { data: me, error: meErr } = await supabaseServer
     .from("room_members")
-    .select("id, display_name, is_owner")
+    .select("id, display_name, is_owner, username")
     .eq("id", session.memberId)
     .single();
 

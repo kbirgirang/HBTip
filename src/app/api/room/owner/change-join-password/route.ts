@@ -42,8 +42,14 @@ export async function POST(req: Request) {
   if (!owner.is_owner) return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
 
   // Athuga owner password (password frá room_members)
+  if (!owner.password_hash) {
+    return NextResponse.json({ error: "Password hash fannst ekki fyrir stjórnanda" }, { status: 500 });
+  }
+  
   const ok = await verifyPassword(owner.password_hash, ownerPassword);
-  if (!ok) return NextResponse.json({ error: "Rangt lykilorð stjórnanda" }, { status: 401 });
+  if (!ok) {
+    return NextResponse.json({ error: "Rangt lykilorð stjórnanda. Athugaðu að þú notir sama lykilorð og þú notaðir til að skrá þig inn." }, { status: 401 });
+  }
 
   // Uppfæra join password
   const newJoinPasswordHash = await hashPassword(newJoinPassword);

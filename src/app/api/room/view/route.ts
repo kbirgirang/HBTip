@@ -77,7 +77,7 @@ export async function GET() {
   // 6) Members
   const { data: members, error: memErr } = await supabaseServer
     .from("room_members")
-    .select("id, display_name")
+    .select("id, display_name, username")
     .eq("room_id", room.id);
 
   if (memErr) return NextResponse.json({ error: memErr.message }, { status: 500 });
@@ -164,7 +164,7 @@ export async function GET() {
       }
     }
 
-    return { memberId: m.id, displayName: m.display_name, points, correct1x2, bonusPoints };
+    return { memberId: m.id, displayName: m.display_name, username: m.username, points, correct1x2, bonusPoints };
   });
 
   leaderboard.sort(

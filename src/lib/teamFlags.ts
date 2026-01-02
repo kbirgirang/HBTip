@@ -48,6 +48,7 @@ const teamToCountryCode: Record<string, string> = {
   "Sweden": "SE",
   "Tékkland": "CZ",
   "Czech Republic": "CZ",
+  "Czechia" : "CZ",
   "Úkraína": "UA",
   "Ukraine": "UA",
   "Þýskaland": "DE",

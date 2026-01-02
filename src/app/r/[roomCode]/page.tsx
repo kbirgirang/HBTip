@@ -42,7 +42,7 @@ type ViewData = {
       my_answer_choice?: string | null;
     };
   }>;
-  leaderboard: Array<{ memberId: string; displayName: string; points: number; correct1x2: number; bonusPoints: number }>;
+  leaderboard: Array<{ memberId: string; displayName: string; username: string; points: number; correct1x2: number; bonusPoints: number }>;
 };
 
 export default function RoomPage() {
@@ -214,8 +214,22 @@ export default function RoomPage() {
           {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
-          Skráður inn sem <span className="font-semibold">{data.me.display_name}</span>. Stig per rétt 1X2:{" "}
-          <span className="font-semibold">{data.pointsPerCorrect1x2}</span>
+          Skráður inn sem <span className="font-semibold">{data.me.display_name}</span>
+          {(() => {
+            const myRank = data.leaderboard.findIndex((p) => p.memberId === data.me.id) + 1;
+            const myStats = data.leaderboard.find((p) => p.memberId === data.me.id);
+            if (myStats && myRank > 0) {
+              return (
+                <>
+                  {" · "}
+                  <span className="font-semibold">{myStats.points}</span> stig
+                  {" · "}
+                  <span className="font-semibold">{myRank}. sæti</span>
+                </>
+              );
+            }
+            return null;
+          })()}
         </p>
       </div>
     );
@@ -526,6 +540,7 @@ export default function RoomPage() {
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Nafn</th>
+                    <th className="px-3 py-2 text-left">Notendanafn</th>
                     <th className="px-3 py-2 text-right">Stig</th>
                     <th className="px-3 py-2 text-right">1X2</th>
                     <th className="px-3 py-2 text-right">Bónus</th>
@@ -542,6 +557,7 @@ export default function RoomPage() {
                           {rank}
                         </td>
                         <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
+                        <td className="px-3 py-2 text-slate-600 dark:text-neutral-400">@{p.username}</td>
                         <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
                         <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
                         <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>

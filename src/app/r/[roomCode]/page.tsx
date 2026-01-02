@@ -9,7 +9,7 @@ type BonusType = "number" | "choice";
 
 type ViewData = {
   room: { code: string; name: string };
-  me: { id: string; display_name: string; is_owner: boolean };
+  me: { id: string; display_name: string; is_owner: boolean; username: string };
   pointsPerCorrect1x2: number;
   matches: Array<{
     id: string;
@@ -214,7 +214,7 @@ export default function RoomPage() {
           {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
-          Skráður inn sem <span className="font-semibold">{data.me.display_name}</span>
+          <span className="font-mono">(@{data.me.username})</span>
           {(() => {
             const myRank = data.leaderboard.findIndex((p) => p.memberId === data.me.id) + 1;
             const myStats = data.leaderboard.find((p) => p.memberId === data.me.id);
@@ -539,7 +539,6 @@ export default function RoomPage() {
                 <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
-                    <th className="px-3 py-2 text-left">Notendanafn</th>
                     <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
                     <th className="px-3 py-2 text-right">Stig</th>
                     <th className="px-3 py-2 text-right">1X2</th>
@@ -556,7 +555,6 @@ export default function RoomPage() {
                           {medal ? <span className="mr-1">{medal}</span> : null}
                           {rank}
                         </td>
-                        <td className="px-3 py-2 text-slate-600 dark:text-neutral-400">@{p.username}</td>
                         <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
                         <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
                         <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>

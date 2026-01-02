@@ -1083,7 +1083,7 @@ function BonusAnswerCard({
   const correctAnswerLabel = 
     bonus.type === "number" ? bonus.correct_number : 
     bonus.type === "choice" ? bonus.correct_choice : 
-    bonus.type === "player" ? bonus.correct_player_name : null;
+    bonus.type === "player" ? (bonus.correct_player_name || bonus.correct_choice) : null;
 
   const isCorrect = locked && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
   const isWrong = locked && myAnswerLabel != null && correctAnswerLabel != null && !isCorrect;

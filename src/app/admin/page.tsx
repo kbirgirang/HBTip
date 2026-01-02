@@ -1362,10 +1362,10 @@ export default function AdminPage() {
                                   Rétt val: <span className="font-semibold">{q.correct_choice}</span>
                                 </div>
                               )}
-                              {q.type === "player" && q.correct_player_id && (
+                              {q.type === "player" && ((q as any).correct_player_name || q.correct_choice) && (
                                 <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
                                   Rétt leikmaður: <span className="font-semibold">
-                                    {(q as any).correct_player_name || q.correct_player_id}
+                                    {(q as any).correct_player_name || q.correct_choice || q.correct_player_id}
                                   </span>
                                 </div>
                               )}

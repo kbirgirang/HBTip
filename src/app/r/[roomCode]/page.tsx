@@ -302,119 +302,257 @@ export default function RoomPage() {
           )}
 
           {data && tab === "matches" && (
-            <div className="space-y-3">
+            <div className="space-y-6">
               {data.matches.length === 0 ? (
                 <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
               ) : (
-                data.matches.map((m) => {
-                  const started = new Date(m.starts_at).getTime() <= Date.now();
-                  const locked = started || m.result != null;
-
-                  async function pick(p: Pick) {
-                    if (locked) return;
-
-                    const res = await fetch("/api/prediction/set", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ matchId: m.id, pick: p }),
-                    });
-
-                    if (!res.ok) {
-                      const j = await res.json().catch(() => ({}));
-                      alert(j?.error || "Ekki tókst að vista spá.");
-                      return;
-                    }
-
-                    setData((prev) => {
-                      if (!prev) return prev;
-                      return {
-                        ...prev,
-                        matches: prev.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
-                      };
-                    });
-                  }
+                (() => {
+                  const now = Date.now();
+                  const upcomingMatches = data.matches.filter((m) => {
+                    const started = new Date(m.starts_at).getTime() <= now;
+                    return !started && m.result == null;
+                  });
+                  const finishedMatches = data.matches.filter((m) => {
+                    const started = new Date(m.starts_at).getTime() <= now;
+                    return started || m.result != null;
+                  });
 
                   return (
-                    <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
-                      <div className="flex items-center justify-between gap-4">
+                    <>
+                      {upcomingMatches.length > 0 && (
                         <div>
-                          <div className="font-semibold">
-                            <span className="inline-flex items-center gap-1">
-                              {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                              {m.home_team}
-                            </span>{" "}
-                            vs{" "}
-                            <span className="inline-flex items-center gap-1">
-                              {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                              {m.away_team}
-                            </span>{" "}
-                            {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-neutral-400">
-                            {m.stage ? `${m.stage} · ` : ""}
-                            {new Date(m.starts_at).toLocaleString()}
-                            {m.match_no != null ? ` · #${m.match_no}` : ""}
+                          <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-neutral-100">Kommandi leikir</h2>
+                          <div className="space-y-3">
+                            {upcomingMatches.map((m) => {
+                              const started = new Date(m.starts_at).getTime() <= now;
+                              const locked = started || m.result != null;
+
+                              async function pick(p: Pick) {
+                                if (locked) return;
+
+                                const res = await fetch("/api/prediction/set", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ matchId: m.id, pick: p }),
+                                });
+
+                                if (!res.ok) {
+                                  const j = await res.json().catch(() => ({}));
+                                  alert(j?.error || "Ekki tókst að vista spá.");
+                                  return;
+                                }
+
+                                setData((prev) => {
+                                  if (!prev) return prev;
+                                  return {
+                                    ...prev,
+                                    matches: prev.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
+                                  };
+                                });
+                              }
+
+                              return (
+                                <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                      <div className="font-semibold">
+                                        <span className="inline-flex items-center gap-1">
+                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                          {m.home_team}
+                                        </span>{" "}
+                                        vs{" "}
+                                        <span className="inline-flex items-center gap-1">
+                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                                          {m.away_team}
+                                        </span>{" "}
+                                        {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                                      </div>
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
+                                        {m.stage ? `${m.stage} · ` : ""}
+                                        {new Date(m.starts_at).toLocaleString()}
+                                        {m.match_no != null ? ` · #${m.match_no}` : ""}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                        1
+                                      </PickButton>
+
+                                      {m.allow_draw && (
+                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                          X
+                                        </PickButton>
+                                      )}
+
+                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                        2
+                                      </PickButton>
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
+                                    <span>
+                                      Úrslit:{" "}
+                                      <span className="rounded-lg border border-slate-300 bg-slate-100 px-2 py-1 font-mono text-slate-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100">
+                                        {m.result ?? "-"}
+                                      </span>
+                                    </span>
+
+                                    {m.myPick && (
+                                      <span className="text-xs">
+                                        Þín spá:{" "}
+                                        <span
+                                          className={[
+                                            "font-mono px-2 py-0.5 rounded",
+                                            m.result != null
+                                              ? m.myPick === m.result
+                                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                                : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                              : "text-slate-500 dark:text-neutral-400",
+                                          ].join(" ")}
+                                        >
+                                          {m.myPick}
+                                        </span>
+                                      </span>
+                                    )}
+
+                                    {locked && <span className="text-xs text-slate-500 dark:text-neutral-400">(lokað)</span>}
+                                  </div>
+
+                                  {m.bonus && (
+                                    <BonusAnswerCard
+                                      bonus={m.bonus}
+                                      matchStartsAt={m.starts_at}
+                                      matchResult={m.result}
+                                      onSaved={() => void load()}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-
-                        <div className="flex gap-2">
-                          <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
-                            1
-                          </PickButton>
-
-                          {m.allow_draw && (
-                            <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                              X
-                            </PickButton>
-                          )}
-
-                          <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
-                            2
-                          </PickButton>
-                        </div>
-                      </div>
-
-                      <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
-                        <span>
-                          Úrslit:{" "}
-                          <span className="rounded-lg border border-slate-300 bg-slate-100 px-2 py-1 font-mono text-slate-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100">
-                            {m.result ?? "-"}
-                          </span>
-                        </span>
-
-                        {m.myPick && (
-                          <span className="text-xs">
-                            Þín spá:{" "}
-                            <span
-                              className={[
-                                "font-mono px-2 py-0.5 rounded",
-                                m.result != null
-                                  ? m.myPick === m.result
-                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                    : "bg-red-500/20 text-red-400 border border-red-500/30"
-                                  : "text-slate-500 dark:text-neutral-400",
-                              ].join(" ")}
-                            >
-                              {m.myPick}
-                            </span>
-                          </span>
-                        )}
-
-                        {locked && <span className="text-xs text-slate-500 dark:text-neutral-400">(lokað)</span>}
-                      </div>
-
-                      {/* ✅ BÓNUS UNDER EACH MATCH (svar UI) */}
-                      {m.bonus && (
-                        <BonusAnswerCard
-                          bonus={m.bonus}
-                          matchStartsAt={m.starts_at}
-                          matchResult={m.result}
-                          onSaved={() => void load()}
-                        />
                       )}
-                    </div>
+
+                      {finishedMatches.length > 0 && (
+                        <div>
+                          <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-neutral-100">Eldri leikir</h2>
+                          <div className="space-y-3">
+                            {finishedMatches.map((m) => {
+                              const started = new Date(m.starts_at).getTime() <= now;
+                              const locked = started || m.result != null;
+
+                              async function pick(p: Pick) {
+                                if (locked) return;
+
+                                const res = await fetch("/api/prediction/set", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ matchId: m.id, pick: p }),
+                                });
+
+                                if (!res.ok) {
+                                  const j = await res.json().catch(() => ({}));
+                                  alert(j?.error || "Ekki tókst að vista spá.");
+                                  return;
+                                }
+
+                                setData((prev) => {
+                                  if (!prev) return prev;
+                                  return {
+                                    ...prev,
+                                    matches: prev.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
+                                  };
+                                });
+                              }
+
+                              return (
+                                <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                      <div className="font-semibold">
+                                        <span className="inline-flex items-center gap-1">
+                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                          {m.home_team}
+                                        </span>{" "}
+                                        vs{" "}
+                                        <span className="inline-flex items-center gap-1">
+                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                                          {m.away_team}
+                                        </span>{" "}
+                                        {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                                      </div>
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
+                                        {m.stage ? `${m.stage} · ` : ""}
+                                        {new Date(m.starts_at).toLocaleString()}
+                                        {m.match_no != null ? ` · #${m.match_no}` : ""}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                        1
+                                      </PickButton>
+
+                                      {m.allow_draw && (
+                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                          X
+                                        </PickButton>
+                                      )}
+
+                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                        2
+                                      </PickButton>
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
+                                    <span>
+                                      Úrslit:{" "}
+                                      <span className="rounded-lg border border-slate-300 bg-slate-100 px-2 py-1 font-mono text-slate-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100">
+                                        {m.result ?? "-"}
+                                      </span>
+                                    </span>
+
+                                    {m.myPick && (
+                                      <span className="text-xs">
+                                        Þín spá:{" "}
+                                        <span
+                                          className={[
+                                            "font-mono px-2 py-0.5 rounded",
+                                            m.result != null
+                                              ? m.myPick === m.result
+                                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                                : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                              : "text-slate-500 dark:text-neutral-400",
+                                          ].join(" ")}
+                                        >
+                                          {m.myPick}
+                                        </span>
+                                      </span>
+                                    )}
+
+                                    {locked && <span className="text-xs text-slate-500 dark:text-neutral-400">(lokað)</span>}
+                                  </div>
+
+                                  {m.bonus && (
+                                    <BonusAnswerCard
+                                      bonus={m.bonus}
+                                      matchStartsAt={m.starts_at}
+                                      matchResult={m.result}
+                                      onSaved={() => void load()}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   );
-                })
+                })()
               )}
             </div>
           )}

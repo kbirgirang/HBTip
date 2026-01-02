@@ -116,6 +116,10 @@ create table public.matches (
   result char(1) null check (result in ('1','X','2')),
   finished_at timestamptz null,
 
+  -- Underdog: ef sett, þá fá notendur meira stig ef þeir giska á underdog og hann vinnur
+  underdog_team char(1) null check (underdog_team in ('1','2')), -- Hvaða lið er underdog ('1' = home, '2' = away)
+  underdog_multiplier numeric(3,1) null check (underdog_multiplier is null or underdog_multiplier >= 1.0), -- Hversu mörg stig (t.d. 3.0 = 3x stig)
+
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

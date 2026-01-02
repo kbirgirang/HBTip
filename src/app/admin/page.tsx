@@ -16,6 +16,8 @@ type MatchRow = {
   starts_at: string;
   allow_draw: boolean;
   result: "1" | "X" | "2" | null;
+  underdog_team: "1" | "2" | null;
+  underdog_multiplier: number | null;
 };
 
 type AdminMatchesResponse = {
@@ -360,6 +362,26 @@ export default function AdminPage() {
 
       setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, result } : m)));
       flash("Úrslit vistuð ✅");
+    } catch {
+      setErr("Tenging klikkaði.");
+    }
+  }
+
+  async function setUnderdog(matchId: string, underdogTeam: "1" | "2" | null, underdogMultiplier: number | null) {
+    clearAlerts();
+
+    try {
+      const res = await fetch("/api/admin/match/set-underdog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId, underdogTeam, underdogMultiplier }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að vista underdog.");
+
+      setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, underdog_team: underdogTeam, underdog_multiplier: underdogMultiplier } : m)));
+      flash(underdogTeam ? `Underdog settur (${underdogMultiplier}x stig) ✅` : "Underdog hreinsaður ✅");
     } catch {
       setErr("Tenging klikkaði.");
     }
@@ -1456,36 +1478,97 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
 
-                        <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
-                          1
-                        </ResultButton>
-
-                        {m.allow_draw && (
-                          <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
-                            X
+                          <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
+                            1
                           </ResultButton>
-                        )}
 
-                        <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
-                          2
-                        </ResultButton>
+                          {m.allow_draw && (
+                            <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
+                              X
+                            </ResultButton>
+                          )}
 
-                        <button
-                          onClick={() => setResult(m.id, null)}
-                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                        >
-                          Clear
-                        </button>
+                          <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
+                            2
+                          </ResultButton>
 
-                        <button
-                          onClick={() => deleteMatch(m.id)}
-                          className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                        >
-                          Eyða
-                        </button>
+                          <button
+                            onClick={() => setResult(m.id, null)}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                          >
+                            Clear
+                          </button>
+
+                          <button
+                            onClick={() => deleteMatch(m.id)}
+                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                          >
+                            Eyða
+                          </button>
+                        </div>
+
+                        {/* Underdog UI */}
+                        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">🎯 Underdog:</span>
+                          
+                          <button
+                            onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                              m.underdog_team === "1"
+                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            }`}
+                          >
+                            {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
+                            1
+                          </button>
+
+                          <button
+                            onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                              m.underdog_team === "2"
+                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            }`}
+                          >
+                            {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
+                            2
+                          </button>
+
+                          {m.underdog_team && (
+                            <>
+                              <input
+                                type="number"
+                                min="1.0"
+                                max="10.0"
+                                step="0.1"
+                                value={m.underdog_multiplier ?? 3.0}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  if (val >= 1.0 && val <= 10.0) {
+                                    setUnderdog(m.id, m.underdog_team, val);
+                                  }
+                                }}
+                                className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="3.0"
+                              />
+                              <span className="text-xs text-slate-600 dark:text-neutral-400">x stig</span>
+                            </>
+                          )}
+
+                          {m.underdog_team && (
+                            <button
+                              onClick={() => setUnderdog(m.id, null, null)}
+                              className="rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            >
+                              Hreinsa
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

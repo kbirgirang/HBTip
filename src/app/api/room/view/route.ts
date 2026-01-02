@@ -29,7 +29,7 @@ export async function GET() {
   // 3) Matches
   const { data: matches, error: mErr } = await supabaseServer
     .from("matches")
-    .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result")
+    .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier")
     .eq("tournament_id", room.tournament_id)
     .order("match_no", { ascending: true, nullsFirst: false });
 
@@ -199,7 +199,13 @@ export async function GET() {
       if (pr.pick === match.result) {
         correct1x2 += 1;
         // Ef X og pointsPerX er sett, nota það, annars nota pointsPer
-        const pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
+        let pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
+        
+        // Underdog check: ef notandi giskaði á underdog og underdog vann, margfalda stig
+        if (match.underdog_team && match.underdog_multiplier && pr.pick === match.underdog_team && match.result === match.underdog_team) {
+          pointsForThis = Math.round(pointsForThis * match.underdog_multiplier);
+        }
+        
         points += pointsForThis;
       }
     }

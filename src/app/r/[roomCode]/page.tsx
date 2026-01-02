@@ -22,6 +22,8 @@ type ViewData = {
     allow_draw: boolean;
     result: Pick | null;
     myPick?: Pick | null;
+    underdog_team?: "1" | "2" | null;
+    underdog_multiplier?: number | null;
 
     bonus?: null | {
       id: string;
@@ -534,11 +536,21 @@ export default function RoomPage() {
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           {m.home_team}
+                                          {m.underdog_team === "1" && (
+                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                              🎯 {m.underdog_multiplier}x
+                                            </span>
+                                          )}
                                         </span>{" "}
                                         vs{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                           {m.away_team}
+                                          {m.underdog_team === "2" && (
+                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                              🎯 {m.underdog_multiplier}x
+                                            </span>
+                                          )}
                                         </span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
@@ -666,11 +678,21 @@ export default function RoomPage() {
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           {m.home_team}
+                                          {m.underdog_team === "1" && (
+                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                              🎯 {m.underdog_multiplier}x
+                                            </span>
+                                          )}
                                         </span>{" "}
                                         vs{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                           {m.away_team}
+                                          {m.underdog_team === "2" && (
+                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                              🎯 {m.underdog_multiplier}x
+                                            </span>
+                                          )}
                                         </span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>

@@ -539,8 +539,8 @@ export default function RoomPage() {
                 <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
-                    <th className="px-3 py-2 text-left">Nafn</th>
                     <th className="px-3 py-2 text-left">Notendanafn</th>
+                    <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
                     <th className="px-3 py-2 text-right">Stig</th>
                     <th className="px-3 py-2 text-right">1X2</th>
                     <th className="px-3 py-2 text-right">Bónus</th>
@@ -556,8 +556,8 @@ export default function RoomPage() {
                           {medal ? <span className="mr-1">{medal}</span> : null}
                           {rank}
                         </td>
-                        <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
                         <td className="px-3 py-2 text-slate-600 dark:text-neutral-400">@{p.username}</td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
                         <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
                         <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
                         <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>

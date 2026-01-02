@@ -88,7 +88,7 @@ export async function POST(req: Request) {
 
   if (mErr || !member) {
     // Ef unique constraint error, þá er notandi þegar í þessari deild
-    if (mErr?.code === "23505" || mErr?.message?.includes("unique")) {
+    if (mErr?.code === "23505" || mErr?.message?.includes("unique") || mErr?.message?.includes("duplicate")) {
       // Notandi er þegar í þessari deild, prófum að skrá hann inn
       const { data: existingMember } = await supabaseServer
         .from("room_members")
@@ -112,7 +112,12 @@ export async function POST(req: Request) {
         }
       }
     }
-    return NextResponse.json({ error: mErr?.message || "Ekki tókst að skrá sig" }, { status: 500 });
+    // Debug: skila betri error message
+    console.error("Register error:", mErr);
+    return NextResponse.json({ 
+      error: mErr?.message || "Ekki tókst að skrá sig",
+      details: mErr?.code || "unknown"
+    }, { status: 500 });
   }
 
   await setSession({

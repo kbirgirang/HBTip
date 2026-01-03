@@ -2,6 +2,31 @@
 
 import { useState } from "react";
 
+// Tooltip component
+function InfoTooltip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  
+  return (
+    <div className="relative inline-block">
+      <button
+        type="button"
+        className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(!show)}
+      >
+        ℹ️
+      </button>
+      {show && (
+        <div className="absolute left-0 top-6 z-50 w-64 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700 shadow-lg dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+          {text}
+          <div className="absolute -top-1 left-3 h-2 w-2 rotate-45 border-l border-t border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type CreateResp =
   | { roomCode: string; roomName: string; ownerPassword: string }
   | { error: string };
@@ -177,7 +202,10 @@ export default function HomePage() {
               Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
             </p>
             <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
-              <p className="font-semibold">Hvað gerist?</p>
+              <p className="font-semibold">
+                Hvað gerist?
+                <InfoTooltip text="Búið er til ný deild með einstöku númeri. Þú verður stjórnandi með sérstakt lykilorð sem birtist bara einu sinni. Önnur geta joinað með deildar númeri og join password sem þú velur." />
+              </p>
               <ul className="mt-1.5 ml-4 list-disc space-y-1">
                 <li>Búið er til ný deild með númeri (t.d. MAREL-9647)</li>
                 <li>Þú verður stjórnandi með sérstakt lykilorð</li>
@@ -188,10 +216,10 @@ export default function HomePage() {
 
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Nafn deildar</label>
-                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                  Nafn á deildinni (t.d. vinnustaður, deild eða hópur)
-                </p>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  Nafn deildar
+                  <InfoTooltip text="Nafn á deildinni sem birtist í kerfinu. Getur verið nafn vinnustaðar, deildar eða hóps. Þetta nafn er notað til að búa til deildar númerið." />
+                </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cRoomName}
@@ -201,10 +229,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt notandanafn</label>
-                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                  Global notandanafn sem þú notar í öllum deildum (getur verið sama í fleiri deildum)
-                </p>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  Þitt notandanafn
+                  <InfoTooltip text="Global notandanafn sem þú notar í öllum deildum. Þú getur notað sama notandanafn í fleiri deildum. Ef þú ert með aðgang, notaðu sama notandanafn og lykilorð." />
+                </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cOwnerUsername}
@@ -214,10 +242,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt lykilorð</label>
-                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                  Lykilorð fyrir þitt notandanafn (notað í öllum deildum)
-                </p>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  Þitt lykilorð
+                  <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta lykilorð er notað í öllum deildum sem þú ert í. Minnst 6 stafir." />
+                </label>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -228,10 +256,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
-                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                  Nafn sem birtist í stigatöflu fyrir þessa deild (getur verið breytt per deild)
-                </p>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  Þitt nafn (í stigatöflu)
+                  <InfoTooltip text="Nafn sem birtist í stigatöflu fyrir þessa deild. Þetta getur verið breytt per deild, svo þú getur haft mismunandi nöfn í mismunandi deildum." />
+                </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cDisplayName}
@@ -241,10 +269,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
-                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                  Lykilorð sem aðrir nota til að joina þessari deild (deila með þeim sem eiga að vera í deildinni)
-                </p>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  Lykilorð til að skrá sig inná deildina
+                  <InfoTooltip text="Lykilorð sem aðrir nota til að joina þessari deild. Deildu þessu lykilorði með þeim sem eiga að vera í deildinni. Minnst 6 stafir." />
+                </label>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -308,7 +336,10 @@ export default function HomePage() {
             <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">Skráðu þig inn eða búðu til nýjan aðgang.</p>
             <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
-              <p className="font-semibold">Hvað þarf ég?</p>
+              <p className="font-semibold">
+                Hvað þarf ég?
+                <InfoTooltip text="Til að skrá sig inná deild þarftu: númer deildar og join password frá stjórnanda. Ef þú ert með notandanafn og lykilorð, notaðu 'Innskráning'. Ef ekki, búðu til nýjan aðgang með 'Nýr aðgangur'." />
+              </p>
               <ul className="mt-1.5 ml-4 list-disc space-y-1">
                 <li><strong>Númer deildar:</strong> Fáð frá stjórnanda (t.d. MAREL-9647)</li>
                 <li><strong>Lykilorð deildar:</strong> Join password frá stjórnanda</li>
@@ -348,10 +379,10 @@ export default function HomePage() {
             {joinTab === "login" && (
               <form onSubmit={handleLogin} className="mt-6 space-y-4">
               <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Númer deildar</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Fáð frá stjórnanda deildarinnar
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Númer deildar
+                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: MAREL-9647. Þetta númer er notað til að finna rétta deildina." />
+                  </label>
                 <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lRoomCode}
@@ -361,10 +392,10 @@ export default function HomePage() {
               </div>
 
               <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð deildar</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Join password sem stjórnandi deildarinnar gaf þér
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Lykilorð deildar
+                    <InfoTooltip text="Join password sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
+                  </label>
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -375,10 +406,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Notandanafn</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Notandanafn sem þú notar (sama í öllum deildum)
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Notandanafn
+                    <InfoTooltip text="Notandanafn sem þú notar. Ef þú ert með aðgang, notaðu sama notandanafn og lykilorð. Ef ekki, búðu til nýjan aðgang með 'Nýr aðgangur' flipanum." />
+                  </label>
                 <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lUsername}
@@ -418,10 +449,10 @@ export default function HomePage() {
             {joinTab === "register" && (
               <form onSubmit={handleRegister} className="mt-6 space-y-4">
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Númer deildar</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Fáð frá stjórnanda deildarinnar
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Númer deildar
+                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: MAREL-9647. Þetta númer er notað til að finna rétta deildina." />
+                  </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rRoomCode}
@@ -431,10 +462,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð deildar</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Join password sem stjórnandi deildarinnar gaf þér
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Lykilorð deildar
+                    <InfoTooltip text="Join password sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
+                  </label>
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -445,10 +476,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Notandanafn</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Global notandanafn (getur verið sama í fleiri deildum)
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Notandanafn
+                    <InfoTooltip text="Global notandanafn sem þú notar. Þú getur notað sama notandanafn í fleiri deildum. Ef notandanafn er þegar til, verður þú að nota sama lykilorð." />
+                  </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rUsername}
@@ -469,10 +500,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
-                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
-                    Nafn sem birtist í stigatöflu fyrir þessa deild
-                  </p>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Þitt nafn (í stigatöflu)
+                    <InfoTooltip text="Nafn sem birtist í stigatöflu fyrir þessa deild. Þetta getur verið breytt per deild, svo þú getur haft mismunandi nöfn í mismunandi deildum." />
+                  </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rDisplayName}

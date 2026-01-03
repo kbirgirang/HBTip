@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Tooltip component
 function InfoTooltip({ text }: { text: string }) {
@@ -65,6 +65,28 @@ export default function HomePage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
+  // Rooms list for dropdown
+  const [roomsList, setRoomsList] = useState<Array<{ room_code: string; room_name: string }>>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+
+  // Load rooms list on mount
+  useEffect(() => {
+    async function loadRooms() {
+      setLoadingRooms(true);
+      try {
+        const res = await fetch("/api/room/list-all");
+        const data = await res.json();
+        if (res.ok && data.rooms) {
+          setRoomsList(data.rooms);
+        }
+      } catch (err) {
+        console.error("Failed to load rooms:", err);
+      } finally {
+        setLoadingRooms(false);
+      }
+    }
+    loadRooms();
+  }, []);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -406,12 +428,18 @@ export default function HomePage() {
                     Númer deildar
                     <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
-                <input
+                <select
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lRoomCode}
                     onChange={(e) => setLRoomCode(e.target.value)}
-                  placeholder="Dæmi: Rafganistan-1234"
-                />
+                  >
+                    <option value="">— veldu deild —</option>
+                    {roomsList.map((room) => (
+                      <option key={room.room_code} value={room.room_code}>
+                        {room.room_name} ({room.room_code})
+                      </option>
+                    ))}
+                </select>
               </div>
 
               <div>
@@ -520,12 +548,18 @@ export default function HomePage() {
                     Númer deildar
                     <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
-                  <input
+                  <select
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rRoomCode}
                     onChange={(e) => setRRoomCode(e.target.value)}
-                    placeholder="Dæmi: Rafganistan-1234"
-                  />
+                  >
+                    <option value="">— veldu deild —</option>
+                    {roomsList.map((room) => (
+                      <option key={room.room_code} value={room.room_code}>
+                        {room.room_name} ({room.room_code})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

@@ -187,8 +187,8 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <header className="mb-10">
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight">Evrópukeppnin í handbolta 2026 - Vinnustaðatip</h1>
           <p className="mt-2 text-slate-600 dark:text-neutral-300">
             Skráðu þig inn á deild eða búðu til nýja deild
@@ -207,10 +207,10 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-lg">
           {/* Create Form - Show when button clicked */}
           {showCreateForm && !created && (
-            <section className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
+            <section className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">Búa til deild</h2>
@@ -229,7 +229,7 @@ export default function HomePage() {
                 </button>
               </div>
               
-              <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
+              <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
                 <p className="font-semibold">
                   Hvað gerist?
                   <InfoTooltip text="Búið er til ný deild með einstöku númeri. Þú verður stjórnandi með sérstakt lykilorð sem birtist bara einu sinni. Önnur geta joinað með deildar númeri og join password sem þú velur." />
@@ -241,20 +241,8 @@ export default function HomePage() {
                   <li>Hvert notandanafn er global (getur verið í fleiri deildum)</li>
                 </ul>
               </div>
-            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
-              <p className="font-semibold">
-                Hvað gerist?
-                <InfoTooltip text="Búið er til ný deild með einstöku númeri. Þú verður stjórnandi með sérstakt lykilorð sem birtist bara einu sinni. Önnur geta joinað með deildar númeri og join password sem þú velur." />
-              </p>
-              <ul className="mt-1.5 ml-4 list-disc space-y-1">
-                <li>Búið er til ný deild með númeri (t.d. MAREL-9647)</li>
-                <li>Þú verður stjórnandi með sérstakt lykilorð</li>
-                <li>Önnur geta joinað með deildar númeri + join password</li>
-                <li>Hvert notandanafn er global (getur verið í fleiri deildum)</li>
-              </ul>
-            </div>
 
-            <form onSubmit={handleCreate} className="mt-6 space-y-4">
+            <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Nafn deildar
@@ -378,11 +366,11 @@ export default function HomePage() {
 
           {/* Join - Register/Login - Main section */}
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
-            <h2 className="text-2xl font-semibold">Skrá sig inná deild</h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
+            <h2 className="text-2xl font-semibold mb-2">Skrá sig inná deild</h2>
+            <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
               Skráðu þig inn eða búðu til nýjan aðgang til að joina deild.
             </p>
-            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
+            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
               <p className="font-semibold">
                 Hvað þarf ég?
                 <InfoTooltip text="Til að skrá sig inná deild þarftu: númer deildar og join password frá stjórnanda. Ef þú ert með notandanafn og lykilorð, notaðu 'Innskráning'. Ef ekki, búðu til nýjan aðgang með 'Nýr aðgangur'." />
@@ -395,7 +383,7 @@ export default function HomePage() {
               </ul>
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="mb-6 flex gap-2">
               <button
                 type="button"
                 onClick={() => setJoinTab("login")}
@@ -424,7 +412,7 @@ export default function HomePage() {
 
             {/* Login Form */}
             {joinTab === "login" && (
-              <form onSubmit={handleLogin} className="mt-6 space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
               <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
@@ -498,7 +486,7 @@ export default function HomePage() {
 
             {/* Register Form */}
             {joinTab === "register" && (
-              <form onSubmit={handleRegister} className="mt-6 space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
@@ -583,7 +571,7 @@ export default function HomePage() {
           </section>
         </div>
 
-        <footer className="mt-10 text-xs text-neutral-500">
+        <footer className="mt-10 text-center text-xs text-neutral-500">
           MVP: handvirk úrslit + global bónusspurningar. Deildir eru fyrir vinnustaði.
         </footer>
       </div>

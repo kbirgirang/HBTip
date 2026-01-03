@@ -176,10 +176,22 @@ export default function HomePage() {
             <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
               Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
             </p>
+            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
+              <p className="font-semibold">Hvað gerist?</p>
+              <ul className="mt-1.5 ml-4 list-disc space-y-1">
+                <li>Búið er til ný deild með númeri (t.d. MAREL-9647)</li>
+                <li>Þú verður stjórnandi með sérstakt lykilorð</li>
+                <li>Önnur geta joinað með deildar númeri + join password</li>
+                <li>Hvert notandanafn er global (getur verið í fleiri deildum)</li>
+              </ul>
+            </div>
 
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">Nafn deildar</label>
+                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                  Nafn á deildinni (t.d. vinnustaður, deild eða hópur)
+                </p>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cRoomName}
@@ -190,6 +202,9 @@ export default function HomePage() {
 
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt notandanafn</label>
+                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                  Global notandanafn sem þú notar í öllum deildum (getur verið sama í fleiri deildum)
+                </p>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cOwnerUsername}
@@ -200,6 +215,9 @@ export default function HomePage() {
 
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt lykilorð</label>
+                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                  Lykilorð fyrir þitt notandanafn (notað í öllum deildum)
+                </p>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -211,6 +229,9 @@ export default function HomePage() {
 
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                  Nafn sem birtist í stigatöflu fyrir þessa deild (getur verið breytt per deild)
+                </p>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cDisplayName}
@@ -221,6 +242,9 @@ export default function HomePage() {
 
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð til að skrá sig inná deildina</label>
+                <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                  Lykilorð sem aðrir nota til að joina þessari deild (deila með þeim sem eiga að vera í deildinni)
+                </p>
                 <input
                   type="password"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -283,6 +307,15 @@ export default function HomePage() {
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">Skráðu þig inn eða búðu til nýjan aðgang.</p>
+            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
+              <p className="font-semibold">Hvað þarf ég?</p>
+              <ul className="mt-1.5 ml-4 list-disc space-y-1">
+                <li><strong>Númer deildar:</strong> Fáð frá stjórnanda (t.d. MAREL-9647)</li>
+                <li><strong>Lykilorð deildar:</strong> Join password frá stjórnanda</li>
+                <li><strong>Notandanafn:</strong> Ef þú ert með aðgang, notaðu sama notandanafn</li>
+                <li><strong>Nýr aðgangur:</strong> Ef þú ert ekki með aðgang, búðu til nýjan</li>
+              </ul>
+            </div>
 
             <div className="mt-4 flex gap-2">
               <button
@@ -316,6 +349,9 @@ export default function HomePage() {
               <form onSubmit={handleLogin} className="mt-6 space-y-4">
               <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Númer deildar</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Fáð frá stjórnanda deildarinnar
+                  </p>
                 <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lRoomCode}
@@ -326,6 +362,9 @@ export default function HomePage() {
 
               <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð deildar</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Join password sem stjórnandi deildarinnar gaf þér
+                  </p>
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -337,6 +376,9 @@ export default function HomePage() {
 
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Notandanafn</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Notandanafn sem þú notar (sama í öllum deildum)
+                  </p>
                 <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lUsername}
@@ -377,6 +419,9 @@ export default function HomePage() {
               <form onSubmit={handleRegister} className="mt-6 space-y-4">
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Númer deildar</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Fáð frá stjórnanda deildarinnar
+                  </p>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rRoomCode}
@@ -387,6 +432,9 @@ export default function HomePage() {
 
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð deildar</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Join password sem stjórnandi deildarinnar gaf þér
+                  </p>
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -398,6 +446,9 @@ export default function HomePage() {
 
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Notandanafn</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Global notandanafn (getur verið sama í fleiri deildum)
+                  </p>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rUsername}
@@ -419,6 +470,9 @@ export default function HomePage() {
 
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">Þitt nafn (í stigatöflu)</label>
+                  <p className="mt-0.5 mb-1 text-xs text-slate-500 dark:text-neutral-400">
+                    Nafn sem birtist í stigatöflu fyrir þessa deild
+                  </p>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rDisplayName}

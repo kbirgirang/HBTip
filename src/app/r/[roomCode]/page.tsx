@@ -1127,8 +1127,11 @@ function BonusAnswerCard({
     bonus.type === "choice" ? bonus.correct_choice : 
     bonus.type === "player" ? (bonus.correct_player_name || bonus.correct_choice) : null;
 
-  const isCorrect = locked && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
-  const isWrong = locked && myAnswerLabel != null && correctAnswerLabel != null && !isCorrect;
+  // Rétt svar á aðeins að birtast ef matchResult er sett (admin hefur sett niðurstöðu)
+  const showCorrectAnswer = matchResult != null;
+  
+  const isCorrect = showCorrectAnswer && myAnswerLabel != null && correctAnswerLabel != null && String(myAnswerLabel) === String(correctAnswerLabel);
+  const isWrong = showCorrectAnswer && myAnswerLabel != null && correctAnswerLabel != null && !isCorrect;
 
   // Minimalist view when locked
   if (locked) {
@@ -1151,12 +1154,16 @@ function BonusAnswerCard({
           ) : (
             <span className="text-slate-500">Ekkert svar</span>
           )}
-          <span className="text-slate-400 dark:text-neutral-500">·</span>
-          <span className="text-slate-500 dark:text-neutral-400">Rétt:</span>
-          {correctAnswerLabel != null ? (
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{String(correctAnswerLabel)}</span>
-          ) : (
-            <span className="text-slate-500">-</span>
+          {showCorrectAnswer && (
+            <>
+              <span className="text-slate-400 dark:text-neutral-500">·</span>
+              <span className="text-slate-500 dark:text-neutral-400">Rétt:</span>
+              {correctAnswerLabel != null ? (
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">{String(correctAnswerLabel)}</span>
+              ) : (
+                <span className="text-slate-500">-</span>
+              )}
+            </>
           )}
         </div>
       </div>

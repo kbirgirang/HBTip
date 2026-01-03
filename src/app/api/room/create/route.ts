@@ -88,6 +88,10 @@ export async function POST(req: Request) {
   }
 
   const ownerPasswordHash = await hashPassword(ownerPassword_user);
+  
+  if (!ownerPasswordHash) {
+    return NextResponse.json({ error: "Ekki tókst að búa til password hash" }, { status: 500 });
+  }
 
   const { data: member, error: mErr } = await supabaseServer
     .from("room_members")

@@ -35,6 +35,7 @@ type JoinResp = { ok: true; roomCode: string } | { error: string };
 
 export default function HomePage() {
   // Create form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [cRoomName, setCRoomName] = useState("");
   const [cJoinPassword, setCJoinPassword] = useState("");
   const [cOwnerUsername, setCOwnerUsername] = useState("");
@@ -190,17 +191,56 @@ export default function HomePage() {
         <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight">Evrópukeppnin í handbolta 2026 - Vinnustaðatip</h1>
           <p className="mt-2 text-slate-600 dark:text-neutral-300">
-            Búðu til deild fyrir vinnustaðinn eða join-aðu með deildar kóða + lykilorði
+            Skráðu þig inn á deild eða búðu til nýja deild
           </p>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Create */}
-          <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
-            <h2 className="text-xl font-semibold">Búa til deild</h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
-              Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
-            </p>
+        {/* Create Room Button */}
+        {!showCreateForm && !created && (
+          <div className="mb-8 flex justify-center">
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="rounded-xl border-2 border-blue-500 bg-blue-50 px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
+            >
+              + Búa til nýja deild
+            </button>
+          </div>
+        )}
+
+        <div className="mx-auto max-w-2xl">
+          {/* Create Form - Show when button clicked */}
+          {showCreateForm && !created && (
+            <section className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Búa til deild</h2>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
+                    Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setCreateError(null);
+                  }}
+                  className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                >
+                  ✕ Loka
+                </button>
+              </div>
+              
+              <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
+                <p className="font-semibold">
+                  Hvað gerist?
+                  <InfoTooltip text="Búið er til ný deild með einstöku númeri. Þú verður stjórnandi með sérstakt lykilorð sem birtist bara einu sinni. Önnur geta joinað með deildar númeri og join password sem þú velur." />
+                </p>
+                <ul className="mt-1.5 ml-4 list-disc space-y-1">
+                  <li>Búið er til ný deild með númeri (t.d. MAREL-9647)</li>
+                  <li>Þú verður stjórnandi með sérstakt lykilorð</li>
+                  <li>Önnur geta joinað með deildar númeri + join password</li>
+                  <li>Hvert notandanafn er global (getur verið í fleiri deildum)</li>
+                </ul>
+              </div>
             <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
               <p className="font-semibold">
                 Hvað gerist?
@@ -296,45 +336,52 @@ export default function HomePage() {
               </button>
             </form>
 
-            {created && (
-              <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                <p className="text-sm text-emerald-100">
-                  <span className="font-semibold">Númer deildar:</span> {created.roomCode}
-                </p>
-                <p className="mt-2 text-sm text-emerald-100">
-                  <span className="font-semibold">Lykilorð stjórnanda (geymdu):</span>{" "}
-                  <span className="font-mono">{created.ownerPassword}</span>
-                </p>
-                <div className="mt-4 flex gap-3">
-                  <button
-                    className="rounded-xl bg-emerald-300 px-4 py-2 font-semibold text-emerald-950 hover:bg-emerald-200"
-                    onClick={() => (window.location.href = `/r/${encodeURIComponent(created.roomCode)}`)}
-                  >
-                    Fara í deildina
-                  </button>
-                  <button
-                    className="rounded-xl border border-emerald-400/40 px-4 py-2 font-semibold text-emerald-100 hover:bg-emerald-500/10"
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(
-                        `Númer deildar: ${created.roomCode}\nJoin password: (þú valdir)\nLykilorð stjórnanda: ${created.ownerPassword}`
-                      );
-                      alert("Afritað í clipboard (ath: join password er ekki vistað hér).");
-                    }}
-                  >
-                    Afrita info
-                  </button>
-                </div>
-                <p className="mt-3 text-xs text-emerald-100/80">
-                  Ath: Join passwordið er það sem þú slóst inn. Lykilorð stjórnanda birtist bara hér, einu sinni.
-                </p>
-              </div>
-            )}
           </section>
+          )}
 
-          {/* Join - Register/Login */}
+          {/* Show success message if created */}
+          {created && (
+            <div className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+              <p className="text-sm text-emerald-100">
+                <span className="font-semibold">Númer deildar:</span> {created.roomCode}
+              </p>
+              <p className="mt-2 text-sm text-emerald-100">
+                <span className="font-semibold">Lykilorð stjórnanda (geymdu):</span>{" "}
+                <span className="font-mono">{created.ownerPassword}</span>
+              </p>
+              <div className="mt-4 flex gap-3">
+                <button
+                  className="rounded-xl bg-emerald-300 px-4 py-2 font-semibold text-emerald-950 hover:bg-emerald-200"
+                  onClick={() => {
+                    window.location.href = `/r/${encodeURIComponent(created.roomCode)}`;
+                  }}
+                >
+                  Fara í deildina
+                </button>
+                <button
+                  className="rounded-xl border border-emerald-400/40 px-4 py-2 font-semibold text-emerald-100 hover:bg-emerald-500/10"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(
+                      `Númer deildar: ${created.roomCode}\nJoin password: (þú valdir)\nLykilorð stjórnanda: ${created.ownerPassword}`
+                    );
+                    alert("Afritað í clipboard (ath: join password er ekki vistað hér).");
+                  }}
+                >
+                  Afrita info
+                </button>
+              </div>
+              <p className="mt-3 text-xs text-emerald-100/80">
+                Ath: Join passwordið er það sem þú slóst inn. Lykilorð stjórnanda birtist bara hér, einu sinni.
+              </p>
+            </div>
+          )}
+
+          {/* Join - Register/Login - Main section */}
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
-            <h2 className="text-xl font-semibold">Skrá sig inná deildina</h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">Skráðu þig inn eða búðu til nýjan aðgang.</p>
+            <h2 className="text-2xl font-semibold">Skrá sig inná deild</h2>
+            <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
+              Skráðu þig inn eða búðu til nýjan aðgang til að joina deild.
+            </p>
             <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
               <p className="font-semibold">
                 Hvað þarf ég?
@@ -419,12 +466,16 @@ export default function HomePage() {
               </div>
 
               <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Lykilorð
+                    <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
+                  </label>
                 <input
                   type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lPassword}
                     onChange={(e) => setLPassword(e.target.value)}
+                    placeholder="Lykilorð þitt"
                 />
               </div>
 
@@ -489,7 +540,10 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">Lykilorð</label>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Lykilorð
+                    <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Minnst 6 stafir. Ef notandanafn er þegar til, verður þú að nota sama lykilorð." />
+                  </label>
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"

@@ -223,8 +223,8 @@ export default function HomePage() {
                   <InfoTooltip text="Búið er til ný deild með einstöku númeri. Þú verður stjórnandi með sérstakt lykilorð sem birtist bara einu sinni. Önnur geta joinað með deildar númeri og join password sem þú velur." />
                 </p>
                 <ul className="mt-1.5 ml-4 list-disc space-y-1">
-                  <li>Búið er til ný deild með númeri (t.d. MAREL-9647)</li>
-                  <li>Þú verður stjórnandi með sérstakt lykilorð</li>
+                  <li>Búið er til ný deild með númeri (t.d. Rafganistan-1234)</li>
+                  <li>Þú verður stjórnandi með sérstakt lykilorð</li>F
                   <li>Önnur geta joinað með deildar númeri + join password</li>
                   <li>Hvert notandanafn er global (getur verið í fleiri deildum)</li>
                 </ul>
@@ -253,7 +253,7 @@ export default function HomePage() {
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cOwnerUsername}
                   onChange={(e) => setCOwnerUsername(e.target.value)}
-                  placeholder="t.d. kari"
+                  placeholder="t.d. Rafgani"
                 />
               </div>
 
@@ -477,33 +477,6 @@ export default function HomePage() {
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
-                    Númer deildar
-                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: MAREL-9647. Þetta númer er notað til að finna rétta deildina." />
-                  </label>
-                  <input
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={rRoomCode}
-                    onChange={(e) => setRRoomCode(e.target.value)}
-                    placeholder="Dæmi: MAREL-9467"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">
-                    Lykilorð deildar
-                    <InfoTooltip text="Aðgangsorð sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
-                  </label>
-                  <input
-                    type="password"
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={rJoinPassword}
-                    onChange={(e) => setRJoinPassword(e.target.value)}
-                    placeholder="Aðgangsorð deildarinnar"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
                     <InfoTooltip text="Global notandanafn sem þú notar. Þú getur notað sama notandanafn í fleiri deildum. Ef notandanafn er þegar til, verður þú að nota sama lykilorð." />
                   </label>
@@ -539,6 +512,33 @@ export default function HomePage() {
                     value={rDisplayName}
                     onChange={(e) => setRDisplayName(e.target.value)}
                     placeholder="t.d. Kári"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Númer deildar
+                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: MAREL-9647. Þetta númer er notað til að finna rétta deildina." />
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={rRoomCode}
+                    onChange={(e) => setRRoomCode(e.target.value)}
+                    placeholder="Dæmi: MAREL-9467"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Lykilorð deildar
+                    <InfoTooltip text="Aðgangsorð sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
+                  </label>
+                  <input
+                    type="password"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={rJoinPassword}
+                    onChange={(e) => setRJoinPassword(e.target.value)}
+                    placeholder="Aðgangsorð deildarinnar"
                   />
                 </div>
 

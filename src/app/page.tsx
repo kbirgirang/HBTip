@@ -195,18 +195,6 @@ export default function HomePage() {
           </p>
         </header>
 
-        {/* Create Room Button */}
-        {!showCreateForm && !created && (
-          <div className="mb-8 flex justify-center">
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="rounded-xl border-2 border-blue-500 bg-blue-50 px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
-            >
-              + Búa til nýja deild
-            </button>
-          </div>
-        )}
-
         <div className="mx-auto max-w-lg">
           {/* Create Form - Show when button clicked */}
           {showCreateForm && !created && (
@@ -567,6 +555,18 @@ export default function HomePage() {
                   {registerLoading ? "Skrái..." : "Búa til aðgang"}
               </button>
             </form>
+            )}
+
+            {/* Create Room Button - Inside join section */}
+            {!showCreateForm && !created && (
+              <div className="mt-6 flex justify-center border-t border-slate-200 pt-6 dark:border-neutral-800">
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="rounded-xl border-2 border-blue-500 bg-blue-50 px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
+                >
+                  + Búa til nýja deild
+                </button>
+              </div>
             )}
           </section>
         </div>

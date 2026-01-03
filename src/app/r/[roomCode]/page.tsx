@@ -969,37 +969,78 @@ export default function RoomPage() {
           )}
 
           {data && tab === "leaderboard" && (
-            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800">
-              <table className="w-full text-sm">
-                <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
-                  <tr>
-                    <th className="px-3 py-2 text-left">#</th>
-                    <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
-                    <th className="px-3 py-2 text-right">Stig</th>
-                    <th className="px-3 py-2 text-right">1X2</th>
-                    <th className="px-3 py-2 text-right">Bónus</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.leaderboard.map((p, idx) => {
-                    const rank = idx + 1;
-                    const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
-                    return (
-                      <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
-                        <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
-                          {medal ? <span className="mr-1">{medal}</span> : null}
-                          {rank}
-                        </td>
-                        <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
-                        <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
-                        <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
-                        <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 md:block">
+                <table className="w-full text-sm">
+                  <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
+                    <tr>
+                      <th className="px-3 py-2 text-left">#</th>
+                      <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
+                      <th className="px-3 py-2 text-right">Stig</th>
+                      <th className="px-3 py-2 text-right">1X2</th>
+                      <th className="px-3 py-2 text-right">Bónus</th>
                     </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.leaderboard.map((p, idx) => {
+                      const rank = idx + 1;
+                      const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                      return (
+                        <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
+                          <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
+                            {medal ? <span className="mr-1">{medal}</span> : null}
+                            {rank}
+                          </td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
+                          <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
+                          <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
+                          <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="space-y-2 md:hidden">
+                {data.leaderboard.map((p, idx) => {
+                  const rank = idx + 1;
+                  const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                  return (
+                    <div
+                      key={p.memberId}
+                      className="rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950/40"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                            {medal ? <span className="mr-1">{medal}</span> : null}
+                            {rank}
+                          </span>
+                          <span className="font-medium text-slate-900 dark:text-neutral-100">{p.displayName}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{p.points}</div>
+                          <div className="text-xs text-slate-500 dark:text-neutral-400">stig</div>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs dark:border-neutral-800">
+                        <div>
+                          <span className="text-slate-500 dark:text-neutral-400">1X2:</span>{" "}
+                          <span className="font-medium text-slate-700 dark:text-neutral-300">{p.correct1x2}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-neutral-400">Bónus:</span>{" "}
+                          <span className="font-medium text-slate-700 dark:text-neutral-300">{p.bonusPoints || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
 
           {!data && !err && roomCode && <p className="mt-4 text-xs text-slate-500 dark:text-neutral-500">Deild param: {roomCode}</p>}

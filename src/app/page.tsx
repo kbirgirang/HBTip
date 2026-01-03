@@ -404,7 +404,7 @@ export default function HomePage() {
               <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
-                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: MAREL-9467. Þetta númer er notað til að finna rétta deildina." />
+                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
                 <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -437,7 +437,7 @@ export default function HomePage() {
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lUsername}
                     onChange={(e) => setLUsername(e.target.value)}
-                    placeholder="t.d. kari"
+                    placeholder="t.d. Rafgani"
                 />
               </div>
 

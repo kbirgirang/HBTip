@@ -240,7 +240,7 @@ export default function HomePage() {
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cRoomName}
                   onChange={(e) => setCRoomName(e.target.value)}
-                  placeholder="t.d. Marel"
+                  placeholder="t.d. Rafganistan"
                 />
               </div>
 
@@ -280,9 +280,9 @@ export default function HomePage() {
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cDisplayName}
                   onChange={(e) => setCDisplayName(e.target.value)}
-                  placeholder="t.d. Kári"
+                  placeholder="t.d. Rafgani"
                 />
-              </div>
+              </div>  
 
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
@@ -356,7 +356,7 @@ export default function HomePage() {
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-2xl font-semibold mb-2">Skráning í deild</h2>
             <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
-              Skráðu þig inn eða búðu til nýjan aðgang til að taka þátt.
+              Skráðu þig inn eða búðu til nýjan aðgang til að taka þátt.  
             </p>
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
               <p className="font-semibold">
@@ -364,7 +364,7 @@ export default function HomePage() {
                 <InfoTooltip text="Til að skrá sig í deild þarftu: númer deildar og aðgangsorð frá stjórnanda. Ef þú átt þegar aðgang, notaðu 'Innskráning'. Ef ekki, búðu til nýjan aðgang með 'Nýskráning'." />
               </p>
               <ul className="mt-1.5 ml-4 list-disc space-y-1">
-                <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. MAREL-9467)</li>
+                <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. Rafganistan-1234)</li>
                 <li><strong>Lykilorð deildar:</strong> Aðgangsorð sem þú færð hjá stjórnanda</li>
                 <li><strong>Notandanafn:</strong> Notaðu núverandi notandanafn ef þú átt þegar aðgang</li>
                 <li><strong>Nýr aðgangur:</strong> Ef þú átt ekki aðgang skaltu búa hann til hér</li>
@@ -410,7 +410,7 @@ export default function HomePage() {
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={lRoomCode}
                     onChange={(e) => setLRoomCode(e.target.value)}
-                  placeholder="Dæmi: MAREL-9467"
+                  placeholder="Dæmi: Rafganistan-1234"
                 />
               </div>
 
@@ -484,7 +484,7 @@ export default function HomePage() {
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rUsername}
                     onChange={(e) => setRUsername(e.target.value)}
-                    placeholder="t.d. kari"
+                    placeholder="t.d. Rafgani"
                   />
                 </div>
 
@@ -511,20 +511,20 @@ export default function HomePage() {
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rDisplayName}
                     onChange={(e) => setRDisplayName(e.target.value)}
-                    placeholder="t.d. Kári"
+                    placeholder="t.d. Rafgani"
                   />
                 </div>
 
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
-                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: MAREL-9647. Þetta númer er notað til að finna rétta deildina." />
+                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={rRoomCode}
                     onChange={(e) => setRRoomCode(e.target.value)}
-                    placeholder="Dæmi: MAREL-9467"
+                    placeholder="Dæmi: Rafganistan-1234"
                   />
                 </div>
 

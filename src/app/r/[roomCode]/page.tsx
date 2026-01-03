@@ -1136,8 +1136,8 @@ function BonusAnswerCard({
   // Minimalist view when locked
   if (locked) {
   return (
-      <div className="mt-3 rounded-lg border border-purple-200 bg-purple-50/30 dark:border-purple-800 dark:bg-purple-950/20 p-2">
-        <div className="text-xs font-medium text-purple-900 dark:text-purple-100">Bónus: {bonus.title}</div>
+      <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-2">
+        <div className="text-xs font-medium text-slate-700 dark:text-neutral-300">{bonus.title}</div>
         <div className="mt-1.5 flex items-center gap-2 text-xs">
           {myAnswerLabel != null && myAnswerLabel !== "" ? (
             <>
@@ -1172,15 +1172,15 @@ function BonusAnswerCard({
 
   // Full form when open
   return (
-    <div className="mt-3 rounded-xl border border-purple-200 bg-purple-50/30 dark:border-purple-800 dark:bg-purple-950/20 p-3">
+    <div className="mt-3 rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
       <div className="flex items-start justify-between gap-3">
-        <div className="font-semibold text-purple-900 dark:text-purple-100">Bónus: {bonus.title}</div>
-        <div className="text-xs text-purple-700 dark:text-purple-300">
+        <div className="font-semibold text-slate-900 dark:text-neutral-100">Bónus: {bonus.title}</div>
+        <div className="text-xs text-slate-600 dark:text-neutral-300">
           +{bonus.points} stig · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
         </div>
       </div>
 
-      <div className="mt-1 text-xs text-purple-600 dark:text-purple-400">
+      <div className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
         Lokar: {new Date(bonus.closes_at).toLocaleString()}
       </div>
 
@@ -1264,7 +1264,7 @@ function BonusAnswerCard({
         <button
           onClick={save}
           disabled={saving || locked}
-          className="w-full rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-purple-500 dark:text-white dark:hover:bg-purple-600"
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
         >
           {locked ? "Lokað" : saving ? "Vistast..." : "Vista bónus svar"}
         </button>

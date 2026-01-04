@@ -50,13 +50,13 @@ function HelpBoxTooltip({ children }: { children: React.ReactNode }) {
       </span>
       {show && (
         <div 
-          className="absolute left-0 top-6 z-[9999] w-80 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 shadow-2xl dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300"
+          className="absolute left-0 bottom-full mb-2 z-[9999] w-80 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 shadow-2xl dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300"
           onMouseEnter={() => setShow(true)}
           onMouseLeave={() => setShow(false)}
           style={{ pointerEvents: 'auto' }}
         >
           {children}
-          <div className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30"></div>
+          <div className="absolute -bottom-1 left-4 h-2 w-2 rotate-45 border-r border-b border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30"></div>
         </div>
       )}
     </div>

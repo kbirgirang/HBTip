@@ -1631,9 +1631,9 @@ export default function AdminPage() {
                   </div>
                 )}
               </Card>
-            </div>
+              </div>
 
-            <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Eyða.">
+              <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Eyða.">
               {matches.length === 0 ? (
                 <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
               ) : (
@@ -1759,6 +1759,7 @@ export default function AdminPage() {
                 </div>
               )}
             </Card>
+            </div>
           </div>
         )}
 

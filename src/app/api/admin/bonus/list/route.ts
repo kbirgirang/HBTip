@@ -2,17 +2,36 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const tournamentSlug = "mens-ehf-euro-2026";
+    // Get tournament slug from query parameter
+    const { searchParams } = new URL(req.url);
+    const tournamentSlug = searchParams.get("tournamentSlug");
 
-    const { data: t, error: tErr } = await supabaseServer
-      .from("tournaments")
-      .select("id")
-      .eq("slug", tournamentSlug)
-      .single();
+    let t;
+    if (tournamentSlug) {
+      const { data, error: tErr } = await supabaseServer
+        .from("tournaments")
+        .select("id")
+        .eq("slug", tournamentSlug)
+        .eq("is_active", true)
+        .single();
 
-    if (tErr || !t) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
+      if (tErr || !data) return NextResponse.json({ error: "Keppni fannst ekki eða er ekki virk" }, { status: 404 });
+      t = data;
+    } else {
+      // Default: fyrsta active tournament
+      const { data, error: tErr } = await supabaseServer
+        .from("tournaments")
+        .select("id")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (tErr || !data) return NextResponse.json({ error: "Engin virk keppni fannst" }, { status: 404 });
+      t = data;
+    }
 
     // 1) Matches
     const { data: matches, error: mErr } = await supabaseServer

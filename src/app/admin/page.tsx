@@ -137,6 +137,9 @@ export default function AdminPage() {
   const [tournamentName, setTournamentName] = useState("");
   const [creatingTournament, setCreatingTournament] = useState(false);
 
+  // Selected tournament for match/bonus operations
+  const [selectedTournamentForOperations, setSelectedTournamentForOperations] = useState<string>("");
+
   async function loadTournaments() {
     setLoadingTournaments(true);
     try {
@@ -154,11 +157,24 @@ export default function AdminPage() {
     }
   }
 
+  // Load tournaments when authenticated (fyrir tournament operations og selector)
   useEffect(() => {
-    if (tab === "tournaments" && authenticated) {
+    if (authenticated) {
       loadTournaments();
     }
-  }, [tab, authenticated]);
+  }, [authenticated]);
+
+  // Set default tournament when tournaments load
+  useEffect(() => {
+    if (tournaments.length > 0 && !selectedTournamentForOperations) {
+      const activeTournament = tournaments.find(t => t.is_active);
+      if (activeTournament) {
+        setSelectedTournamentForOperations(activeTournament.slug);
+      } else if (tournaments[0]) {
+        setSelectedTournamentForOperations(tournaments[0].slug);
+      }
+    }
+  }, [tournaments, selectedTournamentForOperations]);
 
   async function createTournament(e: React.FormEvent) {
     e.preventDefault();
@@ -287,6 +303,7 @@ export default function AdminPage() {
           startsAt: iso,
           allowDraw,
           matchNo: matchNo === "" ? null : matchNo,
+          tournamentSlug: selectedTournamentForOperations || undefined,
         }),
       });
 
@@ -396,6 +413,7 @@ export default function AdminPage() {
             startsAt: r.startsAtIso,
             allowDraw: r.allowDraw,
             matchNo: r.matchNo,
+            tournamentSlug: selectedTournamentForOperations || undefined,
           }),
         });
 
@@ -425,7 +443,10 @@ export default function AdminPage() {
     if (!silent) clearAlerts();
     setLoadingMatches(true);
     try {
-      const res = await fetch("/api/admin/matches", { cache: "no-store" });
+      const url = selectedTournamentForOperations 
+        ? `/api/admin/matches?tournamentSlug=${encodeURIComponent(selectedTournamentForOperations)}`
+        : "/api/admin/matches";
+      const res = await fetch(url, { cache: "no-store" });
       const json = (await res.json()) as Partial<AdminMatchesResponse> & { error?: string };
 
       if (!res.ok) return setErr(json?.error || "Ekki tókst að sækja leiki.");
@@ -551,7 +572,10 @@ export default function AdminPage() {
     if (!silent) clearAlerts();
     setLoadingBonusList(true);
     try {
-      const res = await fetch("/api/admin/bonus/list", { cache: "no-store" });
+      const url = selectedTournamentForOperations 
+        ? `/api/admin/bonus/list?tournamentSlug=${encodeURIComponent(selectedTournamentForOperations)}`
+        : "/api/admin/bonus/list";
+      const res = await fetch(url, { cache: "no-store" });
       const json = (await res.json()) as Partial<AdminBonusListResponse> & { error?: string };
 
       if (!res.ok) return setErr(json?.error || "Ekki tókst að sækja bónus lista.");
@@ -1070,6 +1094,33 @@ export default function AdminPage() {
             <Card title="Búa til leik (stakur)" subtitle="Fljótleg leið fyrir einn leik í einu.">
               <form onSubmit={createMatch} className="space-y-4">
                 <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Keppni</label>
+                  <select
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={selectedTournamentForOperations}
+                    onChange={(e) => setSelectedTournamentForOperations(e.target.value)}
+                    disabled={loadingTournaments || tournaments.length === 0}
+                  >
+                    {loadingTournaments ? (
+                      <option>Sæki keppnir...</option>
+                    ) : tournaments.length === 0 ? (
+                      <option>Engar keppnir tiltækar</option>
+                    ) : (
+                      tournaments
+                        .filter(t => t.is_active)
+                        .map((t) => (
+                          <option key={t.id} value={t.slug}>
+                            {t.name}
+                          </option>
+                        ))
+                    )}
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                    Veldu keppni sem leikurinn tilheyrir
+                  </p>
+                </div>
+
+                <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-300">Riðill</label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -1176,24 +1227,59 @@ export default function AdminPage() {
 
         {/* RESULTS + BONUS */}
         {tab === "results" && (
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <div className="space-y-6">
-              <Card
-                title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
-                subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
-                right={
-                  <button
-                    onClick={() => {
-                      void loadMatches();
-                      void loadBonusList(true);
-                    }}
-                    disabled={loadingMatches || loadingBonusList}
-                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                  >
-                    {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
-                  </button>
-                }
+          <div className="mt-6 space-y-6">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-4">
+              <label className="text-sm font-semibold text-slate-700 dark:text-neutral-300">Veldu keppni</label>
+              <select
+                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                value={selectedTournamentForOperations}
+                onChange={(e) => {
+                  setSelectedTournamentForOperations(e.target.value);
+                  // Reload matches and bonus when tournament changes
+                  setTimeout(() => {
+                    void loadMatches(true);
+                    void loadBonusList(true);
+                  }, 100);
+                }}
+                disabled={loadingTournaments || tournaments.length === 0}
               >
+                {loadingTournaments ? (
+                  <option>Sæki keppnir...</option>
+                ) : tournaments.length === 0 ? (
+                  <option>Engar keppnir tiltækar</option>
+                ) : (
+                  tournaments
+                    .filter(t => t.is_active)
+                    .map((t) => (
+                      <option key={t.id} value={t.slug}>
+                        {t.name}
+                      </option>
+                    ))
+                )}
+              </select>
+              <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                Veldu keppni til að vinna með leiki og bónus spurningar
+              </p>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-6">
+                <Card
+                  title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
+                  subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
+                  right={
+                    <button
+                      onClick={() => {
+                        void loadMatches();
+                        void loadBonusList(true);
+                      }}
+                      disabled={loadingMatches || loadingBonusList}
+                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                    >
+                      {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
+                    </button>
+                  }
+                >
                 {matches.length === 0 ? (
                   <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
                 ) : (

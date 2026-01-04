@@ -9,6 +9,7 @@ type Body = {
   startsAt: string; // ISO string
   allowDraw: boolean;
   matchNo?: number;
+  tournamentSlug?: string;
 };
 
 export async function POST(req: Request) {
@@ -34,15 +35,36 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "startsAt must be valid date" }, { status: 400 });
   }
 
-  // Tournament id (seeded in DB)
-  const { data: tournament, error: tErr } = await supabaseServer
-    .from("tournaments")
-    .select("id")
-    .eq("slug", "mens-ehf-euro-2026")
-    .single();
-
-  if (tErr || !tournament) {
-    return NextResponse.json({ error: "Tournament not found" }, { status: 500 });
+  // Tournament id (from slug or default to first active)
+  const tournamentSlug = body.tournamentSlug || null;
+  
+  let tournament;
+  if (tournamentSlug) {
+    const { data: t, error: tErr } = await supabaseServer
+      .from("tournaments")
+      .select("id")
+      .eq("slug", tournamentSlug)
+      .eq("is_active", true)
+      .single();
+    
+    if (tErr || !t) {
+      return NextResponse.json({ error: "Keppni fannst ekki eða er ekki virk" }, { status: 400 });
+    }
+    tournament = t;
+  } else {
+    // Default: fyrsta active tournament
+    const { data: t, error: tErr } = await supabaseServer
+      .from("tournaments")
+      .select("id")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (tErr || !t) {
+      return NextResponse.json({ error: "Engin virk keppni fannst" }, { status: 404 });
+    }
+    tournament = t;
   }
 
   const { data: match, error: mErr } = await supabaseServer

@@ -233,6 +233,78 @@ export default function AdminPage() {
     }
   }
 
+  // Edit tournament state
+  const [editingTournamentId, setEditingTournamentId] = useState<string | null>(null);
+  const [editingTournamentName, setEditingTournamentName] = useState<string>("");
+  const [updatingTournament, setUpdatingTournament] = useState(false);
+
+  function startEditingTournament(tournament: { id: string; name: string }) {
+    setEditingTournamentId(tournament.id);
+    setEditingTournamentName(tournament.name);
+  }
+
+  function cancelEditingTournament() {
+    setEditingTournamentId(null);
+    setEditingTournamentName("");
+  }
+
+  async function updateTournament(tournamentId: string) {
+    if (!editingTournamentName.trim()) {
+      setErr("Nafn vantar");
+      return;
+    }
+
+    setUpdatingTournament(true);
+    try {
+      const res = await fetch("/api/admin/tournaments/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tournamentId,
+          name: editingTournamentName.trim(),
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að uppfæra keppni");
+        return;
+      }
+
+      flash("Keppni uppfærð ✅");
+      cancelEditingTournament();
+      loadTournaments();
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setUpdatingTournament(false);
+    }
+  }
+
+  async function deleteTournament(tournamentId: string, tournamentName: string) {
+    const ok = confirm(`Ertu viss um að eyða keppni "${tournamentName}"?\n\nAth: Aðeins hægt ef keppnin er ekki með deildir eða leiki.`);
+    if (!ok) return;
+
+    try {
+      const res = await fetch("/api/admin/tournaments/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tournamentId }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að eyða keppni");
+        return;
+      }
+
+      flash("Keppni eytt ✅");
+      loadTournaments();
+    } catch {
+      setErr("Tenging klikkaði.");
+    }
+  }
+
   // -----------------------------
   // SETTINGS
   // -----------------------------
@@ -1760,7 +1832,7 @@ export default function AdminPage() {
               )}
             </Card>
             </div>
-          </div>
+            </div>
         )}
 
         {/* TOURNAMENTS */}
@@ -1817,26 +1889,75 @@ export default function AdminPage() {
                   {tournaments.map((t) => (
                     <div
                       key={t.id}
-                      className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50"
+                      className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50"
                     >
-                      <div className="flex-1">
-                        <div className="font-semibold text-slate-900 dark:text-neutral-100">
-                          {t.name}
+                      {editingTournamentId === t.id ? (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-semibold text-slate-700 dark:text-neutral-300">Nafn keppni</label>
+                            <input
+                              className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                              value={editingTournamentName}
+                              onChange={(e) => setEditingTournamentName(e.target.value)}
+                              placeholder="t.d. Enska deildin í fótbolta 2024/25"
+                            />
+                            <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+                              Slug: {t.slug} (ekki hægt að breyta)
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => updateTournament(t.id)}
+                              disabled={updatingTournament}
+                              className="flex-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                            >
+                              {updatingTournament ? "Vista..." : "Vista"}
+                            </button>
+                            <button
+                              onClick={cancelEditingTournament}
+                              disabled={updatingTournament}
+                              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            >
+                              Hætta við
+                            </button>
+                          </div>
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-neutral-400">
-                          {t.slug}
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="font-semibold text-slate-900 dark:text-neutral-100">
+                              {t.name}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-neutral-400">
+                              {t.slug}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggleTournamentActive(t.id, t.is_active)}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                                t.is_active
+                                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+                                  : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                              }`}
+                            >
+                              {t.is_active ? "Virk" : "Óvirk"}
+                            </button>
+                            <button
+                              onClick={() => startEditingTournament(t)}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                            >
+                              Breyta
+                            </button>
+                            <button
+                              onClick={() => deleteTournament(t.id, t.name)}
+                              className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                            >
+                              Eyða
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <button
-                        onClick={() => toggleTournamentActive(t.id, t.is_active)}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                          t.is_active
-                            ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                        }`}
-                      >
-                        {t.is_active ? "Virk" : "Óvirk"}
-                      </button>
+                      )}
                     </div>
                   ))}
                 </div>

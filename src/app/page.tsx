@@ -13,7 +13,6 @@ function InfoTooltip({ text }: { text: string }) {
         className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
-        onClick={() => setShow(!show)}
       >
         ℹ️
       </button>
@@ -21,6 +20,33 @@ function InfoTooltip({ text }: { text: string }) {
         <div className="absolute left-0 top-6 z-50 w-64 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700 shadow-lg dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
           {text}
           <div className="absolute -top-1 left-3 h-2 w-2 rotate-45 border-l border-t border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Help box tooltip component
+function HelpBoxTooltip({ children }: { children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  
+  return (
+    <div className="relative inline-block">
+      <span
+        className="cursor-help font-semibold underline decoration-dotted"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+      >
+        Hvað þarf ég?
+      </span>
+      {show && (
+        <div 
+          className="absolute left-0 top-6 z-50 w-80 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 shadow-lg dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300"
+          onMouseEnter={() => setShow(true)}
+          onMouseLeave={() => setShow(false)}
+        >
+          {children}
+          <div className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30"></div>
         </div>
       )}
     </div>
@@ -380,17 +406,15 @@ export default function HomePage() {
             <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
               Skráðu þig inn eða búðu til nýjan aðgang til að taka þátt.  
             </p>
-            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
-              <p className="font-semibold">
-                Hvað þarf ég?
-                <InfoTooltip text="Til að skrá sig í deild þarftu: númer deildar og aðgangsorð frá stjórnanda. Ef þú átt þegar aðgang, notaðu 'Innskráning'. Ef ekki, búðu til nýjan aðgang með 'Nýskráning'." />
-              </p>
-              <ul className="mt-1.5 ml-4 list-disc space-y-1">
-                <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. Rafganistan-1234)</li>
-                <li><strong>Lykilorð deildar:</strong> Aðgangsorð sem þú færð hjá stjórnanda</li>
-                <li><strong>Notandanafn:</strong> Notaðu núverandi notandanafn ef þú átt þegar aðgang</li>
-                <li><strong>Nýr aðgangur:</strong> Ef þú átt ekki aðgang skaltu búa hann til hér</li>
-              </ul>
+            <div className="mb-4">
+              <HelpBoxTooltip>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. Rafganistan-1234)</li>
+                  <li><strong>Lykilorð deildar:</strong> Aðgangsorð sem þú færð hjá stjórnanda</li>
+                  <li><strong>Notandanafn:</strong> Notaðu núverandi notandanafn ef þú átt þegar aðgang</li>
+                  <li><strong>Nýr aðgangur:</strong> Ef þú átt ekki aðgang skaltu búa hann til hér</li>
+                </ul>
+              </HelpBoxTooltip>
             </div>
 
             <div className="mb-6 flex gap-2">

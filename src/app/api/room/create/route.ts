@@ -11,6 +11,7 @@ type Body = {
   ownerUsername: string;
   ownerPassword_user: string;
   displayName: string;
+  tournamentSlug?: string;
 };
 
 function generateOwnerPassword() {
@@ -46,14 +47,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Join password þarf að vera amk 6 stafir" }, { status: 400 });
   }
 
+  const tournamentSlug = body.tournamentSlug || "mens-ehf-euro-2026";
+
   const { data: tournament, error: tErr } = await supabaseServer
     .from("tournaments")
     .select("id")
-    .eq("slug", "mens-ehf-euro-2026")
+    .eq("slug", tournamentSlug)
+    .eq("is_active", true)
     .single();
 
   if (tErr || !tournament) {
-    return NextResponse.json({ error: "Tournament not found" }, { status: 500 });
+    return NextResponse.json({ error: "Keppni fannst ekki eða er ekki virk" }, { status: 400 });
   }
 
   let roomCode = makeRoomCode(roomName);

@@ -105,6 +105,11 @@ export default function HomePage() {
   const [roomsList, setRoomsList] = useState<Array<{ room_code: string; room_name: string }>>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
 
+  // Tournaments for create form
+  const [tournaments, setTournaments] = useState<Array<{ id: string; slug: string; name: string }>>([]);
+  const [selectedTournament, setSelectedTournament] = useState<string>("");
+  const [loadingTournaments, setLoadingTournaments] = useState(false);
+
   // Load rooms list on mount
   useEffect(() => {
     async function loadRooms() {
@@ -123,6 +128,32 @@ export default function HomePage() {
     }
     loadRooms();
   }, []);
+
+  // Load tournaments when create form opens
+  useEffect(() => {
+    async function loadTournaments() {
+      if (!showCreateForm) return;
+      
+      setLoadingTournaments(true);
+      try {
+        const res = await fetch("/api/tournaments/list");
+        const data = await res.json();
+        if (res.ok && data.tournaments) {
+          setTournaments(data.tournaments);
+          if (data.tournaments.length > 0 && !selectedTournament) {
+            // Set first tournament as default
+            setSelectedTournament(data.tournaments[0].slug);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load tournaments:", err);
+      } finally {
+        setLoadingTournaments(false);
+      }
+    }
+    loadTournaments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCreateForm]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -146,6 +177,7 @@ export default function HomePage() {
           ownerUsername: cOwnerUsername,
           ownerPassword_user: cOwnerPassword,
           displayName: cDisplayName,
+          tournamentSlug: selectedTournament,
         }),
       });
 
@@ -289,6 +321,31 @@ export default function HomePage() {
               </div>
 
             <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  Tegund keppni
+                  <InfoTooltip text="Veldu hvaða keppni deildin á að vera fyrir. T.d. Evrópumótið í handbolta eða Enska deildin í fótbolta." />
+                </label>
+                <select
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={selectedTournament}
+                  onChange={(e) => setSelectedTournament(e.target.value)}
+                  disabled={loadingTournaments}
+                >
+                  {loadingTournaments ? (
+                    <option>Sæki keppnir...</option>
+                  ) : tournaments.length === 0 ? (
+                    <option>Engar keppnir tiltækar</option>
+                  ) : (
+                    tournaments.map((t) => (
+                      <option key={t.id} value={t.slug}>
+                        {t.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Nafn deildar

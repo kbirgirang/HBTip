@@ -42,7 +42,7 @@ type BonusRow = {
 type MatchWithBonus = MatchRow & { bonus: BonusRow | null };
 type AdminBonusListResponse = { matches: MatchWithBonus[] };
 
-type Tab = "create" | "results" | "settings";
+type Tab = "create" | "results" | "settings" | "tournaments";
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("create");
@@ -119,6 +119,101 @@ export default function AdminPage() {
       flash("Útskráning tókst ✅");
     } catch {
       // Ignore errors on logout
+    }
+  }
+
+  // -----------------------------
+  // TOURNAMENTS
+  // -----------------------------
+  const [tournaments, setTournaments] = useState<Array<{
+    id: string;
+    slug: string;
+    name: string;
+    is_active: boolean;
+    created_at: string;
+  }>>([]);
+  const [loadingTournaments, setLoadingTournaments] = useState(false);
+  const [tournamentSlug, setTournamentSlug] = useState("");
+  const [tournamentName, setTournamentName] = useState("");
+  const [creatingTournament, setCreatingTournament] = useState(false);
+
+  async function loadTournaments() {
+    setLoadingTournaments(true);
+    try {
+      const res = await fetch("/api/admin/tournaments/list");
+      const json = await res.json();
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að sækja keppnir");
+        return;
+      }
+      setTournaments(json.tournaments || []);
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoadingTournaments(false);
+    }
+  }
+
+  useEffect(() => {
+    if (tab === "tournaments" && authenticated) {
+      loadTournaments();
+    }
+  }, [tab, authenticated]);
+
+  async function createTournament(e: React.FormEvent) {
+    e.preventDefault();
+    clearAlerts();
+
+    if (!tournamentSlug.trim()) return setErr("Slug vantar");
+    if (!tournamentName.trim()) return setErr("Nafn vantar");
+
+    setCreatingTournament(true);
+    try {
+      const res = await fetch("/api/admin/tournaments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: tournamentSlug.trim().toLowerCase(),
+          name: tournamentName.trim(),
+          isActive: true,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að búa til keppni");
+
+      setTournamentSlug("");
+      setTournamentName("");
+      flash("Keppni búin til ✅");
+      loadTournaments();
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setCreatingTournament(false);
+    }
+  }
+
+  async function toggleTournamentActive(tournamentId: string, currentActive: boolean) {
+    try {
+      const res = await fetch("/api/admin/tournaments/set-active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tournamentId,
+          isActive: !currentActive,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að uppfæra keppni");
+        return;
+      }
+
+      flash(currentActive ? "Keppni gerð óvirk ✅" : "Keppni gerð virk ✅");
+      loadTournaments();
+    } catch {
+      setErr("Tenging klikkaði.");
     }
   }
 
@@ -946,6 +1041,9 @@ export default function AdminPage() {
           <TabButton active={tab === "results"} onClick={() => setTab("results")}>
             Úrslit + bónus
           </TabButton>
+          <TabButton active={tab === "tournaments"} onClick={() => setTab("tournaments")}>
+            Keppnir
+          </TabButton>
           <TabButton active={tab === "settings"} onClick={() => setTab("settings")}>
             Stillingar
           </TabButton>
@@ -1570,6 +1668,88 @@ export default function AdminPage() {
                           )}
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
+
+        {/* TOURNAMENTS */}
+        {tab === "tournaments" && (
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <Card title="Búa til keppni" subtitle="Búðu til nýja keppni sem hægt er að velja við stofnun deildar.">
+              <form onSubmit={createTournament} className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">
+                    Slug (kóði)
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={tournamentSlug}
+                    onChange={(e) => setTournamentSlug(e.target.value)}
+                    placeholder="t.d. premier-league-2024-25"
+                  />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                    Lágstafir, tölur og bandstrik. Notaður sem kóði í kerfinu.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">
+                    Nafn keppni
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={tournamentName}
+                    onChange={(e) => setTournamentName(e.target.value)}
+                    placeholder="t.d. Enska deildin í fótbolta 2024/25"
+                  />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                    Nafn sem birtist á heimasíðunni.
+                  </p>
+                </div>
+
+                <button
+                  disabled={creatingTournament}
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                >
+                  {creatingTournament ? "Bý til..." : "Búa til keppni"}
+                </button>
+              </form>
+            </Card>
+
+            <Card title="Yfirlit keppna" subtitle="Listi yfir allar keppnir. Virkja/óvirkja með því að smella á stöðu.">
+              {loadingTournaments ? (
+                <p className="text-sm text-slate-600 dark:text-neutral-400">Hleð...</p>
+              ) : tournaments.length === 0 ? (
+                <p className="text-sm text-slate-600 dark:text-neutral-400">Engar keppnir.</p>
+              ) : (
+                <div className="space-y-2">
+                  {tournaments.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50"
+                    >
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-900 dark:text-neutral-100">
+                          {t.name}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-neutral-400">
+                          {t.slug}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => toggleTournamentActive(t.id, t.is_active)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                          t.is_active
+                            ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+                            : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                        }`}
+                      >
+                        {t.is_active ? "Virk" : "Óvirk"}
+                      </button>
                     </div>
                   ))}
                 </div>

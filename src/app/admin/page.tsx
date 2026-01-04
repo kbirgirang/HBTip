@@ -1362,7 +1362,7 @@ export default function AdminPage() {
                         {matches.map((m) => (
                           <option key={m.id} value={m.id}>
                             {(m.match_no != null ? `#${m.match_no} · ` : "") +
-                              `${m.home_team} vs ${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
+                              `${getTeamFlag(m.home_team) ? getTeamFlag(m.home_team) + " " : ""}${m.home_team} vs ${getTeamFlag(m.away_team) ? getTeamFlag(m.away_team) + " " : ""}${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
                           </option>
                         ))}
                       </select>

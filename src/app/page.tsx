@@ -7,17 +7,24 @@ function InfoTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
   
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block z-10">
       <button
         type="button"
-        className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+        className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 relative z-10"
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(!show)}
+        onTouchStart={() => setShow(!show)}
       >
         ℹ️
       </button>
       {show && (
-        <div className="absolute left-0 top-6 z-50 w-64 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700 shadow-lg dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+        <div 
+          className="absolute left-0 top-6 z-[9999] w-64 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700 shadow-2xl dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          onMouseEnter={() => setShow(true)}
+          onMouseLeave={() => setShow(false)}
+          style={{ pointerEvents: 'auto' }}
+        >
           {text}
           <div className="absolute -top-1 left-3 h-2 w-2 rotate-45 border-l border-t border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"></div>
         </div>
@@ -31,19 +38,22 @@ function HelpBoxTooltip({ children }: { children: React.ReactNode }) {
   const [show, setShow] = useState(false);
   
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block z-10">
       <span
-        className="cursor-help font-semibold underline decoration-dotted"
+        className="cursor-help font-semibold underline decoration-dotted relative z-10"
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(!show)}
+        onTouchStart={() => setShow(!show)}
       >
         Hvað þarf ég?
       </span>
       {show && (
         <div 
-          className="absolute left-0 top-6 z-50 w-80 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 shadow-lg dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300"
+          className="absolute left-0 top-6 z-[9999] w-80 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 shadow-2xl dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300"
           onMouseEnter={() => setShow(true)}
           onMouseLeave={() => setShow(false)}
+          style={{ pointerEvents: 'auto' }}
         >
           {children}
           <div className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30"></div>

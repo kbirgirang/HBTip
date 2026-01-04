@@ -733,12 +733,12 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (tab === "results") {
+    if (tab === "results" && selectedTournamentForOperations) {
       void loadMatches(true);
       void loadBonusList(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [tab, selectedTournamentForOperations]);
 
   // -----------------------------
   // BONUS FORM
@@ -1306,12 +1306,23 @@ export default function AdminPage() {
                 className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                 value={selectedTournamentForOperations}
                 onChange={(e) => {
-                  setSelectedTournamentForOperations(e.target.value);
-                  // Reload matches and bonus when tournament changes
-                  setTimeout(() => {
-                    void loadMatches(true);
-                    void loadBonusList(true);
-                  }, 100);
+                  const newSlug = e.target.value;
+                  setSelectedTournamentForOperations(newSlug);
+                  // Reload matches and bonus when tournament changes - use new value directly
+                  if (newSlug) {
+                    const urlMatches = `/api/admin/matches?tournamentSlug=${encodeURIComponent(newSlug)}`;
+                    const urlBonus = `/api/admin/bonus/list?tournamentSlug=${encodeURIComponent(newSlug)}`;
+                    
+                    Promise.all([
+                      fetch(urlMatches, { cache: "no-store" }).then(r => r.json()),
+                      fetch(urlBonus, { cache: "no-store" }).then(r => r.json())
+                    ]).then(([matchesData, bonusData]) => {
+                      if (matchesData.matches) setMatches(matchesData.matches || []);
+                      if (bonusData.matches) setMatchesWithBonus(bonusData.matches || []);
+                    }).catch(() => {
+                      setErr("Tenging klikkaði.");
+                    });
+                  }
                 }}
                 disabled={loadingTournaments || tournaments.length === 0}
               >

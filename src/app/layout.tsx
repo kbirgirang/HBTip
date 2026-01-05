@@ -37,9 +37,6 @@ export default function RootLayout({
       >
         <ThemeToggle />
         {children}
-        <footer className="fixed bottom-0 left-0 right-0 text-center text-xs text-neutral-500 py-2 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-sm border-t border-neutral-200 dark:border-neutral-800">
-          Kári Birgir
-        </footer>
       </body>
     </html>
   );

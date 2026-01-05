@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   if (authError) return authError;
 
   const body = (await req.json()) as Body;
-  const apiKey = process.env.API_FOOTBALL_KEY;
+  const apiKey = process.env.API_FOOTBALL_KEY?.trim();
 
   if (!apiKey) {
     return NextResponse.json({ error: "API_FOOTBALL_KEY er ekki sett í environment variables" }, { status: 500 });

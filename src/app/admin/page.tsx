@@ -131,6 +131,9 @@ export default function AdminPage() {
     name: string;
     is_active: boolean;
     created_at: string;
+    api_football_league_id?: number | null;
+    api_football_season?: number | null;
+    api_football_enabled?: boolean;
   }>>([]);
   const [loadingTournaments, setLoadingTournaments] = useState(false);
   const [tournamentSlug, setTournamentSlug] = useState("");
@@ -250,9 +253,123 @@ export default function AdminPage() {
   const [editingTournamentName, setEditingTournamentName] = useState<string>("");
   const [updatingTournament, setUpdatingTournament] = useState(false);
 
+  // API-Football settings state
+  const [editingApiFootballTournamentId, setEditingApiFootballTournamentId] = useState<string | null>(null);
+  const [apiFootballLeagueId, setApiFootballLeagueId] = useState<number | "">("");
+  const [apiFootballSeason, setApiFootballSeason] = useState<number | "">("");
+  const [apiFootballEnabled, setApiFootballEnabled] = useState(false);
+  const [savingApiFootball, setSavingApiFootball] = useState(false);
+  const [syncingApiFootball, setSyncingApiFootball] = useState(false);
+
   function startEditingTournament(tournament: { id: string; name: string }) {
     setEditingTournamentId(tournament.id);
     setEditingTournamentName(tournament.name);
+  }
+
+  function startEditingApiFootball(tournament: typeof tournaments[0]) {
+    setEditingApiFootballTournamentId(tournament.id);
+    setApiFootballLeagueId(tournament.api_football_league_id ?? "");
+    setApiFootballSeason(tournament.api_football_season ?? "");
+    setApiFootballEnabled(tournament.api_football_enabled ?? false);
+  }
+
+  function cancelEditingApiFootball() {
+    setEditingApiFootballTournamentId(null);
+    setApiFootballLeagueId("");
+    setApiFootballSeason("");
+    setApiFootballEnabled(false);
+  }
+
+  async function saveApiFootballSettings() {
+    if (!editingApiFootballTournamentId) return;
+    clearAlerts();
+
+    setSavingApiFootball(true);
+    try {
+      const res = await fetch("/api/admin/tournaments/update-api-football", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tournamentId: editingApiFootballTournamentId,
+          apiFootballLeagueId: apiFootballLeagueId === "" ? null : Number(apiFootballLeagueId),
+          apiFootballSeason: apiFootballSeason === "" ? null : Number(apiFootballSeason),
+          apiFootballEnabled,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að vista API-Football stillingar");
+        return;
+      }
+
+      flash("API-Football stillingar vistaðar ✅");
+      cancelEditingApiFootball();
+      loadTournaments();
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSavingApiFootball(false);
+    }
+  }
+
+  async function syncApiFootball(tournamentSlug: string) {
+    clearAlerts();
+    setSyncingApiFootball(true);
+    try {
+      const res = await fetch("/api/admin/api-football/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tournamentSlug }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að sækja leiki úr API-Football");
+        return;
+      }
+
+      flash(`Setti inn ${json.created} leiki, uppfærði ${json.updated} leiki ✅`);
+      if (json.errors && json.errors.length > 0) {
+        setErr(`Sumir leikir gátu ekki verið settir inn:\n${json.errors.slice(0, 5).join("\n")}`);
+      }
+      // Reload matches
+      if (tab === "results") {
+        loadMatches(true);
+      }
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSyncingApiFootball(false);
+    }
+  }
+
+  async function updateApiFootballResults(tournamentSlug: string) {
+    clearAlerts();
+    setSyncingApiFootball(true);
+    try {
+      const res = await fetch("/api/admin/api-football/update-results", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tournamentSlug }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að uppfæra úrslit úr API-Football");
+        return;
+      }
+
+      flash(`Uppfærði ${json.updated} úrslit ✅`);
+      // Reload matches
+      if (tab === "results") {
+        loadMatches(true);
+      }
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSyncingApiFootball(false);
+    }
   }
 
   function cancelEditingTournament() {
@@ -1933,39 +2050,149 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </div>
-                      ) : (
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="font-semibold text-slate-900 dark:text-neutral-100">
-                              {t.name}
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-neutral-400">
-                              {t.slug}
+                      ) : editingApiFootballTournamentId === t.id ? (
+                        <div className="space-y-3">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                            API-Football stillingar
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-700 dark:text-neutral-300">Virkja API-Football</label>
+                            <div className="mt-1">
+                              <label className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={apiFootballEnabled}
+                                  onChange={(e) => setApiFootballEnabled(e.target.checked)}
+                                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-700"
+                                />
+                                <span className="text-xs text-slate-600 dark:text-neutral-400">
+                                  Sækja leiki og úrslit sjálfkrafa úr API-Football
+                                </span>
+                              </label>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          {apiFootballEnabled && (
+                            <>
+                              <div>
+                                <label className="text-xs text-slate-700 dark:text-neutral-300">League ID</label>
+                                <input
+                                  type="number"
+                                  value={apiFootballLeagueId}
+                                  onChange={(e) => setApiFootballLeagueId(e.target.value === "" ? "" : Number(e.target.value))}
+                                  placeholder="t.d. 39 (Premier League)"
+                                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                />
+                                <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+                                  API-Football league ID (sjá{" "}
+                                  <a
+                                    href="https://www.api-football.com/documentation-v3#tag/Leagues"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                  >
+                                    documentation
+                                  </a>
+                                  )
+                                </p>
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-700 dark:text-neutral-300">Season</label>
+                                <input
+                                  type="number"
+                                  value={apiFootballSeason}
+                                  onChange={(e) => setApiFootballSeason(e.target.value === "" ? "" : Number(e.target.value))}
+                                  placeholder="t.d. 2024"
+                                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                />
+                                <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+                                  Ár keppninnar (t.d. 2024)
+                                </p>
+                              </div>
+                            </>
+                          )}
+                          <div className="flex gap-2">
                             <button
-                              onClick={() => toggleTournamentActive(t.id, t.is_active)}
-                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                                t.is_active
-                                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
-                                  : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                              }`}
+                              onClick={saveApiFootballSettings}
+                              disabled={savingApiFootball}
+                              className="flex-1 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                             >
-                              {t.is_active ? "Virk" : "Óvirk"}
+                              {savingApiFootball ? "Vista..." : "Vista"}
                             </button>
                             <button
-                              onClick={() => startEditingTournament(t)}
-                              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                              onClick={cancelEditingApiFootball}
+                              disabled={savingApiFootball}
+                              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                             >
-                              Breyta
+                              Hætta við
                             </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="font-semibold text-slate-900 dark:text-neutral-100">
+                                {t.name}
+                              </div>
+                              <div className="text-xs text-slate-500 dark:text-neutral-400">
+                                {t.slug}
+                              </div>
+                              {t.api_football_enabled && (
+                                <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                                  ⚽ API-Football: League {t.api_football_league_id} ({t.api_football_season})
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => toggleTournamentActive(t.id, t.is_active)}
+                                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                                  t.is_active
+                                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+                                    : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                                }`}
+                              >
+                                {t.is_active ? "Virk" : "Óvirk"}
+                              </button>
+                              <button
+                                onClick={() => startEditingTournament(t)}
+                                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                              >
+                                Breyta
+                              </button>
+                              <button
+                                onClick={() => deleteTournament(t.id, t.name)}
+                                className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                              >
+                                Eyða
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 border-t border-slate-200 pt-2 dark:border-neutral-800">
                             <button
-                              onClick={() => deleteTournament(t.id, t.name)}
-                              className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                              onClick={() => startEditingApiFootball(t)}
+                              className="rounded-lg border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
                             >
-                              Eyða
+                              ⚽ API-Football
                             </button>
+                            {t.api_football_enabled && (
+                              <>
+                                <button
+                                  onClick={() => syncApiFootball(t.slug)}
+                                  disabled={syncingApiFootball}
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                                >
+                                  {syncingApiFootball ? "Sæki..." : "Sækja leiki"}
+                                </button>
+                                <button
+                                  onClick={() => updateApiFootballResults(t.slug)}
+                                  disabled={syncingApiFootball}
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                                >
+                                  {syncingApiFootball ? "Uppfæri..." : "Uppfæra úrslit"}
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                       )}

@@ -95,10 +95,17 @@ export async function GET() {
     .eq("tournament_id", room.tournament_id)
     .maybeSingle();
 
+  // Debug: Log hvað er að gerast
+  console.log("[room/view] Room tournament_id:", room.tournament_id);
+  console.log("[room/view] Settings found:", settings);
+  console.log("[room/view] Settings error:", settingsErr);
+
   // Ef settings fannst ekki eða villa, nota default gildi
   const pointsPer = settings?.points_per_correct_1x2 ?? 1;
   // Ath: points_per_correct_x getur verið null (þá nota pointsPer) eða tala
   const pointsPerX = settings?.points_per_correct_x ?? null; // null = nota pointsPer
+  
+  console.log("[room/view] Final pointsPer:", pointsPer, "pointsPerX:", pointsPerX);
 
   // 6) Members
   const { data: members, error: memErr } = await supabaseServer

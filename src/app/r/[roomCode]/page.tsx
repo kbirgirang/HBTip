@@ -91,8 +91,11 @@ export default function RoomPage() {
   const [myRooms, setMyRooms] = useState<Array<{ roomId: string; roomCode: string; roomName: string; isCurrentRoom: boolean }>>([]);
   const [showRoomSwitcher, setShowRoomSwitcher] = useState(false);
   
+  // Join/Create modal
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<"join" | "create" | null>(null);
+  
   // Join room form
-  const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinRoomCode, setJoinRoomCode] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
   const [joinDisplayName, setJoinDisplayName] = useState("");
@@ -100,7 +103,6 @@ export default function RoomPage() {
   const [joinError, setJoinError] = useState<string | null>(null);
 
   // Create room form
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [createRoomName, setCreateRoomName] = useState("");
   const [createJoinPassword, setCreateJoinPassword] = useState("");
   const [createDisplayName, setCreateDisplayName] = useState("");
@@ -152,20 +154,20 @@ export default function RoomPage() {
     void load();
     void loadMyRooms();
     
-    // Auto-refresh every 10 seconds (ekki ef form er opið)
+    // Auto-refresh every 10 seconds (ekki ef modal er opið)
     const interval = setInterval(() => {
-      if (!showJoinForm && !showCreateForm) {
+      if (!showModal) {
         void load();
       }
     }, 10000);
     
     return () => clearInterval(interval);
-  }, [showJoinForm, showCreateForm]);
+  }, [showModal]);
 
-  // Load tournaments when create form opens
+  // Load tournaments when create modal opens
   useEffect(() => {
     async function loadTournaments() {
-      if (!showCreateForm) return;
+      if (modalType !== "create") return;
       
       setLoadingTournaments(true);
       try {
@@ -184,7 +186,7 @@ export default function RoomPage() {
       }
     }
     loadTournaments();
-  }, [showCreateForm, createTournamentSlug]);
+  }, [modalType, createTournamentSlug]);
 
   const roomSwitcherRef = React.useRef<HTMLDivElement>(null);
 
@@ -267,8 +269,9 @@ export default function RoomPage() {
         return;
       }
 
-      // Reload rooms and close form
-      setShowJoinForm(false);
+      // Reload rooms and close modal
+      setShowModal(false);
+      setModalType(null);
       setJoinRoomCode("");
       setJoinPassword("");
       setJoinDisplayName("");
@@ -315,8 +318,9 @@ export default function RoomPage() {
         return;
       }
 
-      // Reload rooms and close form
-      setShowCreateForm(false);
+      // Reload rooms and close modal
+      setShowModal(false);
+      setModalType(null);
       setCreateRoomName("");
       setCreateJoinPassword("");
       setCreateDisplayName("");
@@ -488,10 +492,58 @@ export default function RoomPage() {
     if (!data) return null;
     return (
       <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">
             {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowModal(true);
+                setModalType("join");
+              }}
+              className="flex items-center justify-center h-10 w-10 rounded-lg border border-blue-500 bg-blue-50 text-blue-600 shadow-sm transition-colors hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-950/30 dark:text-blue-400 dark:hover:bg-blue-950/50"
+              title="Joina deild"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+              >
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowModal(true);
+                setModalType("create");
+              }}
+              className="flex items-center justify-center h-10 w-10 rounded-lg border border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-colors hover:bg-emerald-100 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
+              title="Búa til deild"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+              >
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
+            </button>
+          </div>
           <div className="relative" ref={roomSwitcherRef}>
             <button
               type="button"
@@ -565,189 +617,6 @@ export default function RoomPage() {
                       </button>
                     ))}
                   </div>
-                  
-                  <div className="mt-2 border-t border-slate-200 dark:border-neutral-700 pt-2 space-y-2">
-                    {!showJoinForm && !showCreateForm && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowJoinForm(true);
-                          }}
-                          className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
-                        >
-                          + Joina deild
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowCreateForm(true);
-                          }}
-                          className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-                        >
-                          + Búa til deild
-                        </button>
-                      </>
-                    )}
-                    
-                    {showJoinForm && (
-                      <form onSubmit={handleJoinRoom} onClick={(e) => e.stopPropagation()} className="space-y-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-semibold text-slate-600 dark:text-neutral-400">Joina deild</span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowJoinForm(false);
-                              setJoinError(null);
-                            }}
-                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div>
-                          <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={joinRoomCode}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setJoinRoomCode(e.target.value);
-                            }}
-                            placeholder="Númer deildar"
-                            autoComplete="off"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="password"
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={joinPassword}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setJoinPassword(e.target.value);
-                            }}
-                            placeholder="Lykilorð deildar"
-                            autoComplete="off"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={joinDisplayName}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setJoinDisplayName(e.target.value);
-                            }}
-                            placeholder="Nafn (í stigatöflu)"
-                            autoComplete="off"
-                          />
-                        </div>
-                        {joinError && (
-                          <div className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-200">
-                            {joinError}
-                          </div>
-                        )}
-                        <button
-                          type="submit"
-                          disabled={joinLoading}
-                          className="w-full rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-                        >
-                          {joinLoading ? "Joina..." : "Joina"}
-                        </button>
-                      </form>
-                    )}
-
-                    {showCreateForm && (
-                      <form onSubmit={handleCreateRoom} onClick={(e) => e.stopPropagation()} className="space-y-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-semibold text-slate-600 dark:text-neutral-400">Búa til deild</span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowCreateForm(false);
-                              setCreateError(null);
-                            }}
-                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div>
-                          <select
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={createTournamentSlug}
-                            onChange={(e) => setCreateTournamentSlug(e.target.value)}
-                            disabled={loadingTournaments}
-                          >
-                            {loadingTournaments ? (
-                              <option>Sæki keppnir...</option>
-                            ) : tournaments.length === 0 ? (
-                              <option>Engar keppnir tiltækar</option>
-                            ) : (
-                              tournaments.map((t) => (
-                                <option key={t.id} value={t.slug}>
-                                  {t.name}
-                                </option>
-                              ))
-                            )}
-                          </select>
-                        </div>
-                        <div>
-                          <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={createRoomName}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setCreateRoomName(e.target.value);
-                            }}
-                            placeholder="Nafn deildar"
-                            autoComplete="off"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="password"
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={createJoinPassword}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setCreateJoinPassword(e.target.value);
-                            }}
-                            placeholder="Join password (minnst 6 stafir)"
-                            autoComplete="off"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            value={createDisplayName}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setCreateDisplayName(e.target.value);
-                            }}
-                            placeholder="Nafn (í stigatöflu)"
-                            autoComplete="off"
-                          />
-                        </div>
-                        {createError && (
-                          <div className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-200">
-                            {createError}
-                          </div>
-                        )}
-                        <button
-                          type="submit"
-                          disabled={createLoading}
-                          className="w-full rounded-lg bg-emerald-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-                        >
-                          {createLoading ? "Býr til..." : "Búa til"}
-                        </button>
-                      </form>
-                    )}
-                  </div>
                 </div>
               </div>
             )}
@@ -776,8 +645,193 @@ export default function RoomPage() {
     );
   }, [data, myRooms, showRoomSwitcher, loadingRooms]);
 
+  const modal = useMemo(() => {
+    if (!showModal || !modalType) return null;
+
+    return (
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        onClick={() => {
+          setShowModal(false);
+          setModalType(null);
+        }}
+      >
+        <div 
+          className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {modalType === "join" && (
+            <form onSubmit={handleJoinRoom} className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">Joina deild</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    setModalType(null);
+                    setJoinError(null);
+                  }}
+                  className="text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Númer deildar
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={joinRoomCode}
+                  onChange={(e) => setJoinRoomCode(e.target.value)}
+                  placeholder="t.d. RAFGAN-1171"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Lykilorð deildar
+                </label>
+                <input
+                  type="password"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={joinPassword}
+                  onChange={(e) => setJoinPassword(e.target.value)}
+                  placeholder="Aðgangsorð deildarinnar"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Nafn (í stigatöflu)
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={joinDisplayName}
+                  onChange={(e) => setJoinDisplayName(e.target.value)}
+                  placeholder="t.d. Rafgani"
+                  autoComplete="off"
+                />
+              </div>
+              {joinError && (
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {joinError}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={joinLoading}
+                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              >
+                {joinLoading ? "Joina..." : "Joina deild"}
+              </button>
+            </form>
+          )}
+
+          {modalType === "create" && (
+            <form onSubmit={handleCreateRoom} className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">Búa til deild</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    setModalType(null);
+                    setCreateError(null);
+                  }}
+                  className="text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Keppni
+                </label>
+                <select
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={createTournamentSlug}
+                  onChange={(e) => setCreateTournamentSlug(e.target.value)}
+                  disabled={loadingTournaments}
+                >
+                  {loadingTournaments ? (
+                    <option>Sæki keppnir...</option>
+                  ) : tournaments.length === 0 ? (
+                    <option>Engar keppnir tiltækar</option>
+                  ) : (
+                    tournaments.map((t) => (
+                      <option key={t.id} value={t.slug}>
+                        {t.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Nafn deildar
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={createRoomName}
+                  onChange={(e) => setCreateRoomName(e.target.value)}
+                  placeholder="t.d. Rafgan"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Join password (minnst 6 stafir)
+                </label>
+                <input
+                  type="password"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={createJoinPassword}
+                  onChange={(e) => setCreateJoinPassword(e.target.value)}
+                  placeholder="Aðgangsorð fyrir aðra"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                  Nafn (í stigatöflu)
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  value={createDisplayName}
+                  onChange={(e) => setCreateDisplayName(e.target.value)}
+                  placeholder="t.d. Rafgani"
+                  autoComplete="off"
+                />
+              </div>
+              {createError && (
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {createError}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={createLoading}
+                className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {createLoading ? "Býr til..." : "Búa til deild"}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }, [showModal, modalType, joinRoomCode, joinPassword, joinDisplayName, joinError, joinLoading, createRoomName, createJoinPassword, createDisplayName, createTournamentSlug, createError, createLoading, loadingTournaments, tournaments, handleJoinRoom, handleCreateRoom]);
+
   return (
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
+      {modal}
       <div className="mx-auto max-w-5xl px-4 py-10">
         {header}
 

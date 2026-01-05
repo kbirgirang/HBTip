@@ -526,7 +526,10 @@ export default function RoomPage() {
               </svg>
             </button>
             {showRoomSwitcher && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+              <div 
+                className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-2">
                   <div className="mb-2 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-neutral-400">
                     Deildir sem þú ert í:
@@ -536,7 +539,10 @@ export default function RoomPage() {
                       <button
                         key={room.roomId}
                         type="button"
-                        onClick={() => void switchRoom(room.roomCode)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void switchRoom(room.roomCode);
+                        }}
                         className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
                           room.isCurrentRoom
                             ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
@@ -563,14 +569,20 @@ export default function RoomPage() {
                       <>
                         <button
                           type="button"
-                          onClick={() => setShowJoinForm(true)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowJoinForm(true);
+                          }}
                           className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
                         >
                           + Joina deild
                         </button>
                         <button
                           type="button"
-                          onClick={() => setShowCreateForm(true)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowCreateForm(true);
+                          }}
                           className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
                         >
                           + Búa til deild
@@ -579,12 +591,13 @@ export default function RoomPage() {
                     )}
                     
                     {showJoinForm && (
-                      <form onSubmit={handleJoinRoom} className="space-y-2">
+                      <form onSubmit={handleJoinRoom} onClick={(e) => e.stopPropagation()} className="space-y-2">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-semibold text-slate-600 dark:text-neutral-400">Joina deild</span>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setShowJoinForm(false);
                               setJoinError(null);
                             }}
@@ -634,12 +647,13 @@ export default function RoomPage() {
                     )}
 
                     {showCreateForm && (
-                      <form onSubmit={handleCreateRoom} className="space-y-2">
+                      <form onSubmit={handleCreateRoom} onClick={(e) => e.stopPropagation()} className="space-y-2">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-semibold text-slate-600 dark:text-neutral-400">Búa til deild</span>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setShowCreateForm(false);
                               setCreateError(null);
                             }}

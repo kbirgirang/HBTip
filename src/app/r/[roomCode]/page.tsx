@@ -608,27 +608,30 @@ export default function RoomPage() {
                         </div>
                         <div>
                           <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={joinRoomCode}
                             onChange={(e) => setJoinRoomCode(e.target.value)}
                             placeholder="Númer deildar"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
                           <input
                             type="password"
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={joinPassword}
                             onChange={(e) => setJoinPassword(e.target.value)}
                             placeholder="Lykilorð deildar"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
                           <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={joinDisplayName}
                             onChange={(e) => setJoinDisplayName(e.target.value)}
                             placeholder="Nafn (í stigatöflu)"
+                            autoComplete="off"
                           />
                         </div>
                         {joinError && (
@@ -664,7 +667,7 @@ export default function RoomPage() {
                         </div>
                         <div>
                           <select
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createTournamentSlug}
                             onChange={(e) => setCreateTournamentSlug(e.target.value)}
                             disabled={loadingTournaments}
@@ -684,27 +687,30 @@ export default function RoomPage() {
                         </div>
                         <div>
                           <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createRoomName}
                             onChange={(e) => setCreateRoomName(e.target.value)}
                             placeholder="Nafn deildar"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
                           <input
                             type="password"
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createJoinPassword}
                             onChange={(e) => setCreateJoinPassword(e.target.value)}
                             placeholder="Join password (minnst 6 stafir)"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
                           <input
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createDisplayName}
                             onChange={(e) => setCreateDisplayName(e.target.value)}
                             placeholder="Nafn (í stigatöflu)"
+                            autoComplete="off"
                           />
                         </div>
                         {createError && (

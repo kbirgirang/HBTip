@@ -555,8 +555,8 @@ export default function RoomPage() {
                         {new Date(m.starts_at).toLocaleString()}
                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                       </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
+                      <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                        <div className="text-center md:text-left">
                           <div className="font-semibold">
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
@@ -714,8 +714,8 @@ export default function RoomPage() {
                                     {new Date(m.starts_at).toLocaleString()}
                                     {m.match_no != null ? ` · #${m.match_no}` : ""}
                                   </div>
-                                  <div className="flex items-center justify-between gap-4">
-                                    <div>
+                                  <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                                    <div className="text-center md:text-left">
                                       <div className="font-semibold">
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}

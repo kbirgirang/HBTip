@@ -558,15 +558,13 @@ export default function RoomPage() {
                       <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                         <div className="text-center md:text-left">
                           <div className="font-semibold">
+                                        <span>{m.home_team}</span>{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                                          {m.home_team}
-                                        </span>{" "}
-                                        vs{" "}
-                                        <span className="inline-flex items-center gap-1">
+                                          vs
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                          {m.away_team}
                                         </span>{" "}
+                                        <span>{m.away_team}</span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
                         </div>
@@ -717,15 +715,13 @@ export default function RoomPage() {
                                   <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                                     <div className="text-center md:text-left">
                                       <div className="font-semibold">
+                                        <span>{m.home_team}</span>{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                                          {m.home_team}
-                                        </span>{" "}
-                                        vs{" "}
-                                        <span className="inline-flex items-center gap-1">
+                                          vs
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                          {m.away_team}
                                         </span>{" "}
+                                        <span>{m.away_team}</span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>
                                     </div>

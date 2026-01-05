@@ -574,15 +574,14 @@ export default function RoomPage() {
                                         </span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="text-xs text-slate-500 dark:text-neutral-400 whitespace-nowrap">
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
                             {m.stage ? `${m.stage} · ` : ""}
                             {new Date(m.starts_at).toLocaleString()}
                             {m.match_no != null ? ` · #${m.match_no}` : ""}
                           </div>
-                          <div className="flex gap-2">
+                        </div>
+
+                        <div className="flex gap-2">
                                       <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
                             1
                           </PickButton>
@@ -596,7 +595,6 @@ export default function RoomPage() {
                                       <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
                             2
                           </PickButton>
-                          </div>
                         </div>
                       </div>
 
@@ -735,29 +733,27 @@ export default function RoomPage() {
                                         </span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>
-                                    </div>
-
-                                    <div className="flex flex-col items-end gap-1">
-                                      <div className="text-xs text-slate-500 dark:text-neutral-400 whitespace-nowrap">
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
                                         {m.stage ? `${m.stage} · ` : ""}
                                         {new Date(m.starts_at).toLocaleString()}
                                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                                       </div>
-                                      <div className="flex gap-2">
-                                        <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
-                                          1
-                                        </PickButton>
+                                    </div>
 
-                                        {m.allow_draw && (
-                                          <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                                            X
-                                          </PickButton>
-                                        )}
+                                    <div className="flex gap-2">
+                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                        1
+                                      </PickButton>
 
-                                        <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
-                                          2
+                                      {m.allow_draw && (
+                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                          X
                                         </PickButton>
-                                      </div>
+                                      )}
+
+                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                        2
+                                      </PickButton>
                                     </div>
                                   </div>
 
@@ -1402,7 +1398,7 @@ function PickButton({
         disabled
           ? "border-neutral-300 bg-neutral-100 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
           : selected
-          ? "border-blue-500 bg-blue-100 text-blue-700 hover:bg-blue-200 dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-200"
+          ? "border-blue-500 bg-blue-100 text-blue-700 dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950"
           : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
       ].join(" ")}
     >

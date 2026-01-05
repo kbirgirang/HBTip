@@ -54,13 +54,6 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Debug: Log hvað er vistað
-  console.log("[admin/settings/update] Tournament ID:", tournament.id);
-  console.log("[admin/settings/update] Saved points:", {
-    pointsPerCorrect1x2: data.points_per_correct_1x2,
-    pointsPerCorrectX: data.points_per_correct_x
-  });
-
   return NextResponse.json({ 
     ok: true, 
     pointsPerCorrect1x2: data.points_per_correct_1x2,

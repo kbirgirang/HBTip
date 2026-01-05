@@ -86,26 +86,16 @@ export async function GET() {
   const myAnswerByQid = new Map<string, any>();
   for (const a of myBonusAnswers) myAnswerByQid.set(a.question_id, a);
 
-  // 5) Settings - sækja fyrir tournament sem room er tengt við
-  // Ath: Admin vistar stillingar fyrir active tournament, en room sækir fyrir sitt tournament_id
-  // Ef room er tengt við annað tournament en active, þá sækir það gömlu stillingarnar
+  // 5) Settings
   const { data: settings, error: settingsErr } = await supabaseServer
     .from("admin_settings")
     .select("points_per_correct_1x2, points_per_correct_x")
     .eq("tournament_id", room.tournament_id)
     .maybeSingle();
 
-  // Debug: Log hvað er að gerast
-  console.log("[room/view] Room tournament_id:", room.tournament_id);
-  console.log("[room/view] Settings found:", settings);
-  console.log("[room/view] Settings error:", settingsErr);
-
   // Ef settings fannst ekki eða villa, nota default gildi
   const pointsPer = settings?.points_per_correct_1x2 ?? 1;
-  // Ath: points_per_correct_x getur verið null (þá nota pointsPer) eða tala
   const pointsPerX = settings?.points_per_correct_x ?? null; // null = nota pointsPer
-  
-  console.log("[room/view] Final pointsPer:", pointsPer, "pointsPerX:", pointsPerX);
 
   // 6) Members
   const { data: members, error: memErr } = await supabaseServer

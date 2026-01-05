@@ -551,50 +551,50 @@ export default function RoomPage() {
                   return (
                                 <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
                       <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <div className="text-xs text-slate-500 dark:text-neutral-400 mb-1">
+                        <div className="font-semibold">
+                                      <span className="inline-flex items-center gap-1">
+                                        {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                        {m.home_team}
+                                        {m.underdog_team === "1" && (
+                                          <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                            🎯 {m.underdog_multiplier}x
+                                          </span>
+                                        )}
+                                      </span>{" "}
+                                      vs{" "}
+                                      <span className="inline-flex items-center gap-1">
+                                        {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                                        {m.away_team}
+                                        {m.underdog_team === "2" && (
+                                          <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                            🎯 {m.underdog_multiplier}x
+                                          </span>
+                                        )}
+                                      </span>{" "}
+                          {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="text-xs text-slate-500 dark:text-neutral-400 whitespace-nowrap">
                             {m.stage ? `${m.stage} · ` : ""}
                             {new Date(m.starts_at).toLocaleString()}
                             {m.match_no != null ? ` · #${m.match_no}` : ""}
                           </div>
-                          <div className="font-semibold">
-                                        <span className="inline-flex items-center gap-1">
-                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                                          {m.home_team}
-                                          {m.underdog_team === "1" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
-                                        </span>{" "}
-                                        vs{" "}
-                                        <span className="inline-flex items-center gap-1">
-                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                          {m.away_team}
-                                          {m.underdog_team === "2" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
-                                        </span>{" "}
-                            {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                          <div className="flex gap-2">
+                                    <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                          1
+                        </PickButton>
+
+                        {m.allow_draw && (
+                                      <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                            X
+                          </PickButton>
+                        )}
+
+                                    <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                          2
+                        </PickButton>
                           </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
-                            1
-                          </PickButton>
-
-                          {m.allow_draw && (
-                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                              X
-                            </PickButton>
-                          )}
-
-                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
-                            2
-                          </PickButton>
                         </div>
                       </div>
 
@@ -710,50 +710,50 @@ export default function RoomPage() {
                               return (
                                 <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
                                   <div className="flex items-center justify-between gap-4">
-                                    <div>
-                                      <div className="text-xs text-slate-500 dark:text-neutral-400 mb-1">
+                                    <div className="font-semibold">
+                                      <span className="inline-flex items-center gap-1">
+                                        {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                        {m.home_team}
+                                        {m.underdog_team === "1" && (
+                                          <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                            🎯 {m.underdog_multiplier}x
+                                          </span>
+                                        )}
+                                      </span>{" "}
+                                      vs{" "}
+                                      <span className="inline-flex items-center gap-1">
+                                        {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                                        {m.away_team}
+                                        {m.underdog_team === "2" && (
+                                          <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
+                                            🎯 {m.underdog_multiplier}x
+                                          </span>
+                                        )}
+                                      </span>{" "}
+                                      {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
+                                    </div>
+
+                                    <div className="flex flex-col items-end gap-1">
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400 whitespace-nowrap">
                                         {m.stage ? `${m.stage} · ` : ""}
                                         {new Date(m.starts_at).toLocaleString()}
                                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                                       </div>
-                                      <div className="font-semibold">
-                                        <span className="inline-flex items-center gap-1">
-                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                                          {m.home_team}
-                                          {m.underdog_team === "1" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
-                                        </span>{" "}
-                                        vs{" "}
-                                        <span className="inline-flex items-center gap-1">
-                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                          {m.away_team}
-                                          {m.underdog_team === "2" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
-                                        </span>{" "}
-                                        {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
-                                      </div>
-                                    </div>
-
-                                    <div className="flex gap-2">
-                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
-                                        1
-                                      </PickButton>
-
-                                      {m.allow_draw && (
-                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                                          X
+                                      <div className="flex gap-2">
+                                        <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                          1
                                         </PickButton>
-                                      )}
 
-                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
-                                        2
-                                      </PickButton>
+                                        {m.allow_draw && (
+                                          <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                            X
+                                          </PickButton>
+                                        )}
+
+                                        <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                          2
+                                        </PickButton>
+                                      </div>
                                     </div>
                                   </div>
 

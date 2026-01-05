@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { getTeamFlag } from "@/lib/teamFlags";
 
@@ -152,13 +152,15 @@ export default function RoomPage() {
     void load();
     void loadMyRooms();
     
-    // Auto-refresh every 10 seconds
+    // Auto-refresh every 10 seconds (ekki ef form er opið)
     const interval = setInterval(() => {
-      void load();
+      if (!showJoinForm && !showCreateForm) {
+        void load();
+      }
     }, 10000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [showJoinForm, showCreateForm]);
 
   // Load tournaments when create form opens
   useEffect(() => {
@@ -239,7 +241,7 @@ export default function RoomPage() {
     }
   }
 
-  async function handleJoinRoom(e: React.FormEvent) {
+  const handleJoinRoom = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setJoinError(null);
 
@@ -281,9 +283,9 @@ export default function RoomPage() {
     } finally {
       setJoinLoading(false);
     }
-  }
+  }, [joinRoomCode, joinPassword, joinDisplayName]);
 
-  async function handleCreateRoom(e: React.FormEvent) {
+  const handleCreateRoom = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError(null);
 
@@ -329,7 +331,7 @@ export default function RoomPage() {
     } finally {
       setCreateLoading(false);
     }
-  }
+  }, [createRoomName, createJoinPassword, createDisplayName, createTournamentSlug]);
 
   async function loadMembers() {
     if (!data?.me.is_owner) return;
@@ -610,7 +612,10 @@ export default function RoomPage() {
                           <input
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={joinRoomCode}
-                            onChange={(e) => setJoinRoomCode(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setJoinRoomCode(e.target.value);
+                            }}
                             placeholder="Númer deildar"
                             autoComplete="off"
                           />
@@ -620,7 +625,10 @@ export default function RoomPage() {
                             type="password"
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={joinPassword}
-                            onChange={(e) => setJoinPassword(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setJoinPassword(e.target.value);
+                            }}
                             placeholder="Lykilorð deildar"
                             autoComplete="off"
                           />
@@ -629,7 +637,10 @@ export default function RoomPage() {
                           <input
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={joinDisplayName}
-                            onChange={(e) => setJoinDisplayName(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setJoinDisplayName(e.target.value);
+                            }}
                             placeholder="Nafn (í stigatöflu)"
                             autoComplete="off"
                           />
@@ -689,7 +700,10 @@ export default function RoomPage() {
                           <input
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createRoomName}
-                            onChange={(e) => setCreateRoomName(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setCreateRoomName(e.target.value);
+                            }}
                             placeholder="Nafn deildar"
                             autoComplete="off"
                           />
@@ -699,7 +713,10 @@ export default function RoomPage() {
                             type="password"
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createJoinPassword}
-                            onChange={(e) => setCreateJoinPassword(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setCreateJoinPassword(e.target.value);
+                            }}
                             placeholder="Join password (minnst 6 stafir)"
                             autoComplete="off"
                           />
@@ -708,7 +725,10 @@ export default function RoomPage() {
                           <input
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
                             value={createDisplayName}
-                            onChange={(e) => setCreateDisplayName(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setCreateDisplayName(e.target.value);
+                            }}
                             placeholder="Nafn (í stigatöflu)"
                             autoComplete="off"
                           />

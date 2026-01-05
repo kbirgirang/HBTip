@@ -1,28 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { getSession, setSession } from "@/lib/session";
+import { getUserSession, setSession } from "@/lib/session";
 
 type Body = {
   roomCode: string;
 };
 
 export async function POST(req: Request) {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
+  const userSession = await getUserSession();
+  if (!userSession) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
 
   const body = (await req.json()) as Body;
   const targetRoomCode = (body.roomCode || "").trim();
 
   if (!targetRoomCode) return NextResponse.json({ error: "Room code vantar" }, { status: 400 });
-
-  // Sækja username fyrir núverandi member
-  const { data: currentMember, error: memErr } = await supabaseServer
-    .from("room_members")
-    .select("username")
-    .eq("id", session.memberId)
-    .single();
-
-  if (memErr || !currentMember) return NextResponse.json({ error: "Meðlimur fannst ekki" }, { status: 404 });
 
   // Sækja target room
   const { data: targetRoom, error: rErr } = await supabaseServer
@@ -38,12 +29,12 @@ export async function POST(req: Request) {
     .from("room_members")
     .select("id, is_owner")
     .eq("room_id", targetRoom.id)
-    .ilike("username", currentMember.username)
+    .ilike("username", userSession.username)
     .single();
 
   if (mErr || !targetMember) return NextResponse.json({ error: "Notandi er ekki í þessari deild" }, { status: 404 });
 
-  // Uppfæra session
+  // Setja room session
   await setSession({
     roomId: targetRoom.id,
     memberId: targetMember.id,

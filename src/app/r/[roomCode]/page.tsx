@@ -1394,12 +1394,12 @@ function PickButton({
       disabled={disabled}
       onClick={onClick}
       className={[
-        "h-10 w-10 rounded-lg border text-sm font-bold transition",
+        "h-10 w-10 rounded-lg border text-sm font-bold transition-all duration-200",
         disabled
-          ? "border-neutral-300 bg-neutral-100 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
+          ? "border-neutral-300 bg-neutral-100 text-neutral-400 cursor-not-allowed dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
           : selected
-          ? "border-blue-500 bg-blue-100 text-blue-700 dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950"
-          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
+          ? "border-blue-500 bg-blue-100 text-blue-700 hover:bg-blue-200 hover:border-blue-600 hover:shadow-md hover:scale-105 dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-400 dark:hover:border-emerald-400"
+          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100 hover:border-slate-400 hover:shadow-md hover:scale-105 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 dark:hover:border-neutral-500",
       ].join(" ")}
     >
       {children}

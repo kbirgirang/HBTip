@@ -99,6 +99,17 @@ export default function RoomPage() {
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
+  // Create room form
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createRoomName, setCreateRoomName] = useState("");
+  const [createJoinPassword, setCreateJoinPassword] = useState("");
+  const [createDisplayName, setCreateDisplayName] = useState("");
+  const [createTournamentSlug, setCreateTournamentSlug] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [tournaments, setTournaments] = useState<Array<{ id: string; slug: string; name: string }>>([]);
+  const [loadingTournaments, setLoadingTournaments] = useState(false);
+
   // State fyrir hvaða leikjum eru með sýndum bónus
   const [showBonusForMatch, setShowBonusForMatch] = useState<Set<string>>(new Set());
 
@@ -148,6 +159,30 @@ export default function RoomPage() {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Load tournaments when create form opens
+  useEffect(() => {
+    async function loadTournaments() {
+      if (!showCreateForm) return;
+      
+      setLoadingTournaments(true);
+      try {
+        const res = await fetch("/api/tournaments/list");
+        const data = await res.json();
+        if (res.ok && data.tournaments) {
+          setTournaments(data.tournaments);
+          if (data.tournaments.length > 0 && !createTournamentSlug) {
+            setCreateTournamentSlug(data.tournaments[0].slug);
+          }
+        }
+      } catch {
+        // Silent fail
+      } finally {
+        setLoadingTournaments(false);
+      }
+    }
+    loadTournaments();
+  }, [showCreateForm, createTournamentSlug]);
 
   const roomSwitcherRef = React.useRef<HTMLDivElement>(null);
 
@@ -245,6 +280,54 @@ export default function RoomPage() {
       setJoinError("Tenging klikkaði");
     } finally {
       setJoinLoading(false);
+    }
+  }
+
+  async function handleCreateRoom(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateError(null);
+
+    if (!createRoomName.trim()) return setCreateError("Nafn deildar vantar.");
+    if (createRoomName.trim().length < 2) return setCreateError("Nafn deildar þarf að vera amk 2 stafir.");
+    if (!createJoinPassword.trim()) return setCreateError("Join password vantar.");
+    if (createJoinPassword.trim().length < 6) return setCreateError("Join password þarf að vera amk 6 stafir.");
+    if (!createDisplayName.trim()) return setCreateError("Nafn vantar.");
+    if (createDisplayName.trim().length < 2) return setCreateError("Nafn þarf að vera amk 2 stafir.");
+
+    setCreateLoading(true);
+    try {
+      const res = await fetch("/api/room/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomName: createRoomName.trim(),
+          joinPassword: createJoinPassword.trim(),
+          displayName: createDisplayName.trim(),
+          tournamentSlug: createTournamentSlug || undefined,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || "error" in json) {
+        setCreateError("error" in json ? json.error : "Ekki tókst að búa til deild");
+        return;
+      }
+
+      // Reload rooms and close form
+      setShowCreateForm(false);
+      setCreateRoomName("");
+      setCreateJoinPassword("");
+      setCreateDisplayName("");
+      await loadMyRooms();
+      
+      // Switch to new room
+      if (json.roomCode) {
+        await switchRoom(json.roomCode);
+      }
+    } catch {
+      setCreateError("Tenging klikkaði");
+    } finally {
+      setCreateLoading(false);
     }
   }
 
@@ -475,17 +558,41 @@ export default function RoomPage() {
                     ))}
                   </div>
                   
-                  <div className="mt-2 border-t border-slate-200 dark:border-neutral-700 pt-2">
-                    {!showJoinForm ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowJoinForm(true)}
-                        className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
-                      >
-                        + Joina deild
-                      </button>
-                    ) : (
+                  <div className="mt-2 border-t border-slate-200 dark:border-neutral-700 pt-2 space-y-2">
+                    {!showJoinForm && !showCreateForm && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setShowJoinForm(true)}
+                          className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                        >
+                          + Joina deild
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowCreateForm(true)}
+                          className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                        >
+                          + Búa til deild
+                        </button>
+                      </>
+                    )}
+                    
+                    {showJoinForm && (
                       <form onSubmit={handleJoinRoom} className="space-y-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-semibold text-slate-600 dark:text-neutral-400">Joina deild</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowJoinForm(false);
+                              setJoinError(null);
+                            }}
+                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                          >
+                            ✕
+                          </button>
+                        </div>
                         <div>
                           <input
                             className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -516,25 +623,88 @@ export default function RoomPage() {
                             {joinError}
                           </div>
                         )}
-                        <div className="flex gap-2">
-                          <button
-                            type="submit"
-                            disabled={joinLoading}
-                            className="flex-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-                          >
-                            {joinLoading ? "Joina..." : "Joina"}
-                          </button>
+                        <button
+                          type="submit"
+                          disabled={joinLoading}
+                          className="w-full rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                        >
+                          {joinLoading ? "Joina..." : "Joina"}
+                        </button>
+                      </form>
+                    )}
+
+                    {showCreateForm && (
+                      <form onSubmit={handleCreateRoom} className="space-y-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-semibold text-slate-600 dark:text-neutral-400">Búa til deild</span>
                           <button
                             type="button"
                             onClick={() => {
-                              setShowJoinForm(false);
-                              setJoinError(null);
+                              setShowCreateForm(false);
+                              setCreateError(null);
                             }}
-                            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                           >
-                            Hætta
+                            ✕
                           </button>
                         </div>
+                        <div>
+                          <select
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={createTournamentSlug}
+                            onChange={(e) => setCreateTournamentSlug(e.target.value)}
+                            disabled={loadingTournaments}
+                          >
+                            {loadingTournaments ? (
+                              <option>Sæki keppnir...</option>
+                            ) : tournaments.length === 0 ? (
+                              <option>Engar keppnir tiltækar</option>
+                            ) : (
+                              tournaments.map((t) => (
+                                <option key={t.id} value={t.slug}>
+                                  {t.name}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                        </div>
+                        <div>
+                          <input
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={createRoomName}
+                            onChange={(e) => setCreateRoomName(e.target.value)}
+                            placeholder="Nafn deildar"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="password"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={createJoinPassword}
+                            onChange={(e) => setCreateJoinPassword(e.target.value)}
+                            placeholder="Join password (minnst 6 stafir)"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={createDisplayName}
+                            onChange={(e) => setCreateDisplayName(e.target.value)}
+                            placeholder="Nafn (í stigatöflu)"
+                          />
+                        </div>
+                        {createError && (
+                          <div className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-200">
+                            {createError}
+                          </div>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={createLoading}
+                          className="w-full rounded-lg bg-emerald-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                        >
+                          {createLoading ? "Býr til..." : "Búa til"}
+                        </button>
                       </form>
                     )}
                   </div>

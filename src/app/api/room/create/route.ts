@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { hashPassword } from "@/lib/passwords";
 import { makeRoomCode } from "@/lib/roomCode";
-import { setSession, getUserSession } from "@/lib/session";
+import { setSession } from "@/lib/session";
 
 type Body = {
   roomName: string;
   joinPassword: string;
   ownerPassword?: string;
+  ownerUsername: string;
+  ownerPassword_user: string;
   displayName: string;
   tournamentSlug?: string;
 };
@@ -20,36 +22,29 @@ function generateOwnerPassword() {
 }
 
 export async function POST(req: Request) {
-  const userSession = await getUserSession();
-  if (!userSession) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
-
   const body = (await req.json()) as Body;
 
   const roomName = (body.roomName || "").trim();
   const joinPassword = (body.joinPassword || "").trim();
+  const ownerUsername = (body.ownerUsername || "").trim().toLowerCase();
+  const ownerPassword_user = (body.ownerPassword_user || "").trim();
   const displayName = (body.displayName || "").trim();
   const ownerPassword = (body.ownerPassword || "").trim() || generateOwnerPassword();
 
   if (roomName.length < 2) {
     return NextResponse.json({ error: "Nafn deildar er krafist" }, { status: 400 });
   }
+  if (ownerUsername.length < 3) {
+    return NextResponse.json({ error: "Notandanafn eiganda þarf að vera amk 3 stafir" }, { status: 400 });
+  }
+  if (ownerPassword_user.length < 6) {
+    return NextResponse.json({ error: "Lykilorð eiganda þarf að vera amk 6 stafir" }, { status: 400 });
+  }
   if (displayName.length < 2) {
     return NextResponse.json({ error: "Nafn er krafist" }, { status: 400 });
   }
   if (joinPassword.length < 6) {
     return NextResponse.json({ error: "Join password þarf að vera amk 6 stafir" }, { status: 400 });
-  }
-
-  // Sækja password_hash úr einhverri deild sem notandinn er í
-  const { data: existingMember } = await supabaseServer
-    .from("room_members")
-    .select("password_hash")
-    .ilike("username", userSession.username)
-    .limit(1)
-    .single();
-
-  if (!existingMember) {
-    return NextResponse.json({ error: "Ekki tókst að finna notanda" }, { status: 500 });
   }
 
   const tournamentSlug = body.tournamentSlug || "mens-ehf-euro-2026";
@@ -96,12 +91,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: rErr?.message || "Ekki tókst að búa til deild" }, { status: 500 });
   }
 
+  const ownerPasswordHash = await hashPassword(ownerPassword_user);
+  
+  if (!ownerPasswordHash) {
+    return NextResponse.json({ error: "Ekki tókst að búa til password hash" }, { status: 500 });
+  }
+
   const { data: member, error: mErr } = await supabaseServer
     .from("room_members")
     .insert({
       room_id: room.id,
-      username: userSession.username,
-      password_hash: existingMember.password_hash,
+      username: ownerUsername,
+      password_hash: ownerPasswordHash,
       display_name: displayName,
       is_owner: true,
     })

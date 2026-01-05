@@ -86,7 +86,9 @@ export async function GET() {
   const myAnswerByQid = new Map<string, any>();
   for (const a of myBonusAnswers) myAnswerByQid.set(a.question_id, a);
 
-  // 5) Settings
+  // 5) Settings - sækja fyrir tournament sem room er tengt við
+  // Ath: Admin vistar stillingar fyrir active tournament, en room sækir fyrir sitt tournament_id
+  // Ef room er tengt við annað tournament en active, þá sækir það gömlu stillingarnar
   const { data: settings, error: settingsErr } = await supabaseServer
     .from("admin_settings")
     .select("points_per_correct_1x2, points_per_correct_x")
@@ -95,6 +97,7 @@ export async function GET() {
 
   // Ef settings fannst ekki eða villa, nota default gildi
   const pointsPer = settings?.points_per_correct_1x2 ?? 1;
+  // Ath: points_per_correct_x getur verið null (þá nota pointsPer) eða tala
   const pointsPerX = settings?.points_per_correct_x ?? null; // null = nota pointsPer
 
   // 6) Members

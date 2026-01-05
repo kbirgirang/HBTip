@@ -17,11 +17,11 @@ export async function GET() {
     });
   }
 
-  const { data: settings } = await supabaseServer
+  const { data: settings, error: settingsErr } = await supabaseServer
     .from("admin_settings")
     .select("points_per_correct_1x2, points_per_correct_x")
     .eq("tournament_id", tournament.id)
-    .single();
+    .maybeSingle();
 
   return NextResponse.json({
     pointsPerCorrect1x2: settings?.points_per_correct_1x2 ?? 1,

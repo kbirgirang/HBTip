@@ -87,12 +87,13 @@ export async function GET() {
   for (const a of myBonusAnswers) myAnswerByQid.set(a.question_id, a);
 
   // 5) Settings
-  const { data: settings } = await supabaseServer
+  const { data: settings, error: settingsErr } = await supabaseServer
     .from("admin_settings")
     .select("points_per_correct_1x2, points_per_correct_x")
     .eq("tournament_id", room.tournament_id)
-    .single();
+    .maybeSingle();
 
+  // Ef settings fannst ekki eða villa, nota default gildi
   const pointsPer = settings?.points_per_correct_1x2 ?? 1;
   const pointsPerX = settings?.points_per_correct_x ?? null; // null = nota pointsPer
 

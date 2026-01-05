@@ -8,7 +8,7 @@ export async function GET() {
 
   const { data: tournaments, error } = await supabaseServer
     .from("tournaments")
-    .select("id, slug, name, is_active, created_at, api_football_league_id, api_football_season, api_football_enabled")
+    .select("id, slug, name, is_active, created_at")
     .order("created_at", { ascending: false });
 
   if (error) {

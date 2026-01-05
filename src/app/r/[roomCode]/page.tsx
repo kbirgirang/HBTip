@@ -471,7 +471,7 @@ export default function RoomPage() {
           )}
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-4">
+        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-3 md:mt-4 md:p-4">
           {!data && !err && <p className="text-slate-600 dark:text-neutral-300">Hleð...</p>}
 
           {err && (

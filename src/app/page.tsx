@@ -541,16 +541,6 @@ export default function HomePage() {
             <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
               Skráðu þig inn eða búðu til nýjan aðgang til að taka þátt.  
             </p>
-            <div className="mb-4">
-              <HelpBoxTooltip>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. Rafganistan-1234)</li>
-                  <li><strong>Lykilorð deildar:</strong> Aðgangsorð sem þú færð hjá stjórnanda</li>
-                  <li><strong>Notandanafn:</strong> Notaðu núverandi notandanafn ef þú átt þegar aðgang</li>
-                  <li><strong>Nýr aðgangur:</strong> Ef þú átt ekki aðgang skaltu búa hann til hér</li>
-                </ul>
-              </HelpBoxTooltip>
-            </div>
 
             <div className="mb-6 flex gap-2">
               <button

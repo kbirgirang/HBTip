@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Tooltip component
 function InfoTooltip({ text }: { text: string }) {
@@ -99,6 +99,14 @@ export default function HomePage() {
   const [jPassword, setJPassword] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [roomSearchQuery, setRoomSearchQuery] = useState("");
+  const [showRoomDropdown, setShowRoomDropdown] = useState(false);
+  const roomDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Register form room dropdown state
+  const [registerRoomSearchQuery, setRegisterRoomSearchQuery] = useState("");
+  const [showRegisterRoomDropdown, setShowRegisterRoomDropdown] = useState(false);
+  const registerRoomDropdownRef = useRef<HTMLDivElement>(null);
 
   // Register form state
   const [rRoomCode, setRRoomCode] = useState("");
@@ -162,6 +170,22 @@ export default function HomePage() {
     loadTournaments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showCreateForm]);
+
+  // Close room dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (roomDropdownRef.current && !roomDropdownRef.current.contains(event.target as Node)) {
+        setShowRoomDropdown(false);
+      }
+      if (registerRoomDropdownRef.current && !registerRoomDropdownRef.current.contains(event.target as Node)) {
+        setShowRegisterRoomDropdown(false);
+      }
+    }
+    if (showRoomDropdown || showRegisterRoomDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showRoomDropdown, showRegisterRoomDropdown]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -615,23 +639,90 @@ export default function HomePage() {
             {/* Join Department Form - username, password, department number, department password */}
             {joinTab === "join" && (
               <form onSubmit={handleJoin} className="space-y-4">
-                <div>
+                <div className="relative" ref={roomDropdownRef}>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
                     <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
-                  <select
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={jRoomCode}
-                    onChange={(e) => setJRoomCode(e.target.value)}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRoomDropdown(!showRoomDropdown);
+                      if (!showRoomDropdown) {
+                        setRoomSearchQuery("");
+                      }
+                    }}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500 flex items-center justify-between"
                   >
-                    <option value="">— veldu deild —</option>
-                    {roomsList.map((room) => (
-                      <option key={room.room_code} value={room.room_code}>
-                        {room.room_name} ({room.room_code})
-                      </option>
-                    ))}
-                  </select>
+                    <span className={jRoomCode ? "" : "text-slate-500 dark:text-neutral-400"}>
+                      {jRoomCode
+                        ? roomsList.find((r) => r.room_code === jRoomCode)?.room_name + ` (${jRoomCode})`
+                        : "— veldu deild —"}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`h-4 w-4 transition-transform ${showRoomDropdown ? "rotate-180" : ""}`}
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  {showRoomDropdown && (
+                    <div className="absolute z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          placeholder="Leita að deild..."
+                          value={roomSearchQuery}
+                          onChange={(e) => setRoomSearchQuery(e.target.value)}
+                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {loadingRooms ? (
+                          <div className="px-3 py-2 text-sm text-slate-500 dark:text-neutral-400">Hleð...</div>
+                        ) : (() => {
+                          const filteredRooms = roomsList.filter(
+                            (room) =>
+                              room.room_name.toLowerCase().includes(roomSearchQuery.toLowerCase()) ||
+                              room.room_code.toLowerCase().includes(roomSearchQuery.toLowerCase())
+                          );
+                          if (filteredRooms.length === 0) {
+                            return (
+                              <div className="px-3 py-2 text-sm text-slate-500 dark:text-neutral-400">
+                                Engar deildir fundust
+                              </div>
+                            );
+                          }
+                          return filteredRooms.map((room) => (
+                            <button
+                              key={room.room_code}
+                              type="button"
+                              onClick={() => {
+                                setJRoomCode(room.room_code);
+                                setShowRoomDropdown(false);
+                                setRoomSearchQuery("");
+                              }}
+                              className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                                jRoomCode === room.room_code
+                                  ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
+                                  : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                              }`}
+                            >
+                              <div className="font-medium">{room.room_name}</div>
+                              <div className="text-xs text-slate-500 dark:text-neutral-400">{room.room_code}</div>
+                            </button>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -734,23 +825,90 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div>
+                <div className="relative" ref={registerRoomDropdownRef}>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
                     <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
-                  <select
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={rRoomCode}
-                    onChange={(e) => setRRoomCode(e.target.value)}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRegisterRoomDropdown(!showRegisterRoomDropdown);
+                      if (!showRegisterRoomDropdown) {
+                        setRegisterRoomSearchQuery("");
+                      }
+                    }}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500 flex items-center justify-between"
                   >
-                    <option value="">— veldu deild —</option>
-                    {roomsList.map((room) => (
-                      <option key={room.room_code} value={room.room_code}>
-                        {room.room_name} ({room.room_code})
-                      </option>
-                    ))}
-                  </select>
+                    <span className={rRoomCode ? "" : "text-slate-500 dark:text-neutral-400"}>
+                      {rRoomCode
+                        ? roomsList.find((r) => r.room_code === rRoomCode)?.room_name + ` (${rRoomCode})`
+                        : "— veldu deild —"}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`h-4 w-4 transition-transform ${showRegisterRoomDropdown ? "rotate-180" : ""}`}
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  {showRegisterRoomDropdown && (
+                    <div className="absolute z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          placeholder="Leita að deild..."
+                          value={registerRoomSearchQuery}
+                          onChange={(e) => setRegisterRoomSearchQuery(e.target.value)}
+                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {loadingRooms ? (
+                          <div className="px-3 py-2 text-sm text-slate-500 dark:text-neutral-400">Hleð...</div>
+                        ) : (() => {
+                          const filteredRooms = roomsList.filter(
+                            (room) =>
+                              room.room_name.toLowerCase().includes(registerRoomSearchQuery.toLowerCase()) ||
+                              room.room_code.toLowerCase().includes(registerRoomSearchQuery.toLowerCase())
+                          );
+                          if (filteredRooms.length === 0) {
+                            return (
+                              <div className="px-3 py-2 text-sm text-slate-500 dark:text-neutral-400">
+                                Engar deildir fundust
+                              </div>
+                            );
+                          }
+                          return filteredRooms.map((room) => (
+                            <button
+                              key={room.room_code}
+                              type="button"
+                              onClick={() => {
+                                setRRoomCode(room.room_code);
+                                setShowRegisterRoomDropdown(false);
+                                setRegisterRoomSearchQuery("");
+                              }}
+                              className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                                rRoomCode === room.room_code
+                                  ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
+                                  : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                              }`}
+                            >
+                              <div className="font-medium">{room.room_name}</div>
+                              <div className="text-xs text-slate-500 dark:text-neutral-400">{room.room_code}</div>
+                            </button>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

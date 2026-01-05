@@ -550,12 +550,12 @@ export default function RoomPage() {
 
                   return (
                                 <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
-                      <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400 text-center">
+                      <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                       </div>
-                      <div className="font-semibold mb-3 text-center">
+                      <div className="font-semibold mb-3">
                         <span className="inline-flex items-center gap-1">
                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                           {m.home_team}
@@ -593,7 +593,7 @@ export default function RoomPage() {
                         </PickButton>
                       </div>
 
-                                  <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap justify-center">
+                                  <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
                         <span>
                           Úrslit:{" "}
                                       <span className="rounded-lg border border-slate-300 bg-slate-100 px-2 py-1 font-mono text-slate-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100">

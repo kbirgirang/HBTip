@@ -90,6 +90,14 @@ export default function RoomPage() {
   // Room switcher
   const [myRooms, setMyRooms] = useState<Array<{ roomId: string; roomCode: string; roomName: string; isCurrentRoom: boolean }>>([]);
   const [showRoomSwitcher, setShowRoomSwitcher] = useState(false);
+  
+  // Join new room state
+  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinRoomCode, setJoinRoomCode] = useState("");
+  const [joinRoomPassword, setJoinRoomPassword] = useState("");
+  const [joinUserPassword, setJoinUserPassword] = useState("");
+  const [joiningRoom, setJoiningRoom] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   // State fyrir hvaða leikjum eru með sýndum bónus
   const [showBonusForMatch, setShowBonusForMatch] = useState<Set<string>>(new Set());
@@ -193,6 +201,60 @@ export default function RoomPage() {
       window.location.href = `/r/${encodeURIComponent(roomCode)}`;
     } catch {
       alert("Tenging klikkaði. Prófaðu aftur.");
+    }
+  }
+
+  async function handleJoinRoom(e: React.FormEvent) {
+    e.preventDefault();
+    if (!data) return;
+    
+    setJoinError(null);
+    
+    if (!joinRoomCode.trim()) {
+      setJoinError("Númer deildar vantar");
+      return;
+    }
+    if (!joinRoomPassword.trim()) {
+      setJoinError("Join password vantar");
+      return;
+    }
+    if (!joinUserPassword.trim()) {
+      setJoinError("Lykilorð vantar");
+      return;
+    }
+
+    setJoiningRoom(true);
+    try {
+      const res = await fetch("/api/room/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomCode: joinRoomCode.trim(),
+          joinPassword: joinRoomPassword.trim(),
+          username: data.me.username,
+          password: joinUserPassword.trim(),
+          displayName: data.me.display_name,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setJoinError(json.error || "Ekki tókst að joina deild");
+        return;
+      }
+
+      // Success - reload rooms and switch to new room
+      await loadMyRooms();
+      await switchRoom(json.roomCode);
+      setShowJoinForm(false);
+      setJoinRoomCode("");
+      setJoinRoomPassword("");
+      setJoinUserPassword("");
+      setShowRoomSwitcher(false);
+    } catch {
+      setJoinError("Tenging klikkaði. Prófaðu aftur.");
+    } finally {
+      setJoiningRoom(false);
     }
   }
 
@@ -424,27 +486,88 @@ export default function RoomPage() {
                       ))}
                     </div>
                     <div className="mt-2 border-t border-slate-200 pt-2 dark:border-neutral-700">
-                      <a
-                        href="/"
-                        className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-4 w-4"
+                      {!showJoinForm ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowJoinForm(true)}
+                          className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
                         >
-                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                          <circle cx="9" cy="7" r="4" />
-                          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                        Joina aðra deild
-                      </a>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4"
+                          >
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                          Joina aðra deild
+                        </button>
+                      ) : (
+                        <form onSubmit={handleJoinRoom} className="space-y-2">
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Númer deildar"
+                              value={joinRoomCode}
+                              onChange={(e) => setJoinRoomCode(e.target.value)}
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                              autoFocus
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="password"
+                              placeholder="Join password"
+                              value={joinRoomPassword}
+                              onChange={(e) => setJoinRoomPassword(e.target.value)}
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="password"
+                              placeholder="Þitt lykilorð"
+                              value={joinUserPassword}
+                              onChange={(e) => setJoinUserPassword(e.target.value)}
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            />
+                          </div>
+                          {joinError && (
+                            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-200">
+                              {joinError}
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              disabled={joiningRoom}
+                              className="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-500 dark:hover:bg-blue-600"
+                            >
+                              {joiningRoom ? "Joina..." : "Joina"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowJoinForm(false);
+                                setJoinError(null);
+                                setJoinRoomCode("");
+                                setJoinRoomPassword("");
+                                setJoinUserPassword("");
+                              }}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                            >
+                              Hætta
+                            </button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   </div>
                 </div>

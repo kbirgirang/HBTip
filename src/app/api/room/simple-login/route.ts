@@ -91,28 +91,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Engar deildir fundust" }, { status: 404 });
   }
 
-  // Ef notandi er í einni deild, skrá hann beint inn
-  if (roomsWithInfo.length === 1) {
-    const room = roomsWithInfo[0];
-    await setSession({
-      roomId: room.roomId,
-      memberId: room.memberId,
-      roomCode: room.roomCode,
-      role: room.isOwner ? "owner" : "player",
-    });
-    return NextResponse.json({ ok: true, roomCode: room.roomCode });
-  }
-
-  // Ef notandi er í fleiri en einni deild, skila lista
-  return NextResponse.json({
-    ok: true,
-    multipleRooms: true,
-    rooms: roomsWithInfo.map((r) => ({
-      roomCode: r.roomCode,
-      roomName: r.roomName,
-      memberId: r.memberId,
-      isOwner: r.isOwner,
-    })),
+  // Skrá notanda beint inn á fyrstu deildina sem hann er í
+  const room = roomsWithInfo[0];
+  await setSession({
+    roomId: room.roomId,
+    memberId: room.memberId,
+    roomCode: room.roomCode,
+    role: room.isOwner ? "owner" : "player",
   });
+  return NextResponse.json({ ok: true, roomCode: room.roomCode });
 }
 

@@ -69,10 +69,7 @@ type CreateResp =
 
 type JoinResp = { ok: true; roomCode: string } | { error: string };
 
-type SimpleLoginResp = 
-  | { ok: true; roomCode: string } 
-  | { ok: true; multipleRooms: true; rooms: Array<{ roomCode: string; roomName: string; memberId: string; isOwner: boolean }> }
-  | { error: string };
+type SimpleLoginResp = { ok: true; roomCode: string } | { error: string };
 
 export default function HomePage() {
   // Create form state
@@ -94,7 +91,6 @@ export default function HomePage() {
   const [slPassword, setSlPassword] = useState("");
   const [simpleLoginLoading, setSimpleLoginLoading] = useState(false);
   const [simpleLoginError, setSimpleLoginError] = useState<string | null>(null);
-  const [multipleRooms, setMultipleRooms] = useState<Array<{ roomCode: string; roomName: string; memberId: string; isOwner: boolean }> | null>(null);
 
   // Join department form state (username, password, room code, join password)
   const [jRoomCode, setJRoomCode] = useState("");
@@ -252,7 +248,6 @@ export default function HomePage() {
   async function handleSimpleLogin(e: React.FormEvent) {
     e.preventDefault();
     setSimpleLoginError(null);
-    setMultipleRooms(null);
 
     if (slUsername.trim().length < 1) return setSimpleLoginError("Notandanafn vantar.");
     if (slPassword.trim().length < 1) return setSimpleLoginError("Lykilorð vantar.");
@@ -275,41 +270,14 @@ export default function HomePage() {
         return;
       }
 
-      // Ef notandi er í fleiri en einni deild, sýna lista
-      if ("multipleRooms" in data && data.multipleRooms) {
-        setMultipleRooms(data.rooms);
-        return;
-      }
-
-      // Ef notandi er í einni deild, fara beint í hana
-      if ("roomCode" in data && !("multipleRooms" in data)) {
+      // Fara beint í deildina
+      if ("roomCode" in data) {
         window.location.href = `/r/${encodeURIComponent(data.roomCode)}`;
       }
     } catch {
       setSimpleLoginError("Tenging klikkaði. Prófaðu aftur.");
     } finally {
       setSimpleLoginLoading(false);
-    }
-  }
-
-  async function handleSelectRoom(roomCode: string, memberId: string) {
-    try {
-      const res = await fetch("/api/room/select-room", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memberId }),
-      });
-
-      const data = (await res.json()) as JoinResp;
-
-      if (!res.ok || "error" in data) {
-        alert("error" in data ? data.error : "Ekki tókst að velja deild.");
-        return;
-      }
-
-      window.location.href = `/r/${encodeURIComponent(roomCode)}`;
-    } catch {
-      alert("Tenging klikkaði. Prófaðu aftur.");
     }
   }
 
@@ -563,10 +531,7 @@ export default function HomePage() {
             <div className="mb-6 flex gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setJoinTab("login");
-                  setMultipleRooms(null);
-                }}
+                onClick={() => setJoinTab("login")}
                 className={[
                   "rounded-xl px-4 py-2 text-sm font-semibold border transition",
                   joinTab === "login"
@@ -578,10 +543,7 @@ export default function HomePage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setJoinTab("join");
-                  setMultipleRooms(null);
-                }}
+                onClick={() => setJoinTab("join")}
                 className={[
                   "rounded-xl px-4 py-2 text-sm font-semibold border transition",
                   joinTab === "join"
@@ -593,10 +555,7 @@ export default function HomePage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setJoinTab("register");
-                  setMultipleRooms(null);
-                }}
+                onClick={() => setJoinTab("register")}
                 className={[
                   "rounded-xl px-4 py-2 text-sm font-semibold border transition",
                   joinTab === "register"
@@ -610,77 +569,47 @@ export default function HomePage() {
 
             {/* Simple Login Form - just username and password */}
             {joinTab === "login" && (
-              <>
-                {multipleRooms ? (
-                  <div className="space-y-4">
-                    <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200">
-                      <p className="font-semibold">Þú ert í fleiri en einni deild. Veldu deild:</p>
-                    </div>
-                    <div className="space-y-2">
-                      {multipleRooms.map((room) => (
-                        <button
-                          key={room.roomCode}
-                          type="button"
-                          onClick={() => handleSelectRoom(room.roomCode, room.memberId)}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:bg-neutral-900/60"
-                        >
-                          <div className="font-semibold text-slate-900 dark:text-neutral-100">{room.roomName}</div>
-                          <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setMultipleRooms(null)}
-                      className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                    >
-                      Til baka
-                    </button>
+              <form onSubmit={handleSimpleLogin} className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Notandanafn
+                    <InfoTooltip text="Notandanafn sem þú notar. Þú verður skráður inn á fyrstu deild sem þú ert í." />
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={slUsername}
+                    onChange={(e) => setSlUsername(e.target.value)}
+                    placeholder="t.d. Rafgani"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                    Lykilorð
+                    <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
+                  </label>
+                  <input
+                    type="password"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={slPassword}
+                    onChange={(e) => setSlPassword(e.target.value)}
+                    placeholder="Lykilorð þitt"
+                  />
+                </div>
+
+                {simpleLoginError && (
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                    {simpleLoginError}
                   </div>
-                ) : (
-                  <form onSubmit={handleSimpleLogin} className="space-y-4">
-                    <div>
-                      <label className="text-sm text-slate-700 dark:text-neutral-200">
-                        Notandanafn
-                        <InfoTooltip text="Notandanafn sem þú notar. Ef þú ert í fleiri en einni deild, getur þú valið deild eftir innskráningu." />
-                      </label>
-                      <input
-                        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                        value={slUsername}
-                        onChange={(e) => setSlUsername(e.target.value)}
-                        placeholder="t.d. Rafgani"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-700 dark:text-neutral-200">
-                        Lykilorð
-                        <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
-                      </label>
-                      <input
-                        type="password"
-                        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                        value={slPassword}
-                        onChange={(e) => setSlPassword(e.target.value)}
-                        placeholder="Lykilorð þitt"
-                      />
-                    </div>
-
-                    {simpleLoginError && (
-                      <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-                        {simpleLoginError}
-                      </div>
-                    )}
-
-                    <button
-                      disabled={simpleLoginLoading}
-                      className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-                    >
-                      {simpleLoginLoading ? "Skrái inn..." : "Skrá inn"}
-                    </button>
-                  </form>
                 )}
-              </>
+
+                <button
+                  disabled={simpleLoginLoading}
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                >
+                  {simpleLoginLoading ? "Skrái inn..." : "Skrá inn"}
+                </button>
+              </form>
             )}
 
             {/* Join Department Form - username, password, department number, department password */}

@@ -5,6 +5,7 @@ import { requireAdminSession } from "@/lib/adminAuth";
 type Body = {
   pointsPerCorrect1x2: number;
   pointsPerCorrectX?: number | null;
+  tournamentSlug?: string;
 };
 
 export async function POST(req: Request) {
@@ -29,15 +30,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "pointsPerCorrectX þarf að vera 1–100 eða tómur." }, { status: 400 });
   }
 
-  const { data: tournament, error: tErr } = await supabaseServer
-    .from("tournaments")
-    .select("id")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  let tournament;
+  if (body.tournamentSlug) {
+    // Sækja tournament með slug
+    const { data: t, error: tErr } = await supabaseServer
+      .from("tournaments")
+      .select("id")
+      .eq("slug", body.tournamentSlug)
+      .single();
 
-  if (tErr || !tournament) return NextResponse.json({ error: "Active tournament not found" }, { status: 500 });
+    if (tErr || !t) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
+    tournament = t;
+  } else {
+    // Ef engin slug, nota active tournament (backward compatibility)
+    const { data: t, error: tErr } = await supabaseServer
+      .from("tournaments")
+      .select("id")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (tErr || !t) return NextResponse.json({ error: "Active tournament not found" }, { status: 500 });
+    tournament = t;
+  }
 
   const { data, error } = await supabaseServer
     .from("admin_settings")

@@ -139,6 +139,9 @@ export default function AdminPage() {
 
   // Selected tournament for match/bonus operations
   const [selectedTournamentForOperations, setSelectedTournamentForOperations] = useState<string>("");
+  
+  // Selected tournament for settings
+  const [selectedTournamentForSettings, setSelectedTournamentForSettings] = useState<string>("");
 
   async function loadTournaments() {
     setLoadingTournaments(true);
@@ -174,7 +177,16 @@ export default function AdminPage() {
         setSelectedTournamentForOperations(tournaments[0].slug);
       }
     }
-  }, [tournaments, selectedTournamentForOperations]);
+    // Set default tournament for settings
+    if (tournaments.length > 0 && !selectedTournamentForSettings) {
+      const activeTournament = tournaments.find(t => t.is_active);
+      if (activeTournament) {
+        setSelectedTournamentForSettings(activeTournament.slug);
+      } else if (tournaments[0]) {
+        setSelectedTournamentForSettings(tournaments[0].slug);
+      }
+    }
+  }, [tournaments, selectedTournamentForOperations, selectedTournamentForSettings]);
 
   async function createTournament(e: React.FormEvent) {
     e.preventDefault();
@@ -316,6 +328,7 @@ export default function AdminPage() {
     e.preventDefault();
     clearAlerts();
 
+    if (!selectedTournamentForSettings) return setErr("Veldu keppni.");
     if (!Number.isFinite(pointsPer1x2) || pointsPer1x2 < 0) return setErr("Stig þurfa að vera 0 eða hærra.");
     if (pointsPerX != null && (!Number.isFinite(pointsPerX) || pointsPerX < 0)) {
       return setErr("X stig þurfa að vera 0 eða hærra eða tómur.");
@@ -329,6 +342,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           pointsPerCorrect1x2: pointsPer1x2,
           pointsPerCorrectX: pointsPerX === null || pointsPerX === 0 ? null : pointsPerX,
+          tournamentSlug: selectedTournamentForSettings,
         }),
       });
 
@@ -720,8 +734,9 @@ export default function AdminPage() {
     void checkEnv();
 
     async function loadSettings() {
+      if (!selectedTournamentForSettings) return;
       try {
-        const res = await fetch("/api/admin/settings/get");
+        const res = await fetch(`/api/admin/settings/get?tournamentSlug=${encodeURIComponent(selectedTournamentForSettings)}`);
         const json = (await res.json()) as { pointsPerCorrect1x2: number; pointsPerCorrectX: number | null };
         if (res.ok) {
           setPointsPer1x2(json.pointsPerCorrect1x2 ?? 1);
@@ -730,7 +745,7 @@ export default function AdminPage() {
       } catch {}
     }
     void loadSettings();
-  }, []);
+  }, [selectedTournamentForSettings]);
 
   useEffect(() => {
     if (tab === "results" && selectedTournamentForOperations) {
@@ -1965,8 +1980,29 @@ export default function AdminPage() {
         {/* SETTINGS */}
         {tab === "settings" && (
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <Card title="Stigagjöf" subtitle="Breyttu stigum fyrir rétt 1X2 (gildir fyrir allt tournament).">
+            <Card title="Stigagjöf" subtitle="Breyttu stigum fyrir rétt 1X2 (gildir fyrir valda keppni).">
               <form onSubmit={saveSettings} className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Keppni</label>
+                  <select
+                    value={selectedTournamentForSettings}
+                    onChange={(e) => setSelectedTournamentForSettings(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  >
+                    {loadingTournaments ? (
+                      <option>Sæki keppnir...</option>
+                    ) : tournaments.length === 0 ? (
+                      <option>Engar keppnir tiltækar</option>
+                    ) : (
+                      tournaments.map((t) => (
+                        <option key={t.id} value={t.slug}>
+                          {t.name} {t.is_active ? "(Active)" : ""}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-300">Stig per rétt 1X2</label>
                   <input

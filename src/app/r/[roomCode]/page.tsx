@@ -711,6 +711,11 @@ export default function RoomPage() {
                                 <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
                                   <div className="flex items-center justify-between gap-4">
                                     <div>
+                                      <div className="text-xs text-slate-500 dark:text-neutral-400 mb-1">
+                                        {m.stage ? `${m.stage} · ` : ""}
+                                        {new Date(m.starts_at).toLocaleString()}
+                                        {m.match_no != null ? ` · #${m.match_no}` : ""}
+                                      </div>
                                       <div className="font-semibold">
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
@@ -732,11 +737,6 @@ export default function RoomPage() {
                                           )}
                                         </span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
-                                      </div>
-                                      <div className="text-xs text-slate-500 dark:text-neutral-400">
-                                        {m.stage ? `${m.stage} · ` : ""}
-                                        {new Date(m.starts_at).toLocaleString()}
-                                        {m.match_no != null ? ` · #${m.match_no}` : ""}
                                       </div>
                                     </div>
 

@@ -561,28 +561,23 @@ export default function RoomPage() {
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           {m.home_team}
-                                          {m.underdog_team === "1" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
                                         </span>{" "}
                                         vs{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                           {m.away_team}
-                                          {m.underdog_team === "2" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
                                         </span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
                         </div>
 
                         <div className="flex gap-2">
-                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                      <PickButton 
+                            selected={m.myPick === "1"} 
+                            disabled={locked} 
+                            onClick={() => pick("1")}
+                            underdogMultiplier={m.underdog_team === "1" ? m.underdog_multiplier : null}
+                          >
                             1
                           </PickButton>
 
@@ -592,7 +587,12 @@ export default function RoomPage() {
                             </PickButton>
                           )}
 
-                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                      <PickButton 
+                            selected={m.myPick === "2"} 
+                            disabled={locked} 
+                            onClick={() => pick("2")}
+                            underdogMultiplier={m.underdog_team === "2" ? m.underdog_multiplier : null}
+                          >
                             2
                           </PickButton>
                         </div>
@@ -673,7 +673,7 @@ export default function RoomPage() {
                               </div>
                               <p className="text-xs text-slate-500 dark:text-neutral-400">
                                 <span className="inline-flex items-center gap-1">
-                                  🎯 = Underdog (margfaldar stig ef rétt)
+                                  = Underdog (margfaldar stig ef rétt)
                                 </span>
                               </p>
                             </div>
@@ -720,28 +720,23 @@ export default function RoomPage() {
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           {m.home_team}
-                                          {m.underdog_team === "1" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
                                         </span>{" "}
                                         vs{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                           {m.away_team}
-                                          {m.underdog_team === "2" && (
-                                            <span className="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400" title={`Underdog: ${m.underdog_multiplier}x stig`}>
-                                              🎯 {m.underdog_multiplier}x
-                                            </span>
-                                          )}
                                         </span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>
                                     </div>
 
                                     <div className="flex gap-2">
-                                      <PickButton selected={m.myPick === "1"} disabled={locked} onClick={() => pick("1")}>
+                                      <PickButton 
+                                        selected={m.myPick === "1"} 
+                                        disabled={locked} 
+                                        onClick={() => pick("1")}
+                                        underdogMultiplier={m.underdog_team === "1" ? m.underdog_multiplier : null}
+                                      >
                                         1
                                       </PickButton>
 
@@ -751,7 +746,12 @@ export default function RoomPage() {
                                         </PickButton>
                                       )}
 
-                                      <PickButton selected={m.myPick === "2"} disabled={locked} onClick={() => pick("2")}>
+                                      <PickButton 
+                                        selected={m.myPick === "2"} 
+                                        disabled={locked} 
+                                        onClick={() => pick("2")}
+                                        underdogMultiplier={m.underdog_team === "2" ? m.underdog_multiplier : null}
+                                      >
                                         2
                                       </PickButton>
                                     </div>
@@ -1383,11 +1383,13 @@ function PickButton({
   onClick,
   disabled,
   selected,
+  underdogMultiplier,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
   selected?: boolean;
+  underdogMultiplier?: number | null;
 }) {
   return (
     <button
@@ -1395,7 +1397,7 @@ function PickButton({
       onClick={onClick}
       style={{ touchAction: "manipulation" }}
       className={[
-        "h-10 w-10 rounded-lg border text-sm font-bold transition-all duration-150",
+        "relative h-10 w-10 rounded-lg border text-sm font-bold transition-all duration-150",
         disabled
           ? "border-neutral-300 bg-neutral-100 text-neutral-400 cursor-not-allowed dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600"
           : selected
@@ -1404,6 +1406,11 @@ function PickButton({
       ].join(" ")}
     >
       {children}
+      {underdogMultiplier != null && (
+        <span className="absolute -top-1 -right-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+          {underdogMultiplier}x
+        </span>
+      )}
     </button>
   );
 }

@@ -1407,7 +1407,7 @@ function PickButton({
     >
       {children}
       {underdogMultiplier != null && (
-        <span className="absolute -bottom-1 -left-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+        <span className="absolute bottom-0.5 right-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
           {underdogMultiplier}x
         </span>
       )}

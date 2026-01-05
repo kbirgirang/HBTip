@@ -88,8 +88,6 @@ export default function HomePage() {
 
   // Join section - tabs
   const [joinTab, setJoinTab] = useState<"login" | "join" | "register">("login");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loggedInUsername, setLoggedInUsername] = useState("");
 
   // Simple login form state (just username/password)
   const [slUsername, setSlUsername] = useState("");
@@ -283,11 +281,9 @@ export default function HomePage() {
         return;
       }
 
-      // Ef notandi er í einni deild, sýna valmöguleika
+      // Ef notandi er í einni deild, fara beint í hana
       if ("roomCode" in data && !("multipleRooms" in data)) {
-        setIsLoggedIn(true);
-        setLoggedInUsername(slUsername);
-        // Ekki fara beint í deildina, sýna valmöguleika
+        window.location.href = `/r/${encodeURIComponent(data.roomCode)}`;
       }
     } catch {
       setSimpleLoginError("Tenging klikkaði. Prófaðu aftur.");
@@ -311,17 +307,10 @@ export default function HomePage() {
         return;
       }
 
-      // Eftir að hafa valið deild, sýna valmöguleika
-      setIsLoggedIn(true);
-      setLoggedInUsername(slUsername);
-      setMultipleRooms(null);
+      window.location.href = `/r/${encodeURIComponent(roomCode)}`;
     } catch {
       alert("Tenging klikkaði. Prófaðu aftur.");
     }
-  }
-
-  function handleGoToRoom(roomCode: string) {
-    window.location.href = `/r/${encodeURIComponent(roomCode)}`;
   }
 
   async function handleJoin(e: React.FormEvent) {
@@ -557,67 +546,70 @@ export default function HomePage() {
           {/* Join - Register/Login - Main section */}
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-2xl font-semibold mb-2">Skráning í deild</h2>
-            
-            {!isLoggedIn ? (
-              <>
-                <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
-                  Skráðu þig inn til að taka þátt.  
-                </p>
-                <div className="mb-4">
-                  <HelpBoxTooltip>
-                    <ul className="ml-4 list-disc space-y-1">
-                      <li><strong>Notandanafn:</strong> Notaðu notandanafn sem þú bjóst til</li>
-                      <li><strong>Lykilorð:</strong> Lykilorð fyrir þitt notandanafn</li>
-                      <li><strong>Eftir innskráningu:</strong> Getur þú valið að joina nýrri deild eða búa til nýjan aðgang</li>
-                    </ul>
-                  </HelpBoxTooltip>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                  <p className="font-semibold">Skráður inn sem: {loggedInUsername}</p>
-                </div>
-                <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
-                  Hvað viltu gera næst?  
-                </p>
-                <div className="mb-6 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setJoinTab("join");
-                      setMultipleRooms(null);
-                    }}
-                    className={[
-                      "rounded-xl px-4 py-2 text-sm font-semibold border transition",
-                      joinTab === "join"
-                        ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
-                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
-                    ].join(" ")}
-                  >
-                    Joina deild
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setJoinTab("register");
-                      setMultipleRooms(null);
-                    }}
-                    className={[
-                      "rounded-xl px-4 py-2 text-sm font-semibold border transition",
-                      joinTab === "register"
-                        ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
-                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
-                    ].join(" ")}
-                  >
-                    Nýskráning
-                  </button>
-                </div>
-              </>
-            )}
+            <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
+              Skráðu þig inn eða búðu til nýjan aðgang til að taka þátt.  
+            </p>
+            <div className="mb-4">
+              <HelpBoxTooltip>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. Rafganistan-1234)</li>
+                  <li><strong>Lykilorð deildar:</strong> Aðgangsorð sem þú færð hjá stjórnanda</li>
+                  <li><strong>Notandanafn:</strong> Notaðu núverandi notandanafn ef þú átt þegar aðgang</li>
+                  <li><strong>Nýr aðgangur:</strong> Ef þú átt ekki aðgang skaltu búa hann til hér</li>
+                </ul>
+              </HelpBoxTooltip>
+            </div>
+
+            <div className="mb-6 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setJoinTab("login");
+                  setMultipleRooms(null);
+                }}
+                className={[
+                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                  joinTab === "login"
+                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
+                ].join(" ")}
+              >
+                Innskráning
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setJoinTab("join");
+                  setMultipleRooms(null);
+                }}
+                className={[
+                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                  joinTab === "join"
+                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
+                ].join(" ")}
+              >
+                Joina deild
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setJoinTab("register");
+                  setMultipleRooms(null);
+                }}
+                className={[
+                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                  joinTab === "register"
+                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
+                ].join(" ")}
+              >
+                Nýskráning
+              </button>
+            </div>
 
             {/* Simple Login Form - just username and password */}
-            {!isLoggedIn && (
+            {joinTab === "login" && (
               <>
                 {multipleRooms ? (
                   <div className="space-y-4">
@@ -650,7 +642,7 @@ export default function HomePage() {
                     <div>
                       <label className="text-sm text-slate-700 dark:text-neutral-200">
                         Notandanafn
-                        <InfoTooltip text="Notandanafn sem þú notar. Eftir innskráningu getur þú valið að joina nýrri deild eða búa til nýjan aðgang." />
+                        <InfoTooltip text="Notandanafn sem þú notar. Ef þú ert í fleiri en einni deild, getur þú valið deild eftir innskráningu." />
                       </label>
                       <input
                         className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -692,7 +684,7 @@ export default function HomePage() {
             )}
 
             {/* Join Department Form - username, password, department number, department password */}
-            {isLoggedIn && joinTab === "join" && (
+            {joinTab === "join" && (
               <form onSubmit={handleJoin} className="space-y-4">
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
@@ -730,11 +722,11 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
-                    <InfoTooltip text="Notandanafn sem þú notar. Þetta er sjálfkrafa fyllt út með notandanafni sem þú skráðir þig inn með." />
+                    <InfoTooltip text="Notandanafn sem þú notar. Ef þú ert með aðgang, notaðu sama notandanafn og lykilorð. Ef ekki, búðu til nýjan aðgang með 'Nýskráning' flipanum." />
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={jUsername || loggedInUsername}
+                    value={jUsername}
                     onChange={(e) => setJUsername(e.target.value)}
                     placeholder="t.d. Rafgani"
                   />
@@ -771,7 +763,7 @@ export default function HomePage() {
 
 
             {/* Register Form */}
-            {isLoggedIn && joinTab === "register" && (
+            {joinTab === "register" && (
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
@@ -780,7 +772,7 @@ export default function HomePage() {
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={rUsername || loggedInUsername}
+                    value={rUsername}
                     onChange={(e) => setRUsername(e.target.value)}
                     placeholder="t.d. Rafgani"
                   />

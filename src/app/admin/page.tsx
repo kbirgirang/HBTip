@@ -79,6 +79,24 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
+  // Check API-Football key on mount
+  useEffect(() => {
+    async function checkApiFootballKey() {
+      try {
+        const res = await fetch("/api/admin/api-football/check-key");
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok && json.error && json.error.includes("API_FOOTBALL_KEY")) {
+          setErr("API_FOOTBALL_KEY er ekki sett í environment variables");
+        }
+      } catch {
+        // Ignore - might be network errors
+      }
+    }
+    if (authenticated) {
+      checkApiFootballKey();
+    }
+  }, [authenticated]);
+
   // Login handler
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();

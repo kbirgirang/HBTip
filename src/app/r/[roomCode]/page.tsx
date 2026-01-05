@@ -90,6 +90,14 @@ export default function RoomPage() {
   // Room switcher
   const [myRooms, setMyRooms] = useState<Array<{ roomId: string; roomCode: string; roomName: string; isCurrentRoom: boolean }>>([]);
   const [showRoomSwitcher, setShowRoomSwitcher] = useState(false);
+  
+  // Join room form
+  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinRoomCode, setJoinRoomCode] = useState("");
+  const [joinPassword, setJoinPassword] = useState("");
+  const [joinDisplayName, setJoinDisplayName] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   // State fyrir hvaða leikjum eru með sýndum bónus
   const [showBonusForMatch, setShowBonusForMatch] = useState<Set<string>>(new Set());
@@ -193,6 +201,50 @@ export default function RoomPage() {
       window.location.href = `/r/${encodeURIComponent(roomCode)}`;
     } catch {
       alert("Tenging klikkaði. Prófaðu aftur.");
+    }
+  }
+
+  async function handleJoinRoom(e: React.FormEvent) {
+    e.preventDefault();
+    setJoinError(null);
+
+    if (!joinRoomCode.trim()) return setJoinError("Númer deildar vantar.");
+    if (!joinPassword.trim()) return setJoinError("Lykilorð deildar vantar.");
+    if (!joinDisplayName.trim()) return setJoinError("Nafn vantar.");
+
+    setJoinLoading(true);
+    try {
+      const res = await fetch("/api/room/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomCode: joinRoomCode.trim(),
+          joinPassword: joinPassword.trim(),
+          displayName: joinDisplayName.trim(),
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || "error" in json) {
+        setJoinError("error" in json ? json.error : "Ekki tókst að joina deild");
+        return;
+      }
+
+      // Reload rooms and close form
+      setShowJoinForm(false);
+      setJoinRoomCode("");
+      setJoinPassword("");
+      setJoinDisplayName("");
+      await loadMyRooms();
+      
+      // Switch to new room
+      if (json.roomCode) {
+        await switchRoom(json.roomCode);
+      }
+    } catch {
+      setJoinError("Tenging klikkaði");
+    } finally {
+      setJoinLoading(false);
     }
   }
 
@@ -355,79 +407,141 @@ export default function RoomPage() {
         <h1 className="text-2xl font-bold">
             {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
-          {myRooms.length > 1 && (
-            <div className="relative" ref={roomSwitcherRef}>
-              <button
-                type="button"
-                onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
-                className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+          <div className="relative" ref={roomSwitcherRef}>
+            <button
+              type="button"
+              onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
+              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                <span>{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`h-4 w-4 transition-transform ${showRoomSwitcher ? "rotate-180" : ""}`}
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-              {showRoomSwitcher && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
-                  <div className="p-2">
-                    <div className="mb-2 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-neutral-400">
-                      Deildir sem þú ert í:
-                    </div>
-                    <div className="space-y-1">
-                      {myRooms.map((room) => (
-                        <button
-                          key={room.roomId}
-                          type="button"
-                          onClick={() => void switchRoom(room.roomCode)}
-                          className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
-                            room.isCurrentRoom
-                              ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
-                              : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="font-semibold">{room.roomName}</div>
-                              <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
-                            </div>
-                            {room.isCurrentRoom && (
-                              <div className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white dark:bg-blue-600">
-                                Núverandi
-                              </div>
-                            )}
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`h-4 w-4 transition-transform ${showRoomSwitcher ? "rotate-180" : ""}`}
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {showRoomSwitcher && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+                <div className="p-2">
+                  <div className="mb-2 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-neutral-400">
+                    Deildir sem þú ert í:
+                  </div>
+                  <div className="space-y-1">
+                    {myRooms.map((room) => (
+                      <button
+                        key={room.roomId}
+                        type="button"
+                        onClick={() => void switchRoom(room.roomCode)}
+                        className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
+                          room.isCurrentRoom
+                            ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
+                            : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold">{room.roomName}</div>
+                            <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
                           </div>
-                        </button>
-                      ))}
-                    </div>
+                          {room.isCurrentRoom && (
+                            <div className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white dark:bg-blue-600">
+                              Núverandi
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-2 border-t border-slate-200 dark:border-neutral-700 pt-2">
+                    {!showJoinForm ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowJoinForm(true)}
+                        className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                      >
+                        + Joina deild
+                      </button>
+                    ) : (
+                      <form onSubmit={handleJoinRoom} className="space-y-2">
+                        <div>
+                          <input
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={joinRoomCode}
+                            onChange={(e) => setJoinRoomCode(e.target.value)}
+                            placeholder="Númer deildar"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="password"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={joinPassword}
+                            onChange={(e) => setJoinPassword(e.target.value)}
+                            placeholder="Lykilorð deildar"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            value={joinDisplayName}
+                            onChange={(e) => setJoinDisplayName(e.target.value)}
+                            placeholder="Nafn (í stigatöflu)"
+                          />
+                        </div>
+                        {joinError && (
+                          <div className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-200">
+                            {joinError}
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            type="submit"
+                            disabled={joinLoading}
+                            className="flex-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                          >
+                            {joinLoading ? "Joina..." : "Joina"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowJoinForm(false);
+                              setJoinError(null);
+                            }}
+                            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                          >
+                            Hætta
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
           <span className="font-semibold">{data.me.display_name}</span>{" "}

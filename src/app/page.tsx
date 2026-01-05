@@ -18,7 +18,18 @@ export default function HomePage() {
         const res = await fetch("/api/user/check-auth");
         const json = await res.json();
         if (json.authenticated) {
-          router.push("/my-rooms");
+          // Redirect to first room
+          try {
+            const roomRes = await fetch("/api/user/first-room");
+            const roomData = await roomRes.json();
+            if (roomData.roomCode) {
+              router.push(`/r/${encodeURIComponent(roomData.roomCode)}`);
+            } else {
+              setAuthenticated(false); // No rooms, show login
+            }
+          } catch {
+            setAuthenticated(false);
+          }
         } else {
           setAuthenticated(false);
         }
@@ -51,8 +62,19 @@ export default function HomePage() {
         return;
       }
 
-      // Redirect to my-rooms page
-      router.push("/my-rooms");
+      // Redirect to first room or my-rooms if no rooms
+      try {
+        const roomRes = await fetch("/api/user/first-room");
+        const roomData = await roomRes.json();
+        if (roomData.roomCode) {
+          router.push(`/r/${encodeURIComponent(roomData.roomCode)}`);
+        } else {
+          // No rooms yet, show message or redirect to register
+          setLoginError("Þú ert ekki í neinum deildum. Joina deild til að byrja.");
+        }
+      } catch {
+        router.push("/my-rooms");
+      }
     } catch {
       setLoginError("Tenging klikkaði. Prófaðu aftur.");
     } finally {

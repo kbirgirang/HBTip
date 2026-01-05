@@ -69,6 +69,11 @@ type CreateResp =
 
 type JoinResp = { ok: true; roomCode: string } | { error: string };
 
+type SimpleLoginResp = 
+  | { ok: true; roomCode: string } 
+  | { ok: true; multipleRooms: true; rooms: Array<{ roomCode: string; roomName: string; memberId: string; isOwner: boolean }> }
+  | { error: string };
+
 export default function HomePage() {
   // Create form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -82,7 +87,24 @@ export default function HomePage() {
   const [created, setCreated] = useState<{ roomCode: string; ownerPassword: string } | null>(null);
 
   // Join section - tabs
-  const [joinTab, setJoinTab] = useState<"login" | "register">("login");
+  const [joinTab, setJoinTab] = useState<"login" | "join" | "register">("login");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInUsername, setLoggedInUsername] = useState("");
+
+  // Simple login form state (just username/password)
+  const [slUsername, setSlUsername] = useState("");
+  const [slPassword, setSlPassword] = useState("");
+  const [simpleLoginLoading, setSimpleLoginLoading] = useState(false);
+  const [simpleLoginError, setSimpleLoginError] = useState<string | null>(null);
+  const [multipleRooms, setMultipleRooms] = useState<Array<{ roomCode: string; roomName: string; memberId: string; isOwner: boolean }> | null>(null);
+
+  // Join department form state (username, password, room code, join password)
+  const [jRoomCode, setJRoomCode] = useState("");
+  const [jJoinPassword, setJJoinPassword] = useState("");
+  const [jUsername, setJUsername] = useState("");
+  const [jPassword, setJPassword] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   // Register form state
   const [rRoomCode, setRRoomCode] = useState("");
@@ -92,14 +114,6 @@ export default function HomePage() {
   const [rDisplayName, setRDisplayName] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
-
-  // Login form state
-  const [lRoomCode, setLRoomCode] = useState("");
-  const [lJoinPassword, setLJoinPassword] = useState("");
-  const [lUsername, setLUsername] = useState("");
-  const [lPassword, setLPassword] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
 
   // Rooms list for dropdown
   const [roomsList, setRoomsList] = useState<Array<{ room_code: string; room_name: string }>>([]);
@@ -237,40 +251,113 @@ export default function HomePage() {
     }
   }
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSimpleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setLoginError(null);
+    setSimpleLoginError(null);
+    setMultipleRooms(null);
 
-    if (lRoomCode.trim().length < 2) return setLoginError("Númer deildar vantar.");
-    if (lJoinPassword.trim().length < 1) return setLoginError("Join password vantar.");
-    if (lUsername.trim().length < 1) return setLoginError("Notandanafn vantar.");
-    if (lPassword.trim().length < 1) return setLoginError("Lykilorð vantar.");
+    if (slUsername.trim().length < 1) return setSimpleLoginError("Notandanafn vantar.");
+    if (slPassword.trim().length < 1) return setSimpleLoginError("Lykilorð vantar.");
 
-    setLoginLoading(true);
+    setSimpleLoginLoading(true);
+    try {
+      const res = await fetch("/api/room/simple-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: slUsername,
+          password: slPassword,
+        }),
+      });
+
+      const data = (await res.json()) as SimpleLoginResp;
+
+      if (!res.ok || "error" in data) {
+        setSimpleLoginError("error" in data ? data.error : "Ekki tókst að skrá sig inn.");
+        return;
+      }
+
+      // Ef notandi er í fleiri en einni deild, sýna lista
+      if ("multipleRooms" in data && data.multipleRooms) {
+        setMultipleRooms(data.rooms);
+        return;
+      }
+
+      // Ef notandi er í einni deild, sýna valmöguleika
+      if ("roomCode" in data && !("multipleRooms" in data)) {
+        setIsLoggedIn(true);
+        setLoggedInUsername(slUsername);
+        // Ekki fara beint í deildina, sýna valmöguleika
+      }
+    } catch {
+      setSimpleLoginError("Tenging klikkaði. Prófaðu aftur.");
+    } finally {
+      setSimpleLoginLoading(false);
+    }
+  }
+
+  async function handleSelectRoom(roomCode: string, memberId: string) {
+    try {
+      const res = await fetch("/api/room/select-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId }),
+      });
+
+      const data = (await res.json()) as JoinResp;
+
+      if (!res.ok || "error" in data) {
+        alert("error" in data ? data.error : "Ekki tókst að velja deild.");
+        return;
+      }
+
+      // Eftir að hafa valið deild, sýna valmöguleika
+      setIsLoggedIn(true);
+      setLoggedInUsername(slUsername);
+      setMultipleRooms(null);
+    } catch {
+      alert("Tenging klikkaði. Prófaðu aftur.");
+    }
+  }
+
+  function handleGoToRoom(roomCode: string) {
+    window.location.href = `/r/${encodeURIComponent(roomCode)}`;
+  }
+
+  async function handleJoin(e: React.FormEvent) {
+    e.preventDefault();
+    setJoinError(null);
+
+    if (jRoomCode.trim().length < 2) return setJoinError("Númer deildar vantar.");
+    if (jJoinPassword.trim().length < 1) return setJoinError("Join password vantar.");
+    if (jUsername.trim().length < 1) return setJoinError("Notandanafn vantar.");
+    if (jPassword.trim().length < 1) return setJoinError("Lykilorð vantar.");
+
+    setJoinLoading(true);
     try {
       const res = await fetch("/api/room/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          roomCode: lRoomCode,
-          joinPassword: lJoinPassword,
-          username: lUsername,
-          password: lPassword,
+          roomCode: jRoomCode,
+          joinPassword: jJoinPassword,
+          username: jUsername,
+          password: jPassword,
         }),
       });
 
       const data = (await res.json()) as JoinResp;
 
       if (!res.ok || "error" in data) {
-        setLoginError("error" in data ? data.error : "Ekki tókst að skrá sig inn.");
+        setJoinError("error" in data ? data.error : "Ekki tókst að joina deild.");
         return;
       }
 
       window.location.href = `/r/${encodeURIComponent(data.roomCode)}`;
     } catch {
-      setLoginError("Tenging klikkaði. Prófaðu aftur.");
+      setJoinError("Tenging klikkaði. Prófaðu aftur.");
     } finally {
-      setLoginLoading(false);
+      setJoinLoading(false);
     }
   }
 
@@ -470,59 +557,152 @@ export default function HomePage() {
           {/* Join - Register/Login - Main section */}
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
             <h2 className="text-2xl font-semibold mb-2">Skráning í deild</h2>
-            <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
-              Skráðu þig inn eða búðu til nýjan aðgang til að taka þátt.  
-            </p>
-            <div className="mb-4">
-              <HelpBoxTooltip>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong>Númer deildar:</strong> Fáðu númerið hjá stjórnanda (t.d. Rafganistan-1234)</li>
-                  <li><strong>Lykilorð deildar:</strong> Aðgangsorð sem þú færð hjá stjórnanda</li>
-                  <li><strong>Notandanafn:</strong> Notaðu núverandi notandanafn ef þú átt þegar aðgang</li>
-                  <li><strong>Nýr aðgangur:</strong> Ef þú átt ekki aðgang skaltu búa hann til hér</li>
-                </ul>
-              </HelpBoxTooltip>
-            </div>
+            
+            {!isLoggedIn ? (
+              <>
+                <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
+                  Skráðu þig inn til að taka þátt.  
+                </p>
+                <div className="mb-4">
+                  <HelpBoxTooltip>
+                    <ul className="ml-4 list-disc space-y-1">
+                      <li><strong>Notandanafn:</strong> Notaðu notandanafn sem þú bjóst til</li>
+                      <li><strong>Lykilorð:</strong> Lykilorð fyrir þitt notandanafn</li>
+                      <li><strong>Eftir innskráningu:</strong> Getur þú valið að joina nýrri deild eða búa til nýjan aðgang</li>
+                    </ul>
+                  </HelpBoxTooltip>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                  <p className="font-semibold">Skráður inn sem: {loggedInUsername}</p>
+                </div>
+                <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
+                  Hvað viltu gera næst?  
+                </p>
+                <div className="mb-6 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setJoinTab("join");
+                      setMultipleRooms(null);
+                    }}
+                    className={[
+                      "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                      joinTab === "join"
+                        ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
+                    ].join(" ")}
+                  >
+                    Joina deild
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setJoinTab("register");
+                      setMultipleRooms(null);
+                    }}
+                    className={[
+                      "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                      joinTab === "register"
+                        ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
+                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
+                    ].join(" ")}
+                  >
+                    Nýskráning
+                  </button>
+                </div>
+              </>
+            )}
 
-            <div className="mb-6 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setJoinTab("login")}
-                className={[
-                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
-                  joinTab === "login"
-                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
-                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
-                ].join(" ")}
-              >
-                Innskráning
-              </button>
-              <button
-                type="button"
-                onClick={() => setJoinTab("register")}
-                className={[
-                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
-                  joinTab === "register"
-                    ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
-                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
-                ].join(" ")}
-              >
-                Nýskráning
-              </button>
-            </div>
+            {/* Simple Login Form - just username and password */}
+            {!isLoggedIn && (
+              <>
+                {multipleRooms ? (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200">
+                      <p className="font-semibold">Þú ert í fleiri en einni deild. Veldu deild:</p>
+                    </div>
+                    <div className="space-y-2">
+                      {multipleRooms.map((room) => (
+                        <button
+                          key={room.roomCode}
+                          type="button"
+                          onClick={() => handleSelectRoom(room.roomCode, room.memberId)}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:bg-neutral-900/60"
+                        >
+                          <div className="font-semibold text-slate-900 dark:text-neutral-100">{room.roomName}</div>
+                          <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setMultipleRooms(null)}
+                      className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                    >
+                      Til baka
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSimpleLogin} className="space-y-4">
+                    <div>
+                      <label className="text-sm text-slate-700 dark:text-neutral-200">
+                        Notandanafn
+                        <InfoTooltip text="Notandanafn sem þú notar. Eftir innskráningu getur þú valið að joina nýrri deild eða búa til nýjan aðgang." />
+                      </label>
+                      <input
+                        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                        value={slUsername}
+                        onChange={(e) => setSlUsername(e.target.value)}
+                        placeholder="t.d. Rafgani"
+                      />
+                    </div>
 
-            {/* Login Form */}
-            {joinTab === "login" && (
-              <form onSubmit={handleLogin} className="space-y-4">
-              <div>
+                    <div>
+                      <label className="text-sm text-slate-700 dark:text-neutral-200">
+                        Lykilorð
+                        <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
+                      </label>
+                      <input
+                        type="password"
+                        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                        value={slPassword}
+                        onChange={(e) => setSlPassword(e.target.value)}
+                        placeholder="Lykilorð þitt"
+                      />
+                    </div>
+
+                    {simpleLoginError && (
+                      <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                        {simpleLoginError}
+                      </div>
+                    )}
+
+                    <button
+                      disabled={simpleLoginLoading}
+                      className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                    >
+                      {simpleLoginLoading ? "Skrái inn..." : "Skrá inn"}
+                    </button>
+                  </form>
+                )}
+              </>
+            )}
+
+            {/* Join Department Form - username, password, department number, department password */}
+            {isLoggedIn && joinTab === "join" && (
+              <form onSubmit={handleJoin} className="space-y-4">
+                <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
                     <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
-                <select
+                  <select
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={lRoomCode}
-                    onChange={(e) => setLRoomCode(e.target.value)}
+                    value={jRoomCode}
+                    onChange={(e) => setJRoomCode(e.target.value)}
                   >
                     <option value="">— veldu deild —</option>
                     {roomsList.map((room) => (
@@ -530,10 +710,10 @@ export default function HomePage() {
                         {room.room_name} ({room.room_code})
                       </option>
                     ))}
-                </select>
-              </div>
+                  </select>
+                </div>
 
-              <div>
+                <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð deildar
                     <InfoTooltip text="Aðgangsorð sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
@@ -541,8 +721,8 @@ export default function HomePage() {
                   <input
                     type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={lJoinPassword}
-                    onChange={(e) => setLJoinPassword(e.target.value)}
+                    value={jJoinPassword}
+                    onChange={(e) => setJJoinPassword(e.target.value)}
                     placeholder="Aðgangsorð deildarinnar"
                   />
                 </div>
@@ -550,49 +730,48 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
-                    <InfoTooltip text="Notandanafn sem þú notar. Ef þú ert með aðgang, notaðu sama notandanafn og lykilorð. Ef ekki, búðu til nýjan aðgang með 'Nýr aðgangur' flipanum." />
+                    <InfoTooltip text="Notandanafn sem þú notar. Þetta er sjálfkrafa fyllt út með notandanafni sem þú skráðir þig inn með." />
                   </label>
-                <input
+                  <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={lUsername}
-                    onChange={(e) => setLUsername(e.target.value)}
+                    value={jUsername || loggedInUsername}
+                    onChange={(e) => setJUsername(e.target.value)}
                     placeholder="t.d. Rafgani"
-                />
-              </div>
+                  />
+                </div>
 
-              <div>
+                <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð
                     <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
                   </label>
-                <input
-                  type="password"
+                  <input
+                    type="password"
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={lPassword}
-                    onChange={(e) => setLPassword(e.target.value)}
+                    value={jPassword}
+                    onChange={(e) => setJPassword(e.target.value)}
                     placeholder="Lykilorð þitt"
-                />
-              </div>
+                  />
+                </div>
 
-                {loginError && (
-                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-                    {loginError}
+                {joinError && (
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                    {joinError}
                   </div>
                 )}
 
                 <button
-                  disabled={loginLoading}
+                  disabled={joinLoading}
                   className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
-                  {loginLoading ? "Skrái inn..." : "Skrá inn"}
+                  {joinLoading ? "Joina..." : "Joina deild"}
                 </button>
-
               </form>
             )}
 
 
             {/* Register Form */}
-            {joinTab === "register" && (
+            {isLoggedIn && joinTab === "register" && (
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
@@ -601,7 +780,7 @@ export default function HomePage() {
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                    value={rUsername}
+                    value={rUsername || loggedInUsername}
                     onChange={(e) => setRUsername(e.target.value)}
                     placeholder="t.d. Rafgani"
                   />

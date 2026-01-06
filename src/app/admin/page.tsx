@@ -317,6 +317,40 @@ export default function AdminPage() {
     }
   }
 
+  const [deletingMatches, setDeletingMatches] = useState<string | null>(null);
+
+  async function deleteAllMatches(tournamentId: string, tournamentName: string) {
+    const ok = confirm(
+      `Ertu viss um að eyða ÖLLUM leikjum úr keppni "${tournamentName}"?\n\n` +
+      `Þetta eyðir einnig öllum spám (predictions) og bónus spurningum sem tengjast þessum leikjum.\n\n` +
+      `Þessi aðgerð er ÓSNUÐNINNLEG!`
+    );
+    if (!ok) return;
+
+    setDeletingMatches(tournamentId);
+    try {
+      const res = await fetch("/api/admin/matches/delete-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tournamentId }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að eyða leikjum");
+        return;
+      }
+
+      const deletedCount = json.deletedCount ?? 0;
+      flash(`${deletedCount} leikir eytt úr keppni ✅`);
+      loadTournaments();
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setDeletingMatches(null);
+    }
+  }
+
   // -----------------------------
   // SETTINGS
   // -----------------------------
@@ -1959,6 +1993,14 @@ export default function AdminPage() {
                               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                             >
                               Breyta
+                            </button>
+                            <button
+                              onClick={() => deleteAllMatches(t.id, t.name)}
+                              disabled={deletingMatches === t.id}
+                              className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-500/20 disabled:opacity-60 dark:text-amber-200 dark:hover:bg-amber-500/15"
+                              title="Eyða öllum leikjum úr keppni"
+                            >
+                              {deletingMatches === t.id ? "Eyði..." : "Eyða leikjum"}
                             </button>
                             <button
                               onClick={() => deleteTournament(t.id, t.name)}

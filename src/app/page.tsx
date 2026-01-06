@@ -330,7 +330,7 @@ export default function HomePage() {
       const data = (await res.json()) as JoinResp;
 
       if (!res.ok || "error" in data) {
-        setJoinError("error" in data ? data.error : "Ekki tókst að joina deild.");
+        setJoinError("error" in data ? data.error : "Ekki tókst að skrá sig í deild.");
         return;
       }
 
@@ -565,7 +565,7 @@ export default function HomePage() {
                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
                 ].join(" ")}
               >
-                Joina deild
+                Skrá sig í deild
               </button>
               <button
                 type="button"
@@ -766,7 +766,7 @@ export default function HomePage() {
                   disabled={joinLoading}
                   className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                 >
-                  {joinLoading ? "Joina..." : "Joina deild"}
+                  {joinLoading ? "Skrá sig í deild..." : "Skrá sig í deild"}
                 </button>
               </form>
             )}

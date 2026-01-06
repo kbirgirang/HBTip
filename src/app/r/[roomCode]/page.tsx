@@ -196,6 +196,27 @@ export default function RoomPage() {
     }
   }
 
+  async function handleLogout() {
+    if (!confirm("Ertu viss um að þú viljir skrá þig út?")) return;
+    
+    try {
+      const res = await fetch("/api/room/logout", {
+        method: "POST",
+      });
+      
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(json.error || "Ekki tókst að skrá út");
+        return;
+      }
+      
+      // Fara á forsíðu eftir útskráningu
+      window.location.href = "/";
+    } catch {
+      alert("Tenging klikkaði. Prófaðu aftur.");
+    }
+  }
+
   async function loadMembers() {
     if (!data?.me.is_owner) return;
     setLoadingMembers(true);
@@ -355,79 +376,102 @@ export default function RoomPage() {
         <h1 className="text-2xl font-bold">
             {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
-          {myRooms.length > 1 && (
-            <div className="relative" ref={roomSwitcherRef}>
-              <button
-                type="button"
-                onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
-                className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
+          <div className="flex items-center gap-2">
+            {myRooms.length > 1 && (
+              <div className="relative" ref={roomSwitcherRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
+                  className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
                 >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                <span>{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`h-4 w-4 transition-transform ${showRoomSwitcher ? "rotate-180" : ""}`}
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-              {showRoomSwitcher && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
-                  <div className="p-2">
-                    <div className="mb-2 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-neutral-400">
-                      Deildir sem þú ert í:
-                    </div>
-                    <div className="space-y-1">
-                      {myRooms.map((room) => (
-                        <button
-                          key={room.roomId}
-                          type="button"
-                          onClick={() => void switchRoom(room.roomCode)}
-                          className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
-                            room.isCurrentRoom
-                              ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
-                              : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="font-semibold">{room.roomName}</div>
-                              <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
-                            </div>
-                            {room.isCurrentRoom && (
-                              <div className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white dark:bg-blue-600">
-                                Núverandi
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <span>{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`h-4 w-4 transition-transform ${showRoomSwitcher ? "rotate-180" : ""}`}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+                {showRoomSwitcher && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+                    <div className="p-2">
+                      <div className="mb-2 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-neutral-400">
+                        Deildir sem þú ert í:
+                      </div>
+                      <div className="space-y-1">
+                        {myRooms.map((room) => (
+                          <button
+                            key={room.roomId}
+                            type="button"
+                            onClick={() => void switchRoom(room.roomCode)}
+                            className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
+                              room.isCurrentRoom
+                                ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
+                                : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="font-semibold">{room.roomName}</div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
                               </div>
-                            )}
-                          </div>
-                        </button>
-                      ))}
+                              {room.isCurrentRoom && (
+                                <div className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white dark:bg-blue-600">
+                                  Núverandi
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              <span>Útskrá</span>
+            </button>
+          </div>
         </div>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
           <span className="font-semibold">{data.me.display_name}</span>{" "}
@@ -486,7 +530,7 @@ export default function RoomPage() {
                 <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
               ) : (
                 (() => {
-                  // Kommandi leikir: allir leikir sem ekki hafa niðurstöðu (sama hvort byrjaðir eða ekki)
+                  // Komandi leikir: allir leikir sem ekki hafa niðurstöðu (sama hvort byrjaðir eða ekki)
                   const upcomingMatches = data.matches.filter((m) => m.result == null);
                   // Eldri leikir: allir leikir sem hafa niðurstöðu
                   const finishedMatches = data.matches.filter((m) => m.result != null);
@@ -654,7 +698,7 @@ export default function RoomPage() {
                       {upcomingMatches.length > 0 && (
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-4">
-                            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Kommandi leikir</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Komandi leikir</h2>
                             <div className="flex flex-col items-end gap-1">
                               <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900/40">
                                 {data.pointsPerCorrectX != null ? (

@@ -698,7 +698,7 @@ export default function RoomPage() {
                       {upcomingMatches.length > 0 && (
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-4">
-                            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Komandi leikir</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Leikir framundan</h2>
                             <div className="flex flex-col items-end gap-1">
                               <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900/40">
                                 {data.pointsPerCorrectX != null ? (
@@ -713,11 +713,6 @@ export default function RoomPage() {
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-slate-500 dark:text-neutral-400">
-                                <span className="inline-flex items-center gap-1">
-                                  = Underdog (margfaldar stig ef rétt)
-                                </span>
-                              </p>
                             </div>
                           </div>
                           <div className="space-y-3">

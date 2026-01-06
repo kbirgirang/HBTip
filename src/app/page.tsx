@@ -359,7 +359,7 @@ export default function HomePage() {
             <section className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold">Búa til deild</h2>
+                  <h2 className="text-xl font-semibold">Búðu til nýja deild</h2>
                   <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
                     Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
                   </p>
@@ -450,7 +450,7 @@ export default function HomePage() {
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cDisplayName}
                   onChange={(e) => setCDisplayName(e.target.value)}
-                  placeholder="t.d. Rafgani"
+                  placeholder="t.d. Rafganis"
                 />
               </div>  
 
@@ -572,10 +572,10 @@ export default function HomePage() {
             {joinTab === "login" && (
               <form onSubmit={handleSimpleLogin} className="space-y-4">
                 <div>
-                  <label className="text-sm text-slate-700 dark:text-neutral-200">
+                  {/*<label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
                     <InfoTooltip text="Notandanafn sem þú notar. Þú verður skráður inn á fyrstu deild sem þú ert í." />
-                  </label>
+                  </label>*/}
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={slUsername}

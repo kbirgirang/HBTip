@@ -374,19 +374,6 @@ export default function HomePage() {
                   ✕ Loka
                 </button>
               </div>
-              
-              <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-xs text-slate-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-neutral-300">
-                <p className="font-semibold">
-                  Hvað gerist?
-                  <InfoTooltip text="Búið er til ný deild með einstöku númeri. Þú verður stjórnandi með sérstakt lykilorð sem birtist bara einu sinni. Önnur geta joinað með deildar númeri og join password sem þú velur." />
-                </p>
-                <ul className="mt-1.5 ml-4 list-disc space-y-1">
-                  <li>Búið er til ný deild með númeri (t.d. Rafganistan-1234)</li>
-                  <li>Þú verður stjórnandi með sérstakt lykilorð</li>F
-                  <li>Önnur geta joinað með deildar númeri + join password</li>
-                  <li>Hvert notandanafn er global (getur verið í fleiri deildum)</li>
-                </ul>
-              </div>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>

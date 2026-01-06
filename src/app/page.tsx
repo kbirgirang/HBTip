@@ -360,9 +360,9 @@ export default function HomePage() {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">Búðu til nýja deild</h2>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
+                  {/*<p className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
                     Þú verður stjórnandi og færð lykilorð stjórnanda (geymdu það).
-                  </p>
+                  </p>*/}
                 </div>
                 <button
                   onClick={() => {
@@ -450,7 +450,7 @@ export default function HomePage() {
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                   value={cDisplayName}
                   onChange={(e) => setCDisplayName(e.target.value)}
-                  placeholder="t.d. Rafganis"
+                  placeholder="t.d. Rafgani"
                 />
               </div>  
 

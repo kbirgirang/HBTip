@@ -1516,27 +1516,25 @@ export default function AdminPage() {
                               type="button"
                               onClick={() => {
                                 const icelandTeam = [
-                                  { "name": "Viktor Gísli Hallgrímsson", "team": "Iceland" },
                                   { "name": "Björgvin Páll Gústavsson", "team": "Iceland" },
-                                  { "name": "Gísli Þorgeir Kristjánsson", "team": "Iceland" },
-                                  { "name": "Ómar Ingi Magnússon", "team": "Iceland" },
+                                  { "name": "Viktor Gísli Hallgrímsson", "team": "Iceland" },
+                                  { "name": "Andri Már Rúnarsson", "team": "Iceland" },
+                                  { "name": "Arnar Freyr Arnarsson", "team": "Iceland" },
                                   { "name": "Bjarki Már Elísson", "team": "Iceland" },
-                                  { "name": "Sigvaldi Björn Guðjónsson", "team": "Iceland" },
-                                  { "name": "Ýmir Örn Gíslason", "team": "Iceland" },
+                                  { "name": "Einar Þorsteinn Ólafsson", "team": "Iceland" },
                                   { "name": "Elliði Snær Viðarsson", "team": "Iceland" },
                                   { "name": "Elvar Örn Jónsson", "team": "Iceland" },
-                                  { "name": "Viggó Kristjánsson", "team": "Iceland" },
+                                  { "name": "Gísli Þorgeir Kristjánsson", "team": "Iceland" },
+                                  { "name": "Haukur Þrastarsson", "team": "Iceland" },
                                   { "name": "Janus Daði Smárason", "team": "Iceland" },
-                                  { "name": "Haukur Þrastarson", "team": "Iceland" },
-                                  { "name": "Arnór Snær Óskarsson", "team": "Iceland" },
-                                  { "name": "Stiven Tobar Valencia", "team": "Iceland" },
                                   { "name": "Orri Freyr Þorkelsson", "team": "Iceland" },
                                   { "name": "Óðinn Þór Ríkharðsson", "team": "Iceland" },
-                                  { "name": "Arnar Freyr Arnarsson", "team": "Iceland" },
-                                  { "name": "Þorsteinn Leó Gunnarsson", "team": "Iceland" },
-                                  { "name": "Einar Þorsteinn Ólafsson", "team": "Iceland" },
-                                  { "name": "Daníel Þór Ingason", "team": "Iceland" }
-                                ];
+                                  { "name": "Ómar Ingi Magnússon", "team": "Iceland" },
+                                  { "name": "Teitur Örn Einarsson", "team": "Iceland" },
+                                  { "name": "Viggó Kristjánsson", "team": "Iceland" },
+                                  { "name": "Ýmir Örn Gíslason", "team": "Iceland" }
+                                ]
+                                ;
                                 setPlayerOptionsJson(JSON.stringify(icelandTeam, null, 2));
                                 flash("Íslenska landsliðið sett inn ✅");
                               }}

@@ -601,32 +601,31 @@ export default function RoomPage() {
                   const isIceland = isIcelandPlaying(m.home_team, m.away_team);
                   
                   return (
-                                <div key={m.id} className={`rounded-xl border p-4 ${
+                                <div key={m.id} className={`rounded-xl border p-4 relative overflow-hidden ${
                                   isIceland 
-                                    ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-400 dark:from-blue-950/60 dark:to-blue-900/40 shadow-lg ring-2 ring-blue-300/50 dark:ring-blue-500/30" 
+                                    ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
-                      <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
+                      {isIceland && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                          <span className="text-9xl">{getTeamFlag("Ísland")}</span>
+                        </div>
+                      )}
+                      <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                       </div>
-                      <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                      <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                         <div className="text-center md:text-left">
                           <div className="font-semibold">
-                                        <span className={isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
-                                          {isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") && "⭐ "}
-                                          {m.home_team}
-                                        </span>{" "}
+                                        <span>{m.home_team}</span>{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           vs
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                         </span>{" "}
-                                        <span className={isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
-                                          {isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") && "⭐ "}
-                                          {m.away_team}
-                                        </span>{" "}
+                                        <span>{m.away_team}</span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
                         </div>
@@ -765,32 +764,31 @@ export default function RoomPage() {
                               const isIceland = isIcelandPlaying(m.home_team, m.away_team);
                               
                               return (
-                                <div key={m.id} className={`rounded-xl border p-4 ${
+                                <div key={m.id} className={`rounded-xl border p-4 relative overflow-hidden ${
                                   isIceland 
-                                    ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-400 dark:from-blue-950/60 dark:to-blue-900/40 shadow-lg ring-2 ring-blue-300/50 dark:ring-blue-500/30" 
+                                    ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
-                                  <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
+                                  {isIceland && (
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                                      <span className="text-9xl">{getTeamFlag("Ísland")}</span>
+                                    </div>
+                                  )}
+                                  <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                                     {m.stage ? `${m.stage} · ` : ""}
                                     {new Date(m.starts_at).toLocaleString()}
                                     {m.match_no != null ? ` · #${m.match_no}` : ""}
                                   </div>
-                                  <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                                  <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                                     <div className="text-center md:text-left">
                                       <div className="font-semibold">
-                                        <span className={isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
-                                          {isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") && "⭐ "}
-                                          {m.home_team}
-                                        </span>{" "}
+                                        <span>{m.home_team}</span>{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           vs
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                         </span>{" "}
-                                        <span className={isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
-                                          {isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") && "⭐ "}
-                                          {m.away_team}
-                                        </span>{" "}
+                                        <span>{m.away_team}</span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>
                                     </div>

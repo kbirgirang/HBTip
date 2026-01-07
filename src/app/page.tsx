@@ -524,10 +524,7 @@ export default function HomePage() {
 
           {/* Join - Register/Login - Main section */}
           <section className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-6 shadow">
-            <h2 className="text-2xl font-semibold mb-2">Skráning í deild</h2>
-            <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
-            Taktu þátt í deildum og fáðu stig!     
-            </p>
+            <h2 className="text-2xl font-semibold mb-2">Viltu vera besti tipparinn!!! </h2>
             <p className="mb-4 text-sm text-slate-600 dark:text-neutral-300">
               Skráðu þig inn og/eða búðu til nýjan aðgang til að taka þátt í deildum.  
             </p>

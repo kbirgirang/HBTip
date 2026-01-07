@@ -607,8 +607,8 @@ export default function RoomPage() {
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
                       {isIceland && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-                          <span className="text-9xl">{getTeamFlag("Ísland")}</span>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
+                          <span className="text-[25rem] leading-none scale-150">{getTeamFlag("Ísland")}</span>
                         </div>
                       )}
                       <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
@@ -770,8 +770,8 @@ export default function RoomPage() {
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
                                   {isIceland && (
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-                                      <span className="text-9xl">{getTeamFlag("Ísland")}</span>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
+                                      <span className="text-[25rem] leading-none scale-150">{getTeamFlag("Ísland")}</span>
                                     </div>
                                   )}
                                   <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">

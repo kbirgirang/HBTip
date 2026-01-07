@@ -690,7 +690,7 @@ export default function RoomPage() {
                         <>
                           <button
                             onClick={() => toggleBonus(m.id)}
-                            className="relative mt-3 rounded-lg border-2 border-blue-500 bg-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-600 hover:shadow-lg transition-all dark:border-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500"
+                            className="relative mt-3 rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                           >
                             {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Sýna bónus"}
                           </button>
@@ -853,7 +853,7 @@ export default function RoomPage() {
                                     <>
                                       <button
                                         onClick={() => toggleBonus(m.id)}
-                                        className="relative mt-3 rounded-lg border-2 border-blue-500 bg-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-600 hover:shadow-lg transition-all dark:border-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500"
+                                        className="relative mt-3 rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                                       >
                                         {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Bónus Spurning"}
                                       </button>

@@ -771,7 +771,7 @@ export default function RoomPage() {
                                 }`}>
                                   {isIceland && (
                                     <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
-                                      <span className="text-[25rem] leading-none scale-150 rotate-45">{getTeamFlag("Ísland")}</span>
+                                      <span className="text-[25rem] leading-none scale-150 rotate 45">{getTeamFlag("Ísland")}</span>
                                     </div>
                                   )}
                                   <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">

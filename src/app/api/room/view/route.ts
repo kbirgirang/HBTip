@@ -218,6 +218,10 @@ export async function GET() {
       const question = bonusById.get(ans.question_id);
       if (!question) continue;
 
+      // Athuga hvort leikurinn sé búinn (match.result != null)
+      const match = matchById.get(question.match_id);
+      if (!match || !match.result) continue; // Ekki gefa stig ef leikurinn er ekki búinn
+
       // Athuga hvort rétt svar sé sett
       let isCorrect = false;
       if (question.type === "number" && question.correct_number != null) {

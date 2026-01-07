@@ -4,6 +4,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { getTeamFlag } from "@/lib/teamFlags";
 
+// Athuga hvort Ísland sé í leiknum
+function isIcelandPlaying(homeTeam: string, awayTeam: string): boolean {
+  const icelandNames = ["Ísland", "Iceland"];
+  return icelandNames.includes(homeTeam) || icelandNames.includes(awayTeam);
+}
+
 type Pick = "1" | "X" | "2";
 type BonusType = "number" | "choice" | "player";
 
@@ -592,8 +598,14 @@ export default function RoomPage() {
                     });
                   }
 
+                  const isIceland = isIcelandPlaying(m.home_team, m.away_team);
+                  
                   return (
-                                <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
+                                <div key={m.id} className={`rounded-xl border p-4 ${
+                                  isIceland 
+                                    ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-400 dark:from-blue-950/60 dark:to-blue-900/40 shadow-lg ring-2 ring-blue-300/50 dark:ring-blue-500/30" 
+                                    : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
+                                }`}>
                       <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
@@ -602,13 +614,19 @@ export default function RoomPage() {
                       <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                         <div className="text-center md:text-left">
                           <div className="font-semibold">
-                                        <span>{m.home_team}</span>{" "}
+                                        <span className={isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
+                                          {isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") && "⭐ "}
+                                          {m.home_team}
+                                        </span>{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           vs
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                         </span>{" "}
-                                        <span>{m.away_team}</span>{" "}
+                                        <span className={isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
+                                          {isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") && "⭐ "}
+                                          {m.away_team}
+                                        </span>{" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
                         </div>
@@ -744,8 +762,14 @@ export default function RoomPage() {
                                 });
                               }
 
+                              const isIceland = isIcelandPlaying(m.home_team, m.away_team);
+                              
                               return (
-                                <div key={m.id} className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
+                                <div key={m.id} className={`rounded-xl border p-4 ${
+                                  isIceland 
+                                    ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-400 dark:from-blue-950/60 dark:to-blue-900/40 shadow-lg ring-2 ring-blue-300/50 dark:ring-blue-500/30" 
+                                    : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
+                                }`}>
                                   <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
                                     {m.stage ? `${m.stage} · ` : ""}
                                     {new Date(m.starts_at).toLocaleString()}
@@ -754,13 +778,19 @@ export default function RoomPage() {
                                   <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                                     <div className="text-center md:text-left">
                                       <div className="font-semibold">
-                                        <span>{m.home_team}</span>{" "}
+                                        <span className={isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
+                                          {isIceland && (m.home_team === "Ísland" || m.home_team === "Iceland") && "⭐ "}
+                                          {m.home_team}
+                                        </span>{" "}
                                         <span className="inline-flex items-center gap-1">
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                           vs
                                           {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                                         </span>{" "}
-                                        <span>{m.away_team}</span>{" "}
+                                        <span className={isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") ? "text-blue-600 dark:text-blue-400" : ""}>
+                                          {isIceland && (m.away_team === "Ísland" || m.away_team === "Iceland") && "⭐ "}
+                                          {m.away_team}
+                                        </span>{" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>
                                     </div>

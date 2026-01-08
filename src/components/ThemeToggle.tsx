@@ -7,7 +7,8 @@ export default function ThemeToggle() {
   const pathname = usePathname();
   
   // Hide on admin page (admin page has its own inline toggle)
-  if (pathname === "/admin") {
+  // Hide on room pages (room pages have their own inline toggle in header)
+  if (pathname === "/admin" || pathname?.startsWith("/r/")) {
     return null;
   }
   const [theme, setTheme] = useState<"light" | "dark">("dark");

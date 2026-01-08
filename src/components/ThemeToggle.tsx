@@ -66,7 +66,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="fixed right-4 top-16 md:top-4 z-50">
+      <div className="fixed right-4 top-4 z-50">
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-neutral-300 bg-white shadow-lg transition hover:scale-105 dark:border-neutral-700 dark:bg-neutral-900"
@@ -79,7 +79,7 @@ export default function ThemeToggle() {
   }
 
   return (
-    <div className="fixed right-4 top-16 md:top-4 z-40">
+    <div className="fixed right-4 top-4 z-40">
       <button
         type="button"
         onClick={handleClick}

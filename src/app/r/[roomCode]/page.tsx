@@ -378,11 +378,11 @@ export default function RoomPage() {
     if (!data) return null;
     return (
       <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
+        <div className="flex items-start justify-between gap-2">
+        <h1 className="text-2xl font-bold flex-1">
             {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
             {myRooms.length > 1 && (
               <div className="relative" ref={roomSwitcherRef}>
                 <button

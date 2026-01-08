@@ -8,68 +8,93 @@ export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Ekki skráður inn" }, { status: 401 });
 
-  // 1) Room + tournament
-  const { data: room, error: rErr } = await supabaseServer
-    .from("rooms")
-    .select("id, room_code, room_name, tournament_id")
-    .eq("id", session.roomId)
-    .single();
-
-  if (rErr || !room) return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
-
-  // 2) Current member
-  const { data: me, error: meErr } = await supabaseServer
+  // ✅ Sækja username fyrir núverandi member
+  const { data: currentMember, error: meErr } = await supabaseServer
     .from("room_members")
     .select("id, display_name, is_owner, username")
     .eq("id", session.memberId)
     .single();
 
-  if (meErr || !me) return NextResponse.json({ error: "Meðlimur fannst ekki" }, { status: 404 });
+  if (meErr || !currentMember) return NextResponse.json({ error: "Meðlimur fannst ekki" }, { status: 404 });
 
-  // 3) Matches
-  const { data: matches, error: mErr } = await supabaseServer
+  // ✅ Sækja allar deildir sem notandi er í með sama username
+  const { data: allMyMembers, error: allErr } = await supabaseServer
+    .from("room_members")
+    .select("id, room_id, display_name, is_owner")
+    .ilike("username", currentMember.username);
+
+  if (allErr) return NextResponse.json({ error: allErr.message }, { status: 500 });
+
+  const roomIds = (allMyMembers ?? []).map((m: any) => m.room_id);
+  if (roomIds.length === 0) {
+    return NextResponse.json({ error: "Engar deildir fundust" }, { status: 404 });
+  }
+
+  // ✅ Sækja allar deildir
+  const { data: rooms, error: rErr } = await supabaseServer
+    .from("rooms")
+    .select("id, room_code, room_name, tournament_id")
+    .in("id", roomIds);
+
+  if (rErr || !rooms || rooms.length === 0) return NextResponse.json({ error: "Deildir fundust ekki" }, { status: 404 });
+
+  // ✅ Sækja allar keppnir sem tengjast þessum deildum
+  const tournamentIds = [...new Set(rooms.map((r: any) => r.tournament_id))];
+
+  // ✅ Sækja allar leikir úr öllum keppnunum
+  const { data: allMatches, error: mErr } = await supabaseServer
     .from("matches")
-    .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier")
-    .eq("tournament_id", room.tournament_id)
+    .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier, tournament_id")
+    .in("tournament_id", tournamentIds)
     .order("match_no", { ascending: true, nullsFirst: false });
 
   if (mErr) return NextResponse.json({ error: mErr.message }, { status: 500 });
 
-  // 4) Bonus questions PER MATCH (1 per match) + choice fields + player fields
-  const { data: bonusQs, error: bErr } = await supabaseServer
+  // ✅ Sækja allar bonus spurningar
+  const { data: allBonusQs, error: bErr } = await supabaseServer
     .from("bonus_questions")
-    .select(
-      "id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice, correct_player_id, player_options"
-    )
-    .eq("tournament_id", room.tournament_id);
+    .select("id, match_id, title, type, points, closes_at, correct_number, choice_options, correct_choice, correct_player_id, player_options, tournament_id")
+    .in("tournament_id", tournamentIds);
 
   if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
 
-  // 4b) My bonus answers (for this member) - only for questions we have
-  const qIds = (bonusQs ?? []).map((q: any) => q.id);
-  let myBonusAnswers: any[] = [];
+  // ✅ Sækja allar spár fyrir allar deildir sem notandi er í
+  const allMemberIds = (allMyMembers ?? []).map((m: any) => m.id);
+  const { data: allPreds, error: pErr } = await supabaseServer
+    .from("predictions")
+    .select("member_id, match_id, pick, room_id")
+    .in("member_id", allMemberIds);
 
-  if (qIds.length > 0) {
+  if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
+
+  // ✅ Sækja allar settings fyrir allar keppnir
+  const { data: allSettings, error: settingsErr } = await supabaseServer
+    .from("admin_settings")
+    .select("tournament_id, points_per_correct_1x2, points_per_correct_x")
+    .in("tournament_id", tournamentIds);
+
+  // ✅ Sækja bonus svör fyrir allar deildir
+  const allQIds = (allBonusQs ?? []).map((q: any) => q.id);
+  let allMyBonusAnswers: any[] = [];
+  if (allQIds.length > 0) {
     const { data: ans, error: aErr } = await supabaseServer
       .from("bonus_answers")
-      .select("question_id, answer_number, answer_choice, answer_player_id")
-      .eq("room_id", room.id)
-      .eq("member_id", session.memberId)
-      .in("question_id", qIds);
-
+      .select("question_id, answer_number, answer_choice, answer_player_id, room_id, member_id")
+      .in("member_id", allMemberIds)
+      .in("question_id", allQIds);
     if (aErr) return NextResponse.json({ error: aErr.message }, { status: 500 });
-    myBonusAnswers = ans ?? [];
+    allMyBonusAnswers = ans ?? [];
   }
 
-  // 4c) Fetch player names for correct_player_id and answer_player_id
+  // ✅ Sækja player nöfn
   const playerIds = new Set<string>();
-  for (const q of bonusQs ?? []) {
+  for (const q of allBonusQs ?? []) {
     if (q.correct_player_id) playerIds.add(q.correct_player_id);
   }
-  for (const a of myBonusAnswers) {
+  for (const a of allMyBonusAnswers) {
     if (a.answer_player_id) playerIds.add(a.answer_player_id);
   }
-  
+
   let playersMap = new Map<string, { id: string; full_name: string }>();
   if (playerIds.size > 0) {
     const { data: players, error: pErr } = await supabaseServer
@@ -83,183 +108,192 @@ export async function GET() {
     }
   }
 
-  const myAnswerByQid = new Map<string, any>();
-  for (const a of myBonusAnswers) myAnswerByQid.set(a.question_id, a);
+  // ✅ Búa til gögn fyrir hverja deild
+  const roomsData = await Promise.all(
+    rooms.map(async (room: any) => {
+      const roomMember = allMyMembers.find((m: any) => m.room_id === room.id);
+      if (!roomMember) return null;
 
-  // 5) Settings
-  const { data: settings, error: settingsErr } = await supabaseServer
-    .from("admin_settings")
-    .select("points_per_correct_1x2, points_per_correct_x")
-    .eq("tournament_id", room.tournament_id)
-    .maybeSingle();
+      // Leikir fyrir þessa keppni
+      const roomMatches = (allMatches ?? []).filter((m: any) => m.tournament_id === room.tournament_id);
 
-  // Ef settings fannst ekki eða villa, nota default gildi
-  const pointsPer = settings?.points_per_correct_1x2 ?? 1;
-  const pointsPerX = settings?.points_per_correct_x ?? null; // null = nota pointsPer
+      // Settings fyrir þessa keppni
+      const roomSettings = allSettings?.find((s: any) => s.tournament_id === room.tournament_id);
+      const pointsPer = roomSettings?.points_per_correct_1x2 ?? 1;
+      const pointsPerX = roomSettings?.points_per_correct_x ?? null;
 
-  // 6) Members
-  const { data: members, error: memErr } = await supabaseServer
-    .from("room_members")
-    .select("id, display_name, username")
-    .eq("room_id", room.id);
+      // Bonus spurningar fyrir þessa keppni
+      const roomBonusQs = (allBonusQs ?? []).filter((q: any) => q.tournament_id === room.tournament_id);
+      const roomQIds = roomBonusQs.map((q: any) => q.id);
 
-  if (memErr) return NextResponse.json({ error: memErr.message }, { status: 500 });
+      // Bonus svör fyrir þessa deild
+      const roomBonusAnswers = allMyBonusAnswers.filter((a: any) => a.room_id === room.id && a.member_id === roomMember.id);
+      const myAnswerByQid = new Map<string, any>();
+      for (const a of roomBonusAnswers) myAnswerByQid.set(a.question_id, a);
 
-  // 7) Predictions for room
-  const { data: preds, error: pErr } = await supabaseServer
-    .from("predictions")
-    .select("member_id, match_id, pick")
-    .eq("room_id", room.id);
+      // Bonus per match map
+      const bonusByMatchId = new Map<string, any>();
+      const bonusById = new Map<string, any>();
+      for (const q of roomBonusQs) {
+        const mine = myAnswerByQid.get(q.id);
+        bonusById.set(q.id, q);
+        const correctPlayer = q.correct_player_id ? playersMap.get(q.correct_player_id) : null;
+        const myAnswerPlayer = mine?.answer_player_id ? playersMap.get(mine.answer_player_id) : null;
 
-  if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
+        let myAnswerPlayerName = null;
+        if (q.type === "player") {
+          myAnswerPlayerName = mine?.answer_choice ?? null;
+        } else if (mine?.answer_player_id) {
+          myAnswerPlayerName = myAnswerPlayer?.full_name ?? null;
+        }
 
-  // 7b) ALL bonus answers for ALL members (for leaderboard)
-  let allBonusAnswers: any[] = [];
-  if (qIds.length > 0) {
-    const { data: allAns, error: allAErr } = await supabaseServer
-      .from("bonus_answers")
-      .select("member_id, question_id, answer_number, answer_choice, answer_player_id")
-      .eq("room_id", room.id)
-      .in("question_id", qIds);
+        let correctPlayerName = correctPlayer?.full_name ?? null;
+        if (q.type === "player" && q.correct_choice) {
+          correctPlayerName = q.correct_choice;
+        }
 
-    if (allAErr) return NextResponse.json({ error: allAErr.message }, { status: 500 });
-    allBonusAnswers = allAns ?? [];
-    
-    // Add player IDs to playersMap
-    for (const a of allBonusAnswers) {
-      if (a.answer_player_id) playerIds.add(a.answer_player_id);
-    }
-    
-    // Fetch all players needed
-    if (playerIds.size > 0) {
-      const { data: players, error: pErr } = await supabaseServer
-        .from("players")
-        .select("id, full_name")
-        .in("id", Array.from(playerIds));
-      if (!pErr && players) {
-        for (const p of players) {
-          playersMap.set(p.id, p);
+        bonusByMatchId.set(q.match_id, {
+          ...q,
+          my_answer_number: mine?.answer_number ?? null,
+          my_answer_choice: mine?.answer_choice ?? null,
+          my_answer_player_id: mine?.answer_player_id ?? null,
+          my_answer_player_name: myAnswerPlayerName,
+          correct_player_id: q.correct_player_id ?? null,
+          correct_player_name: correctPlayerName,
+        });
+      }
+
+      // Spár fyrir þessa deild
+      const roomPreds = (allPreds ?? []).filter((pr: any) => pr.room_id === room.id);
+      const myPicks = new Map<string, Pick>();
+      for (const pr of roomPreds) {
+        if (pr.member_id === roomMember.id) myPicks.set(pr.match_id, pr.pick as Pick);
+      }
+
+      // Members fyrir þessa deild
+      const { data: roomMembers, error: memErr } = await supabaseServer
+        .from("room_members")
+        .select("id, display_name, username")
+        .eq("room_id", room.id);
+
+      if (memErr) return null;
+
+      // Leaderboard fyrir þessa deild
+      const matchById = new Map(roomMatches.map((x: any) => [x.id, x]));
+
+      // All bonus answers fyrir þessa deild (fyrir leaderboard)
+      let allRoomBonusAnswers: any[] = [];
+      if (roomQIds.length > 0) {
+        const { data: allAns, error: allAErr } = await supabaseServer
+          .from("bonus_answers")
+          .select("member_id, question_id, answer_number, answer_choice, answer_player_id")
+          .eq("room_id", room.id)
+          .in("question_id", roomQIds);
+
+        if (!allAErr && allAns) {
+          allRoomBonusAnswers = allAns;
+
+          // Add player IDs to playersMap
+          for (const a of allRoomBonusAnswers) {
+            if (a.answer_player_id) playerIds.add(a.answer_player_id);
+          }
+
+          // Fetch additional players if needed
+          const additionalPlayerIds = Array.from(playerIds).filter((id) => !playersMap.has(id));
+          if (additionalPlayerIds.length > 0) {
+            const { data: additionalPlayers, error: addPErr } = await supabaseServer
+              .from("players")
+              .select("id, full_name")
+              .in("id", additionalPlayerIds);
+            if (!addPErr && additionalPlayers) {
+              for (const p of additionalPlayers) {
+                playersMap.set(p.id, p);
+              }
+            }
+          }
         }
       }
-    }
-  }
 
-  // --- Lookup maps
-  const matchById = new Map((matches ?? []).map((x: any) => [x.id, x]));
+      const leaderboard = (roomMembers ?? []).map((m: any) => {
+        let correct1x2 = 0;
+        let points = 0;
 
-  // bonus per match map (merge in my answers)
-  const bonusByMatchId = new Map<string, any>();
-  const bonusById = new Map<string, any>();
-  for (const q of bonusQs ?? []) {
-    const mine = myAnswerByQid.get(q.id);
-    bonusById.set(q.id, q);
-    const correctPlayer = q.correct_player_id ? playersMap.get(q.correct_player_id) : null;
-    const myAnswerPlayer = mine?.answer_player_id ? playersMap.get(mine.answer_player_id) : null;
-    
-    // For player type, answer_choice contains player name
-    let myAnswerPlayerName = null;
-    if (q.type === "player") {
-      myAnswerPlayerName = mine?.answer_choice ?? null;
-    } else if (mine?.answer_player_id) {
-      myAnswerPlayerName = myAnswerPlayer?.full_name ?? null;
-    }
-    
-    // For player type, correct_choice contains the correct player name
-    let correctPlayerName = correctPlayer?.full_name ?? null;
-    if (q.type === "player" && q.correct_choice) {
-      correctPlayerName = q.correct_choice;
-    }
-    
-    bonusByMatchId.set(q.match_id, {
-      ...q,
-      my_answer_number: mine?.answer_number ?? null,
-      my_answer_choice: mine?.answer_choice ?? null,
-      my_answer_player_id: mine?.answer_player_id ?? null,
-      my_answer_player_name: myAnswerPlayerName,
-      correct_player_id: q.correct_player_id ?? null,
-      correct_player_name: correctPlayerName,
-    });
-  }
+        // 1X2 stig
+        for (const pr of roomPreds) {
+          if (pr.member_id !== m.id) continue;
+          const match = matchById.get(pr.match_id);
+          if (!match?.result) continue;
+          if (pr.pick === match.result) {
+            correct1x2 += 1;
+            let pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
 
-  // --- My picks
-  const myPicks = new Map<string, Pick>();
-  for (const pr of preds ?? []) {
-    if (pr.member_id === session.memberId) myPicks.set(pr.match_id, pr.pick as Pick);
-  }
+            if (match.underdog_team && match.underdog_multiplier && pr.pick === match.underdog_team && match.result === match.underdog_team) {
+              pointsForThis = Math.round(pointsForThis * match.underdog_multiplier);
+            }
 
-  // 8) Leaderboard (1X2 + bónus)
-  const leaderboard = (members ?? []).map((m: any) => {
-    let correct1x2 = 0;
-    let points = 0;
-
-    // 1X2 stig
-    for (const pr of preds ?? []) {
-      if (pr.member_id !== m.id) continue;
-      const match = matchById.get(pr.match_id);
-      if (!match?.result) continue;
-      if (pr.pick === match.result) {
-        correct1x2 += 1;
-        // Ef X og pointsPerX er sett, nota það, annars nota pointsPer
-        let pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
-        
-        // Underdog check: ef notandi giskaði á underdog og underdog vann, margfalda stig
-        if (match.underdog_team && match.underdog_multiplier && pr.pick === match.underdog_team && match.result === match.underdog_team) {
-          pointsForThis = Math.round(pointsForThis * match.underdog_multiplier);
+            points += pointsForThis;
+          }
         }
-        
-        points += pointsForThis;
-      }
-    }
 
-    // Bónus stig
-    let bonusPoints = 0;
-    for (const ans of allBonusAnswers ?? []) {
-      if (ans.member_id !== m.id) continue;
-      const question = bonusById.get(ans.question_id);
-      if (!question) continue;
+        // Bónus stig
+        let bonusPoints = 0;
+        for (const ans of allRoomBonusAnswers ?? []) {
+          if (ans.member_id !== m.id) continue;
+          const question = bonusById.get(ans.question_id);
+          if (!question) continue;
 
-      // Athuga hvort leikurinn sé búinn (match.result != null)
-      const match = matchById.get(question.match_id);
-      if (!match || !match.result) continue; // Ekki gefa stig ef leikurinn er ekki búinn
+          const match = matchById.get(question.match_id);
+          if (!match || !match.result) continue;
 
-      // Athuga hvort rétt svar sé sett
-      let isCorrect = false;
-      if (question.type === "number" && question.correct_number != null) {
-        isCorrect = ans.answer_number === question.correct_number;
-      } else if (question.type === "choice" && question.correct_choice != null) {
-        isCorrect = ans.answer_choice === question.correct_choice;
-      } else if (question.type === "player" && question.correct_choice != null) {
-        // Fyrir player type er bæði rétt svar og notandans svar í answer_choice/correct_choice (leikmannsnafn)
-        isCorrect = ans.answer_choice === question.correct_choice;
-      }
+          let isCorrect = false;
+          if (question.type === "number" && question.correct_number != null) {
+            isCorrect = ans.answer_number === question.correct_number;
+          } else if (question.type === "choice" && question.correct_choice != null) {
+            isCorrect = ans.answer_choice === question.correct_choice;
+          } else if (question.type === "player" && question.correct_choice != null) {
+            isCorrect = ans.answer_choice === question.correct_choice;
+          }
 
-      if (isCorrect) {
-        bonusPoints += question.points;
-        points += question.points;
-      }
-    }
+          if (isCorrect) {
+            bonusPoints += question.points;
+            points += question.points;
+          }
+        }
 
-    return { memberId: m.id, displayName: m.display_name, username: m.username, points, correct1x2, bonusPoints };
-  });
+        return { memberId: m.id, displayName: m.display_name, username: m.username, points, correct1x2, bonusPoints };
+      });
 
-  leaderboard.sort(
-    (a: any, b: any) =>
-      b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
+      leaderboard.sort(
+        (a: any, b: any) =>
+          b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
+      );
+
+      return {
+        room: { code: room.room_code, name: room.room_name },
+        me: { id: roomMember.id, display_name: roomMember.display_name, is_owner: roomMember.is_owner, username: currentMember.username },
+        pointsPerCorrect1x2: pointsPer,
+        pointsPerCorrectX: pointsPerX,
+        matches: roomMatches.map((m: any) => ({
+          ...m,
+          myPick: myPicks.get(m.id) ?? null,
+          bonus: bonusByMatchId.get(m.id) ?? null,
+        })),
+        leaderboard,
+      };
+    })
   );
 
-  // 9) Return matches with myPick + bonus
-  const matchesOut = (matches ?? []).map((m: any) => ({
-    ...m,
-    myPick: myPicks.get(m.id) ?? null,
-    bonus: bonusByMatchId.get(m.id) ?? null,
-  }));
+  const validRoomsData = roomsData.filter((r: any) => r !== null);
 
+  // Return first room as "current" for backwards compatibility, but also include all rooms
   return NextResponse.json({
-    room: { code: room.room_code, name: room.room_name },
-    me,
-    pointsPerCorrect1x2: pointsPer,
-    pointsPerCorrectX: pointsPerX,
-    matches: matchesOut,
-    leaderboard,
+    room: validRoomsData[0]?.room ?? { code: session.roomCode, name: "" },
+    me: currentMember,
+    pointsPerCorrect1x2: validRoomsData[0]?.pointsPerCorrect1x2 ?? 1,
+    pointsPerCorrectX: validRoomsData[0]?.pointsPerCorrectX ?? null,
+    matches: validRoomsData[0]?.matches ?? [],
+    leaderboard: validRoomsData[0]?.leaderboard ?? [],
+    // ✅ Nýtt: allar deildir
+    allRooms: validRoomsData,
   });
 }

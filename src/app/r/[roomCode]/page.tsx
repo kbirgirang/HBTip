@@ -13,7 +13,7 @@ function isIcelandPlaying(homeTeam: string, awayTeam: string): boolean {
 type Pick = "1" | "X" | "2";
 type BonusType = "number" | "choice" | "player";
 
-type ViewData = {
+type RoomData = {
   room: { code: string; name: string };
   me: { id: string; display_name: string; is_owner: boolean; username: string };
   pointsPerCorrect1x2: number;
@@ -59,6 +59,10 @@ type ViewData = {
   leaderboard: Array<{ memberId: string; displayName: string; username: string; points: number; correct1x2: number; bonusPoints: number }>;
 };
 
+type ViewData = RoomData & {
+  allRooms?: RoomData[];
+};
+
 export default function RoomPage() {
   const params = useParams<{ roomCode: string }>();
   const roomCode = params?.roomCode ? decodeURIComponent(params.roomCode) : "";
@@ -93,10 +97,6 @@ export default function RoomPage() {
   // Toggle for "Eldri leikir" section
   const [showFinishedMatches, setShowFinishedMatches] = useState(false);
 
-  // Room switcher
-  const [myRooms, setMyRooms] = useState<Array<{ roomId: string; roomCode: string; roomName: string; isCurrentRoom: boolean }>>([]);
-  const [showRoomSwitcher, setShowRoomSwitcher] = useState(false);
-
   // State fyrir hvaða leikjum eru með sýndum bónus
   const [showBonusForMatch, setShowBonusForMatch] = useState<Set<string>>(new Set());
 
@@ -112,7 +112,6 @@ export default function RoomPage() {
       return next;
     });
   };
-  const [loadingRooms, setLoadingRooms] = useState(false);
 
   // Real-time clock for checking if matches have started
   const [now, setNow] = useState(Date.now());
@@ -137,7 +136,6 @@ export default function RoomPage() {
 
   useEffect(() => {
     void load();
-    void loadMyRooms();
     
     // Auto-refresh every 10 seconds
     const interval = setInterval(() => {
@@ -146,61 +144,6 @@ export default function RoomPage() {
     
     return () => clearInterval(interval);
   }, []);
-
-  const roomSwitcherRef = React.useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Loka dropdown þegar notandi klikkar utan um hann
-    function handleClickOutside(event: MouseEvent) {
-      if (showRoomSwitcher && roomSwitcherRef.current && !roomSwitcherRef.current.contains(event.target as Node)) {
-        setShowRoomSwitcher(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showRoomSwitcher]);
-
-  async function loadMyRooms() {
-    setLoadingRooms(true);
-    try {
-      const res = await fetch("/api/room/list-my-rooms", { cache: "no-store" });
-      const json = await res.json().catch(() => ({}));
-      if (res.ok && json.rooms) {
-        setMyRooms(json.rooms);
-      }
-    } catch {
-      // Silent fail
-    } finally {
-      setLoadingRooms(false);
-    }
-  }
-
-  async function switchRoom(roomCode: string) {
-    if (!roomCode) {
-      console.error("Room code is empty");
-      return;
-    }
-    
-    // Uppfæra session fyrst
-    try {
-      const res = await fetch("/api/room/switch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomCode }),
-      });
-      
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        alert(json.error || "Ekki tókst að skipta deild");
-        return;
-      }
-      
-      // Fara í nýju deildina
-      window.location.href = `/r/${encodeURIComponent(roomCode)}`;
-    } catch {
-      alert("Tenging klikkaði. Prófaðu aftur.");
-    }
-  }
 
   async function handleLogout() {
     if (!confirm("Ertu viss um að þú viljir skrá þig út?")) return;
@@ -376,132 +319,45 @@ export default function RoomPage() {
 
   const header = useMemo(() => {
     if (!data) return null;
+    const allRooms = data.allRooms || [data];
     return (
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-        <h1 className="text-2xl font-bold flex-1">
-            {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
-        </h1>
-          <div className="flex flex-col items-end gap-2 flex-shrink-0">
-            {myRooms.length > 1 && (
-              <div className="relative" ref={roomSwitcherRef}>
-                <button
-                  type="button"
-                  onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
-                  className="flex items-center gap-1 md:gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 md:px-4 md:py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4 flex-shrink-0"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                  <span className="hidden md:inline">{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
-                  <span className="md:hidden">{myRooms.length}</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`h-4 w-4 transition-transform flex-shrink-0 ${showRoomSwitcher ? "rotate-180" : ""}`}
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </button>
-                {showRoomSwitcher && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
-                    <div className="p-2">
-                      <div className="mb-2 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-neutral-400">
-                        Deildir sem þú ert í:
-                      </div>
-                      <div className="space-y-1">
-                        {myRooms.map((room) => (
-                          <button
-                            key={room.roomId}
-                            type="button"
-                            onClick={() => void switchRoom(room.roomCode)}
-                            className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
-                              room.isCurrentRoom
-                                ? "bg-blue-50 text-blue-900 dark:bg-blue-900/30 dark:text-blue-300"
-                                : "text-slate-700 hover:bg-slate-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="font-semibold">{room.roomName}</div>
-                                <div className="text-xs text-slate-500 dark:text-neutral-400">{room.roomCode}</div>
-                              </div>
-                              {room.isCurrentRoom && (
-                                <div className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white dark:bg-blue-600">
-                                  Núverandi
-                                </div>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => void handleLogout()}
-              className="flex items-center gap-1 md:gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 md:px-4 md:py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+          <h1 className="text-2xl font-bold flex-1">
+            Leikir
+          </h1>
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            className="flex items-center gap-1 md:gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 md:px-4 md:py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4 flex-shrink-0"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4 flex-shrink-0"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" x2="9" y1="12" y2="12" />
-              </svg>
-              <span className="hidden md:inline">Útskrá</span>
-            </button>
-          </div>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
+            </svg>
+            <span className="hidden md:inline">Útskrá</span>
+          </button>
         </div>
         <p className="text-sm text-slate-600 dark:text-neutral-300">
           <span className="font-semibold">{data.me.display_name}</span>{" "}
           <span className="font-mono">(@{data.me.username})</span>
-          {(() => {
-            const myRank = data.leaderboard.findIndex((p) => p.memberId === data.me.id) + 1;
-            const myStats = data.leaderboard.find((p) => p.memberId === data.me.id);
-            if (myStats && myRank > 0) {
-              return (
-                <>
-                  {" · "}
-                  <span className="font-semibold">{myStats.points}</span> stig
-                  {" · "}
-                  <span className="font-semibold">{myRank}. sæti</span>
-                </>
-              );
-            }
-            return null;
-          })()}
+          {allRooms.length > 1 && (
+            <> · <span className="font-semibold">{allRooms.length}</span> deildir</>
+          )}
         </p>
       </div>
     );
-  }, [data, myRooms, showRoomSwitcher, loadingRooms]);
+  }, [data]);
 
   return (
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -533,18 +389,32 @@ export default function RoomPage() {
 
           {data && tab === "matches" && (
             <div className="space-y-6">
-              {data.matches.length === 0 ? (
-                <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>
-              ) : (
-                (() => {
-                  // Komandi leikir: allir leikir sem ekki hafa niðurstöðu (sama hvort byrjaðir eða ekki)
-                  const upcomingMatches = data.matches.filter((m) => m.result == null);
-                  // Eldri leikir: allir leikir sem hafa niðurstöðu
-                  const finishedMatches = data.matches.filter((m) => m.result != null);
+              {(() => {
+                const allRooms = data.allRooms || [data];
+                // Sameina allar leikir úr öllum deildum (unique by match id)
+                const allMatchesMap = new Map<string, typeof data.matches[0]>();
+                for (const roomData of allRooms) {
+                  for (const match of roomData.matches) {
+                    // Nota fyrsta myPick sem finnst (sama fyrir allar deildir)
+                    if (!allMatchesMap.has(match.id)) {
+                      allMatchesMap.set(match.id, match);
+                    }
+                  }
+                }
+                const allMatches = Array.from(allMatchesMap.values());
+                
+                if (allMatches.length === 0) {
+                  return <p className="text-slate-600 dark:text-neutral-300">Engir leikir komnir inn ennþá (admin setur inn).</p>;
+                }
 
-                  return (
-                    <>
-                      {finishedMatches.length > 0 && (
+                // Komandi leikir: allir leikir sem ekki hafa niðurstöðu (sama hvort byrjaðir eða ekki)
+                const upcomingMatches = allMatches.filter((m) => m.result == null);
+                // Eldri leikir: allir leikir sem hafa niðurstöðu
+                const finishedMatches = allMatches.filter((m) => m.result != null);
+
+                return (
+                  <>
+                    {finishedMatches.length > 0 && (
                         <div>
                           <button
                             type="button"
@@ -590,11 +460,17 @@ export default function RoomPage() {
                       return;
                     }
 
+                    // Uppfæra allar deildir með nýrri spá
                     setData((prev) => {
                       if (!prev) return prev;
+                      const allRooms = prev.allRooms || [prev];
                       return {
                         ...prev,
                         matches: prev.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
+                        allRooms: allRooms.map((room) => ({
+                          ...room,
+                          matches: room.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
+                        })),
                       };
                     });
                   }
@@ -753,11 +629,17 @@ export default function RoomPage() {
                                   return;
                                 }
 
+                                // Uppfæra allar deildir með nýrri spá
                                 setData((prev) => {
                                   if (!prev) return prev;
+                                  const allRooms = prev.allRooms || [prev];
                                   return {
                                     ...prev,
                                     matches: prev.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
+                                    allRooms: allRooms.map((room) => ({
+                                      ...room,
+                                      matches: room.matches.map((x) => (x.id === m.id ? { ...x, myPick: p } : x)),
+                                    })),
                                   };
                                 });
                               }
@@ -874,10 +756,9 @@ export default function RoomPage() {
                           </div>
                         </div>
                       )}
-                    </>
-                  );
-                })()
-              )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
@@ -1070,76 +951,86 @@ export default function RoomPage() {
 
           {data && tab === "leaderboard" && (
             <>
-              {/* Desktop Table View */}
-              <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 md:block">
-                <table className="w-full text-sm">
-                  <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
-                    <tr>
-                      <th className="px-3 py-2 text-left">#</th>
-                      <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
+              {(() => {
+                const allRooms = data.allRooms || [data];
+                return allRooms.map((roomData) => (
+                  <div key={roomData.room.code} className="mb-8 space-y-4">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
+                      {roomData.room.name} <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">({roomData.room.code})</span>
+                    </h2>
+                    {/* Desktop Table View */}
+                    <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 md:block">
+                      <table className="w-full text-sm">
+                        <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
+                          <tr>
+                            <th className="px-3 py-2 text-left">#</th>
+                            <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
                       <th className="px-3 py-2 text-right">Stig</th>
                       <th className="px-3 py-2 text-right">1X2</th>
                       <th className="px-3 py-2 text-right">Bónus</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {data.leaderboard.map((p, idx) => {
-                      const rank = idx + 1;
-                      const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
-                      return (
-                        <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
-                          <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
-                            {medal ? <span className="mr-1">{medal}</span> : null}
-                            {rank}
-                          </td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
-                          <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
-                          <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
-                          <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="space-y-2 md:hidden">
-                {data.leaderboard.map((p, idx) => {
-                  const rank = idx + 1;
-                  const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
-                  return (
-                    <div
-                      key={p.memberId}
-                      className="rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950/40"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
-                            {medal ? <span className="mr-1">{medal}</span> : null}
-                            {rank}
-                          </span>
-                          <span className="font-medium text-slate-900 dark:text-neutral-100">{p.displayName}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{p.points}</div>
-                          <div className="text-xs text-slate-500 dark:text-neutral-400">stig</div>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs dark:border-neutral-800">
-                        <div>
-                          <span className="text-slate-500 dark:text-neutral-400">1X2:</span>{" "}
-                          <span className="font-medium text-slate-700 dark:text-neutral-300">{p.correct1x2}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-500 dark:text-neutral-400">Bónus:</span>{" "}
-                          <span className="font-medium text-slate-700 dark:text-neutral-300">{p.bonusPoints || 0}</span>
-                        </div>
-                      </div>
+                        <tbody>
+                          {roomData.leaderboard.map((p, idx) => {
+                            const rank = idx + 1;
+                            const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                            return (
+                              <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
+                                <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
+                                  {medal ? <span className="mr-1">{medal}</span> : null}
+                                  {rank}
+                                </td>
+                                <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
+                                <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
+                                <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
+                                <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                  );
-                })}
-              </div>
+
+                    {/* Mobile Card View */}
+                    <div className="space-y-2 md:hidden">
+                      {roomData.leaderboard.map((p, idx) => {
+                        const rank = idx + 1;
+                        const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                        return (
+                          <div
+                            key={p.memberId}
+                            className="rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950/40"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                                  {medal ? <span className="mr-1">{medal}</span> : null}
+                                  {rank}
+                                </span>
+                                <span className="font-medium text-slate-900 dark:text-neutral-100">{p.displayName}</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{p.points}</div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">stig</div>
+                              </div>
+                            </div>
+                            <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs dark:border-neutral-800">
+                              <div>
+                                <span className="text-slate-500 dark:text-neutral-400">1X2:</span>{" "}
+                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.correct1x2}</span>
+                              </div>
+                              <div>
+                                <span className="text-slate-500 dark:text-neutral-400">Bónus:</span>{" "}
+                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.bonusPoints || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
+              })()}
             </>
           )}
 

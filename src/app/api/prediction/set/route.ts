@@ -42,22 +42,47 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Leikur er lokaður. Ekki hægt að breyta spá." }, { status: 400 });
   }
 
-  // Upsert prediction
+  // ✅ Sækja allar deildir sem notandi er skráður í
+  const { data: currentMember, error: memErr } = await supabaseServer
+    .from("room_members")
+    .select("username")
+    .eq("id", session.memberId)
+    .single();
+
+  if (memErr || !currentMember) {
+    return NextResponse.json({ error: "Meðlimur fannst ekki" }, { status: 404 });
+  }
+
+  // Sækja allar deildir sem notandi er í með sama username
+  const { data: allMyMembers, error: allErr } = await supabaseServer
+    .from("room_members")
+    .select("id, room_id")
+    .ilike("username", currentMember.username);
+
+  if (allErr) {
+    return NextResponse.json({ error: allErr.message }, { status: 500 });
+  }
+
+  // ✅ Vista spá fyrir ALLAR deildir sem notandi er í
+  const predictionsToInsert = (allMyMembers ?? []).map((member: any) => ({
+    room_id: member.room_id,
+    member_id: member.id,
+    match_id: body.matchId,
+    pick: body.pick,
+  }));
+
+  if (predictionsToInsert.length === 0) {
+    return NextResponse.json({ error: "Engar deildir fundust" }, { status: 400 });
+  }
+
+  // Upsert predictions fyrir allar deildir
   const { error: pErr } = await supabaseServer
     .from("predictions")
-    .upsert(
-      {
-        room_id: session.roomId,
-        member_id: session.memberId,
-        match_id: match.id,
-        pick: body.pick,
-      },
-      { onConflict: "member_id,match_id" }
-    );
+    .upsert(predictionsToInsert, { onConflict: "member_id,match_id" });
 
   if (pErr) {
     return NextResponse.json({ error: pErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, roomsUpdated: predictionsToInsert.length });
 }

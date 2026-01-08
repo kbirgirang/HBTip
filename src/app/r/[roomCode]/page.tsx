@@ -72,6 +72,7 @@ export default function RoomPage() {
   const [err, setErr] = useState<string | null>(null);
 
   // Owner management state
+  const [selectedOwnerRoomCode, setSelectedOwnerRoomCode] = useState<string>("");
   const [members, setMembers] = useState<Array<{ id: string; username: string; display_name: string; is_owner: boolean }>>([]);
   const [ownerPassword, setOwnerPassword] = useState("");
   const [ownerError, setOwnerError] = useState<string | null>(null);
@@ -207,10 +208,33 @@ export default function RoomPage() {
   }
 
   async function loadMembers() {
-    if (!data?.me.is_owner) return;
+    if (!data?.me.is_owner || !selectedOwnerRoomCode) return;
+    
+    // Finna memberId fyrir valda deild
+    const allRooms = data.allRooms || [data];
+    const selectedRoom = allRooms.find((r) => r.room.code === selectedOwnerRoomCode);
+    if (!selectedRoom || !selectedRoom.me.is_owner) {
+      setOwnerError("Ekki stjórnandi í þessari deild");
+      return;
+    }
+
     setLoadingMembers(true);
     setOwnerError(null);
     try {
+      // Nota /api/room/select-room til að skipta yfir í valda deild
+      const switchRes = await fetch("/api/room/select-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId: selectedRoom.me.id }),
+      });
+      
+      if (!switchRes.ok) {
+        const switchJson = await switchRes.json().catch(() => ({}));
+        setOwnerError(switchJson.error || "Ekki tókst að skipta deild");
+        return;
+      }
+
+      // Sækja members fyrir valda deild
       const res = await fetch("/api/room/owner/list-members");
       const json = await res.json();
       if (!res.ok) {
@@ -225,11 +249,23 @@ export default function RoomPage() {
     }
   }
 
+  // Set default selected room when data loads
   useEffect(() => {
-    if (tab === "owner" && data?.me.is_owner) {
+    if (data && tab === "owner") {
+      const allRooms = data.allRooms || [data];
+      const ownerRooms = allRooms.filter((r) => r.me.is_owner);
+      if (ownerRooms.length > 0 && !selectedOwnerRoomCode) {
+        // Set first owner room as default
+        setSelectedOwnerRoomCode(ownerRooms[0].room.code);
+      }
+    }
+  }, [data, tab]);
+
+  useEffect(() => {
+    if (tab === "owner" && data?.me.is_owner && selectedOwnerRoomCode) {
       void loadMembers();
     }
-  }, [tab, data?.me.is_owner]);
+  }, [tab, data?.me.is_owner, selectedOwnerRoomCode]);
 
   async function handleChangeJoinPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -457,11 +493,15 @@ export default function RoomPage() {
           <TabButton active={tab === "leaderboard"} onClick={() => setTab("leaderboard")}>
             Staða
           </TabButton>
-          {data?.me.is_owner && (
-            <TabButton active={tab === "owner"} onClick={() => setTab("owner")}>
-              Stjórnandi
-            </TabButton>
-          )}
+          {(() => {
+            const allRooms = data?.allRooms || (data ? [data] : []);
+            const hasOwnerRoom = allRooms.some((r) => r.me.is_owner);
+            return hasOwnerRoom ? (
+              <TabButton active={tab === "owner"} onClick={() => setTab("owner")}>
+                Stjórnandi
+              </TabButton>
+            ) : null;
+          })()}
         </div>
 
         <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-3 md:mt-4 md:p-4">
@@ -866,12 +906,50 @@ export default function RoomPage() {
             </div>
           )}
 
-          {data && tab === "owner" && data.me.is_owner && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold">Stjórnandi stjórnun</h2>
-                <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">Stjórna deildinni með lykilorði stjórnanda.</p>
-              </div>
+          {data && tab === "owner" && (() => {
+            const allRooms = data.allRooms || [data];
+            const ownerRooms = allRooms.filter((r) => r.me.is_owner);
+            
+            if (ownerRooms.length === 0) {
+              return (
+                <div className="space-y-6">
+                  <p className="text-slate-600 dark:text-neutral-400">Þú ert ekki stjórnandi í neinni deild.</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold">Stjórnandi stjórnun</h2>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">Stjórna deildinni með lykilorði stjórnanda.</p>
+                </div>
+
+                {/* Deild val */}
+                <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40 p-4">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-neutral-300">Veldu deild</label>
+                  <select
+                    className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    value={selectedOwnerRoomCode}
+                    onChange={(e) => {
+                      setSelectedOwnerRoomCode(e.target.value);
+                      setMembers([]); // Hreinsa members þegar deild er skipt
+                      setOwnerError(null);
+                      setOwnerSuccess(null);
+                    }}
+                  >
+                    {ownerRooms
+                      .sort((a, b) => a.room.name.localeCompare(b.room.name, 'is'))
+                      .map((roomData) => (
+                        <option key={roomData.room.code} value={roomData.room.code}>
+                          {roomData.room.name} ({roomData.room.code})
+                        </option>
+                      ))}
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
+                    Veldu deild sem þú vilt stjórna
+                  </p>
+                </div>
 
               {ownerError && (
                 <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -1051,7 +1129,8 @@ export default function RoomPage() {
                 )}
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {data && tab === "leaderboard" && (
             <>

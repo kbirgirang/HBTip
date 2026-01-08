@@ -1057,7 +1057,11 @@ export default function RoomPage() {
             <>
               {(() => {
                 const allRooms = data.allRooms || [data];
-                return allRooms.map((roomData) => (
+                // Raða deildum eftir stafrófsröð (eftir nafni)
+                const sortedRooms = [...allRooms].sort((a, b) => 
+                  a.room.name.localeCompare(b.room.name, 'is')
+                );
+                return sortedRooms.map((roomData) => (
                   <div key={roomData.room.code} className="mb-8 space-y-4">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
                       {roomData.room.name} <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">({roomData.room.code})</span>

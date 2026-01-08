@@ -93,22 +93,47 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Óþekktur gerð bónusspurningar" }, { status: 400 });
   }
 
-  // Upsert svar (ein röð per member/question)
+  // ✅ Sækja allar deildir sem notandi er skráður í
+  const { data: currentMember, error: memErr } = await supabaseServer
+    .from("room_members")
+    .select("username")
+    .eq("id", session.memberId)
+    .single();
+
+  if (memErr || !currentMember) {
+    return NextResponse.json({ error: "Meðlimur fannst ekki" }, { status: 404 });
+  }
+
+  // Sækja allar deildir sem notandi er í með sama username
+  const { data: allMyMembers, error: allErr } = await supabaseServer
+    .from("room_members")
+    .select("id, room_id")
+    .ilike("username", currentMember.username);
+
+  if (allErr) {
+    return NextResponse.json({ error: allErr.message }, { status: 500 });
+  }
+
+  // ✅ Vista bónus svar fyrir ALLAR deildir sem notandi er í
+  const answersToInsert = (allMyMembers ?? []).map((member: any) => ({
+    room_id: member.room_id,
+    member_id: member.id,
+    question_id: q.id,
+    answer_number,
+    answer_choice,
+    answer_player_id,
+  }));
+
+  if (answersToInsert.length === 0) {
+    return NextResponse.json({ error: "Engar deildir fundust" }, { status: 400 });
+  }
+
+  // Upsert answers fyrir allar deildir
   const { error: upErr } = await supabaseServer
     .from("bonus_answers")
-    .upsert(
-      {
-        room_id: session.roomId,
-        member_id: session.memberId,
-        question_id: q.id,
-        answer_number,
-        answer_choice,
-        answer_player_id,
-      },
-      { onConflict: "member_id,question_id" }
-    );
+    .upsert(answersToInsert, { onConflict: "member_id,question_id" });
 
   if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, answer_number, answer_choice });
+  return NextResponse.json({ ok: true, answer_number, answer_choice, roomsUpdated: answersToInsert.length });
 }

@@ -398,6 +398,24 @@ export default function RoomPage() {
                     // Nota fyrsta myPick sem finnst (sama fyrir allar deildir)
                     if (!allMatchesMap.has(match.id)) {
                       allMatchesMap.set(match.id, match);
+                    } else {
+                      // Ef match er þegar til, uppfæra myPick og bonus my_answer ef þau eru til
+                      const existing = allMatchesMap.get(match.id)!;
+                      if (match.myPick && !existing.myPick) {
+                        existing.myPick = match.myPick;
+                      }
+                      // Uppfæra bonus my_answer ef það er til í þessari deild
+                      if (match.bonus && existing.bonus) {
+                        if (match.bonus.my_answer_choice && !existing.bonus.my_answer_choice) {
+                          existing.bonus.my_answer_choice = match.bonus.my_answer_choice;
+                        }
+                        if (match.bonus.my_answer_number != null && existing.bonus.my_answer_number == null) {
+                          existing.bonus.my_answer_number = match.bonus.my_answer_number;
+                        }
+                        if (match.bonus.my_answer_player_name && !existing.bonus.my_answer_player_name) {
+                          existing.bonus.my_answer_player_name = match.bonus.my_answer_player_name;
+                        }
+                      }
                     }
                   }
                 }

@@ -382,7 +382,7 @@ export default function RoomPage() {
         <h1 className="text-2xl font-bold">
             {data.room.name} <span className="text-neutral-500 dark:text-neutral-400">({data.room.code})</span>
         </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-end gap-2">
             {myRooms.length > 1 && (
               <div className="relative" ref={roomSwitcherRef}>
                 <button

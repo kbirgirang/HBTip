@@ -388,7 +388,7 @@ export default function RoomPage() {
                 <button
                   type="button"
                   onClick={() => setShowRoomSwitcher(!showRoomSwitcher)}
-                  className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+                  className="flex items-center gap-1 md:gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 md:px-4 md:py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -398,14 +398,15 @@ export default function RoomPage() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="h-4 w-4"
+                    className="h-4 w-4 flex-shrink-0"
                   >
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
-                  <span>{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
+                  <span className="hidden md:inline">{loadingRooms ? "Hleð..." : `Þínar deildir (${myRooms.length})`}</span>
+                  <span className="md:hidden">{myRooms.length}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -414,7 +415,7 @@ export default function RoomPage() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`h-4 w-4 transition-transform ${showRoomSwitcher ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 transition-transform flex-shrink-0 ${showRoomSwitcher ? "rotate-180" : ""}`}
                   >
                     <path d="m6 9 6 6 6-6" />
                   </svg>
@@ -459,7 +460,7 @@ export default function RoomPage() {
             <button
               type="button"
               onClick={() => void handleLogout()}
-              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+              className="flex items-center gap-1 md:gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 md:px-4 md:py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -469,13 +470,13 @@ export default function RoomPage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-4 w-4"
+                className="h-4 w-4 flex-shrink-0"
               >
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" x2="9" y1="12" y2="12" />
               </svg>
-              <span>Útskrá</span>
+              <span className="hidden md:inline">Útskrá</span>
             </button>
           </div>
         </div>

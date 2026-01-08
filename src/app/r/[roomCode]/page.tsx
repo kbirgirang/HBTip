@@ -1063,8 +1063,13 @@ export default function RoomPage() {
                 );
                 return sortedRooms.map((roomData) => (
                   <div key={roomData.room.code} className="mb-8 space-y-4">
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
                       {roomData.room.name} <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">({roomData.room.code})</span>
+                      {roomData.me.is_owner && (
+                        <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-300">
+                          Stjórnandi
+                        </span>
+                      )}
                     </h2>
                     {/* Desktop Table View */}
                     <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 md:block">

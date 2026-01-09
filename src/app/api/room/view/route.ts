@@ -58,12 +58,23 @@ export async function GET() {
 
   if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
 
-  // ✅ Sækja allar spár fyrir allar deildir sem notandi er í
+  // ✅ Sækja allar spár fyrir ALLA meðlimi í öllum deildunum (ekki bara notandans)
+  // Fyrst sækjum við alla meðlimi í öllum deildunum
+  const { data: allRoomMembers, error: allMemErr } = await supabaseServer
+    .from("room_members")
+    .select("id, room_id")
+    .in("room_id", roomIds);
+
+  if (allMemErr) return NextResponse.json({ error: allMemErr.message }, { status: 500 });
+
   const allMemberIds = (allMyMembers ?? []).map((m: any) => m.id);
+  const allRoomMemberIds = (allRoomMembers ?? []).map((m: any) => m.id);
+  
+  // Sækja spár fyrir ALLA meðlimi í deildunum
   const { data: allPreds, error: pErr } = await supabaseServer
     .from("predictions")
     .select("member_id, match_id, pick, room_id")
-    .in("member_id", allMemberIds);
+    .in("member_id", allRoomMemberIds);
 
   if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
 
@@ -73,14 +84,14 @@ export async function GET() {
     .select("tournament_id, points_per_correct_1x2, points_per_correct_x")
     .in("tournament_id", tournamentIds);
 
-  // ✅ Sækja bonus svör fyrir allar deildir
+  // ✅ Sækja bonus svör fyrir ALLA meðlimi í öllum deildunum (ekki bara notandans)
   const allQIds = (allBonusQs ?? []).map((q: any) => q.id);
   let allMyBonusAnswers: any[] = [];
-  if (allQIds.length > 0) {
+  if (allQIds.length > 0 && allRoomMemberIds.length > 0) {
     const { data: ans, error: aErr } = await supabaseServer
       .from("bonus_answers")
       .select("question_id, answer_number, answer_choice, answer_player_id, room_id, member_id")
-      .in("member_id", allMemberIds)
+      .in("member_id", allRoomMemberIds)
       .in("question_id", allQIds);
     if (aErr) return NextResponse.json({ error: aErr.message }, { status: 500 });
     allMyBonusAnswers = ans ?? [];

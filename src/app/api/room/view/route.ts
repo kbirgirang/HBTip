@@ -279,6 +279,9 @@ export async function GET() {
           b.points - a.points || b.correct1x2 - a.correct1x2 || a.displayName.localeCompare(b.displayName)
       );
 
+      // Debug: Athuga hvort allir meðlimir séu í stigatöflunni
+      // console.log(`Room ${room.room_code}: ${roomMembers?.length ?? 0} members, ${leaderboard.length} in leaderboard`);
+
       return {
         room: { code: room.room_code, name: room.room_name },
         me: { id: roomMember.id, display_name: roomMember.display_name, is_owner: roomMember.is_owner, username: currentMember.username },

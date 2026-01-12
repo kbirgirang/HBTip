@@ -859,7 +859,7 @@ export default function RoomPage() {
                                       
                                       {isTraitor && (
                                         <div className="text-xs font-semibold text-red-600 dark:text-red-400">
-                                          Svikari
+                                          Svikari!!
                                         </div>
                                       )}
                                     </div>

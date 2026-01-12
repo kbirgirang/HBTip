@@ -790,6 +790,16 @@ export default function RoomPage() {
 
                               const isIceland = isIcelandPlaying(m.home_team, m.away_team);
                               
+                              // Athuga hvort Ísland sé heimalið (1) eða útilið (2)
+                              const icelandIsHome = m.home_team === "Ísland" || m.home_team === "Iceland";
+                              const icelandIsAway = m.away_team === "Ísland" || m.away_team === "Iceland";
+                              
+                              // Athuga hvort notandi valdi eitthvað annað en Ísland
+                              const isTraitor = isIceland && m.myPick && (
+                                (icelandIsHome && m.myPick !== "1") || 
+                                (icelandIsAway && m.myPick !== "2")
+                              );
+                              
                               return (
                                 <div key={m.id} className={`rounded-xl border p-4 relative overflow-hidden ${
                                   isIceland 
@@ -820,30 +830,38 @@ export default function RoomPage() {
                                       </div>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                      <PickButton 
-                                        selected={m.myPick === "1"} 
-                                        disabled={locked} 
-                                        onClick={() => pick("1")}
-                                        underdogMultiplier={m.underdog_team === "1" ? m.underdog_multiplier : null}
-                                      >
-                                        1
-                                      </PickButton>
-
-                                      {m.allow_draw && (
-                                        <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
-                                          X
+                                    <div className="flex flex-col items-center gap-2">
+                                      <div className="flex gap-2">
+                                        <PickButton 
+                                          selected={m.myPick === "1"} 
+                                          disabled={locked} 
+                                          onClick={() => pick("1")}
+                                          underdogMultiplier={m.underdog_team === "1" ? m.underdog_multiplier : null}
+                                        >
+                                          1
                                         </PickButton>
-                                      )}
 
-                                      <PickButton 
-                                        selected={m.myPick === "2"} 
-                                        disabled={locked} 
-                                        onClick={() => pick("2")}
-                                        underdogMultiplier={m.underdog_team === "2" ? m.underdog_multiplier : null}
-                                      >
-                                        2
-                                      </PickButton>
+                                        {m.allow_draw && (
+                                          <PickButton selected={m.myPick === "X"} disabled={locked} onClick={() => pick("X")}>
+                                            X
+                                          </PickButton>
+                                        )}
+
+                                        <PickButton 
+                                          selected={m.myPick === "2"} 
+                                          disabled={locked} 
+                                          onClick={() => pick("2")}
+                                          underdogMultiplier={m.underdog_team === "2" ? m.underdog_multiplier : null}
+                                        >
+                                          2
+                                        </PickButton>
+                                      </div>
+                                      
+                                      {isTraitor && (
+                                        <div className="text-xs font-semibold text-red-600 dark:text-red-400">
+                                          Svikari
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
 

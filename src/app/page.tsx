@@ -379,7 +379,6 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Tegund keppni
-                  <InfoTooltip text="Veldu hvaða keppni deildin á að vera fyrir. T.d. Evrópumótið í handbolta eða Enska deildin í fótbolta." />
                 </label>
                 <select
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -404,7 +403,6 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Nafn deildar
-                  <InfoTooltip text="Nafn á deildinni sem birtist í kerfinu. Getur verið nafn vinnustaðar, deildar eða hóps. Þetta nafn er notað til að búa til deildar númerið." />
                 </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -417,7 +415,6 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Þitt notandanafn
-                  <InfoTooltip text="Global notandanafn sem þú notar í öllum deildum. Þú getur notað sama notandanafn í fleiri deildum. Ef þú ert með aðgang, notaðu sama notandanafn og lykilorð." />
                 </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -430,7 +427,6 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Þitt lykilorð
-                  <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta lykilorð er notað í öllum deildum sem þú ert í. Minnst 6 stafir." />
                 </label>
                 <input
                   type="password"
@@ -444,7 +440,6 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Þitt nafn (í stigatöflu)
-                  <InfoTooltip text="Nafn sem birtist í stigatöflu fyrir þessa deild. Þetta getur verið breytt per deild, svo þú getur haft mismunandi nöfn í mismunandi deildum." />
                 </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -457,7 +452,6 @@ export default function HomePage() {
               <div>
                 <label className="text-sm text-slate-700 dark:text-neutral-200">
                   Lykilorð til að skrá sig inná deildina
-                  <InfoTooltip text="Lykilorð sem aðrir nota til að joina þessari deild. Deildu þessu lykilorði með þeim sem eiga að vera í deildinni. Minnst 6 stafir." />
                 </label>
                 <input
                   type="password"
@@ -587,7 +581,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð
-                    <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
                   </label>
                   <input
                     type="password"
@@ -619,7 +612,6 @@ export default function HomePage() {
                 <div className="relative" ref={roomDropdownRef}>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
-                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
                   <button
                     type="button"
@@ -705,7 +697,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð deildar
-                    <InfoTooltip text="Aðgangsorð sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
                   </label>
                   <input
                     type="password"
@@ -719,7 +710,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
-                    <InfoTooltip text="Notandanafn sem þú notar. Ef þú ert með aðgang, notaðu sama notandanafn og lykilorð. Ef ekki, búðu til nýjan aðgang með 'Nýskráning' flipanum." />
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -732,7 +722,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð
-                    <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Þetta er lykilorðið sem þú valdir þegar þú bjóst til aðganginn." />
                   </label>
                   <input
                     type="password"
@@ -765,7 +754,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
-                    <InfoTooltip text="Global notandanafn sem þú notar. Þú getur notað sama notandanafn í fleiri deildum. Ef notandanafn er þegar til, verður þú að nota sama lykilorð." />
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -778,7 +766,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð
-                    <InfoTooltip text="Lykilorð fyrir þitt notandanafn. Minnst 6 stafir. Ef notandanafn er þegar til, verður þú að nota sama lykilorð." />
                   </label>
                   <input
                     type="password"
@@ -792,7 +779,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Þitt nafn (í stigatöflu)
-                    <InfoTooltip text="Nafn sem birtist í stigatöflu fyrir þessa deild. Þetta getur verið breytt per deild, svo þú getur haft mismunandi nöfn í mismunandi deildum." />
                   </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
@@ -805,7 +791,6 @@ export default function HomePage() {
                 <div className="relative" ref={registerRoomDropdownRef}>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Númer deildar
-                    <InfoTooltip text="Númer deildar sem stjórnandi deildarinnar gefur þér. Dæmi: Rafganistan-1234. Þetta númer er notað til að finna rétta deildina." />
                   </label>
                   <button
                     type="button"
@@ -891,7 +876,6 @@ export default function HomePage() {
                 <div>
                   <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Lykilorð deildar
-                    <InfoTooltip text="Aðgangsorð sem stjórnandi deildarinnar gaf þér. Þetta er lykilorðið sem stjórnandi valdi þegar deildin var búin til." />
                   </label>
                   <input
                     type="password"

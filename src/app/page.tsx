@@ -529,12 +529,12 @@ export default function HomePage() {
               Skráðu þig inn og/eða búðu til nýjan aðgang til að taka þátt í deildum.  
             </p>
 
-            <div className="mb-6 flex gap-2">
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setJoinTab("login")}
                 className={[
-                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                  "rounded-xl px-4 py-2.5 text-sm font-semibold border transition whitespace-nowrap",
                   joinTab === "login"
                     ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
@@ -546,7 +546,7 @@ export default function HomePage() {
                 type="button"
                 onClick={() => setJoinTab("join")}
                 className={[
-                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                  "rounded-xl px-4 py-2.5 text-sm font-semibold border transition whitespace-nowrap",
                   joinTab === "join"
                     ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
@@ -558,7 +558,7 @@ export default function HomePage() {
                 type="button"
                 onClick={() => setJoinTab("register")}
                 className={[
-                  "rounded-xl px-4 py-2 text-sm font-semibold border transition",
+                  "rounded-xl px-4 py-2.5 text-sm font-semibold border transition whitespace-nowrap",
                   joinTab === "register"
                     ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/70",
@@ -919,12 +919,13 @@ export default function HomePage() {
 
             {/* Create Room Button - Inside join section */}
             {!showCreateForm && !created && (
-              <div className="mt-6 flex justify-center border-t border-slate-200 pt-6 dark:border-neutral-800">
+              <div className="mt-6 border-t border-slate-200 pt-6 dark:border-neutral-800">
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="rounded-xl border-2 border-blue-500 bg-blue-50 px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
+                  className="w-full rounded-xl border-2 border-blue-500 bg-blue-50 px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50 flex items-center justify-center gap-2"
                 >
-                  + Búa til nýja deild
+                  <span className="text-lg">+</span>
+                  <span>Búa til nýja deild</span>
                 </button>
               </div>
             )}

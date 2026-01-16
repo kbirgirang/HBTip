@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Betlihem – Tippasíða",
-  description: "Tippasíða fyrir ýmsar keppnir og mót",
+  title: "Betlihem – Tippsíða",
+  description: "Tippsíða fyrir ýmsar keppnir og mót",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

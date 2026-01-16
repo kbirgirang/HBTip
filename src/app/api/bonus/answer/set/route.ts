@@ -129,11 +129,24 @@ export async function POST(req: Request) {
   }
 
   // Upsert answers fyrir allar deildir
+  // Nota ignoreDuplicates: false til að tryggja að svör séu alltaf uppfærð
   const { error: upErr } = await supabaseServer
     .from("bonus_answers")
-    .upsert(answersToInsert, { onConflict: "member_id,question_id" });
+    .upsert(answersToInsert, { 
+      onConflict: "member_id,question_id",
+      ignoreDuplicates: false 
+    });
 
-  if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+  if (upErr) {
+    console.error("Error upserting bonus answers:", upErr);
+    return NextResponse.json({ error: upErr.message }, { status: 500 });
+  }
 
-  return NextResponse.json({ ok: true, answer_number, answer_choice, roomsUpdated: answersToInsert.length });
+  return NextResponse.json({ 
+    ok: true, 
+    answer_number, 
+    answer_choice, 
+    roomsUpdated: answersToInsert.length,
+    membersFound: allMyMembers?.length || 0
+  });
 }

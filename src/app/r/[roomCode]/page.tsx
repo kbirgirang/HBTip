@@ -207,6 +207,27 @@ export default function RoomPage() {
     }
   }
 
+  async function switchRoom(roomData: RoomData) {
+    try {
+      const res = await fetch("/api/room/select-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId: roomData.me.id }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(json.error || "Ekki tókst að skipta deild");
+        return;
+      }
+
+      // Endurhlaða síðu með nýrri deild
+      window.location.href = `/r/${encodeURIComponent(roomData.room.code)}`;
+    } catch {
+      alert("Tenging klikkaði. Prófaðu aftur.");
+    }
+  }
+
   async function loadMembers() {
     if (!data?.me.is_owner || !selectedOwnerRoomCode) return;
     
@@ -433,6 +454,8 @@ export default function RoomPage() {
   const header = useMemo(() => {
     if (!data) return null;
     const allRooms = data.allRooms || [data];
+    const isInMultipleRooms = allRooms.length > 1;
+    
     return (
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
@@ -507,16 +530,36 @@ export default function RoomPage() {
             </button>
           </div>
         </div>
-        <p className="text-sm text-slate-600 dark:text-neutral-300">
-          <span className="font-semibold">{data.me.display_name}</span>{" "}
-          <span className="font-mono">(@{data.me.username})</span>
-          {allRooms.length > 1 && (
-            <> · <span className="font-semibold">{allRooms.length}</span> deildir</>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-sm text-slate-600 dark:text-neutral-300">
+            <span className="font-semibold">{data.me.display_name}</span>{" "}
+            <span className="font-mono">(@{data.me.username})</span>
+            {allRooms.length > 1 && (
+              <> · <span className="font-semibold">{allRooms.length}</span> deildir</>
+            )}
+          </p>
+          {isInMultipleRooms && (
+            <select
+              value={data.room.code}
+              onChange={(e) => {
+                const selectedRoom = allRooms.find((r) => r.room.code === e.target.value);
+                if (selectedRoom) {
+                  switchRoom(selectedRoom);
+                }
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500 dark:focus:ring-blue-400"
+            >
+              {allRooms.map((room) => (
+                <option key={room.room.code} value={room.room.code}>
+                  {room.room.name} ({room.room.code})
+                </option>
+              ))}
+            </select>
           )}
-        </p>
+        </div>
       </div>
     );
-  }, [data]);
+  }, [data, mounted, theme]);
 
   return (
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">

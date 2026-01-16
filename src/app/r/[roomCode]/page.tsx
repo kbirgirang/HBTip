@@ -1343,37 +1343,114 @@ export default function RoomPage() {
                       </table>
                     </div>
 
-                    {/* Mobile Card View */}
-                    <div className="space-y-2 md:hidden">
+                    {/* Mobile Card View - Improved */}
+                    <div className="space-y-3 md:hidden">
                       {roomData.leaderboard.map((p, idx) => {
                         const rank = idx + 1;
                         const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                        const isTopThree = rank <= 3;
+                        
+                        // Calculate max points for relative positioning
+                        const maxPoints = roomData.leaderboard[0]?.points || 1;
+                        const pointsPercentage = maxPoints > 0 ? (p.points / maxPoints) * 100 : 0;
+                        
                         return (
                           <div
                             key={p.memberId}
-                            className="rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950/40"
+                            className={`relative overflow-hidden rounded-2xl border-2 transition-all ${
+                              rank === 1
+                                ? "border-amber-400/60 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:border-amber-500/40 dark:from-amber-950/30 dark:to-amber-900/20"
+                                : rank === 2
+                                ? "border-slate-300/60 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:border-neutral-600/40 dark:from-neutral-900/30 dark:to-neutral-800/20"
+                                : rank === 3
+                                ? "border-amber-700/40 bg-gradient-to-br from-amber-100/30 to-amber-200/20 dark:border-amber-800/30 dark:from-amber-950/20 dark:to-amber-900/15"
+                                : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
+                            }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
-                                  {medal ? <span className="mr-1">{medal}</span> : null}
-                                  {rank}
-                                </span>
-                                <span className="font-medium text-slate-900 dark:text-neutral-100">{p.displayName}</span>
+                            {/* Progress bar background for top 3 */}
+                            {isTopThree && (
+                              <div
+                                className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-blue-400/30 to-blue-500/30 dark:from-blue-500/20 dark:to-blue-600/20"
+                                style={{ width: `${pointsPercentage}%` }}
+                              />
+                            )}
+                            
+                            <div className="relative p-4">
+                              {/* Main content row */}
+                              <div className="flex items-start justify-between gap-3">
+                                {/* Left: Rank and Name */}
+                                <div className="flex min-w-0 flex-1 items-center gap-3">
+                                  {/* Rank badge */}
+                                  <div
+                                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${
+                                      rank === 1
+                                        ? "bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-lg shadow-amber-400/30"
+                                        : rank === 2
+                                        ? "bg-gradient-to-br from-slate-300 to-slate-400 text-white shadow-lg shadow-slate-300/30"
+                                        : rank === 3
+                                        ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-lg shadow-amber-600/30"
+                                        : "bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400"
+                                    }`}
+                                  >
+                                    {medal ? <span className="text-lg">{medal}</span> : rank}
+                                  </div>
+                                  
+                                  {/* Player name */}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="truncate font-semibold text-slate-900 dark:text-neutral-100">
+                                      {p.displayName}
+                                    </div>
+                                    {rank > 3 && (
+                                      <div className="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">
+                                        #{rank}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                {/* Right: Total Points */}
+                                <div className="shrink-0 text-right">
+                                  <div className={`text-2xl font-bold ${
+                                    isTopThree 
+                                      ? "text-slate-900 dark:text-neutral-100" 
+                                      : "text-slate-900 dark:text-neutral-100"
+                                  }`}>
+                                    {p.points}
+                                  </div>
+                                  <div className="text-xs font-medium text-slate-500 dark:text-neutral-400">
+                                    stig
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{p.points}</div>
-                                <div className="text-xs text-slate-500 dark:text-neutral-400">stig</div>
-                              </div>
-                            </div>
-                            <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs dark:border-neutral-800">
-                              <div>
-                                <span className="text-slate-500 dark:text-neutral-400">1X2:</span>{" "}
-                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.points1x2 || 0}</span>
-                              </div>
-                              <div>
-                                <span className="text-slate-500 dark:text-neutral-400">Bónus:</span>{" "}
-                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.bonusPoints || 0}</span>
+                              
+                              {/* Stats breakdown */}
+                              <div className="mt-3 flex gap-4 rounded-lg bg-slate-50/80 px-3 py-2.5 dark:bg-neutral-900/40">
+                                <div className="flex-1">
+                                  <div className="text-xs font-medium text-slate-500 dark:text-neutral-400">
+                                    1X2
+                                  </div>
+                                  <div className="mt-0.5 text-base font-semibold text-slate-700 dark:text-neutral-300">
+                                    {p.points1x2 || 0}
+                                  </div>
+                                </div>
+                                <div className="h-8 w-px bg-slate-200 dark:bg-neutral-700" />
+                                <div className="flex-1">
+                                  <div className="text-xs font-medium text-slate-500 dark:text-neutral-400">
+                                    Bónus
+                                  </div>
+                                  <div className="mt-0.5 text-base font-semibold text-slate-700 dark:text-neutral-300">
+                                    {p.bonusPoints || 0}
+                                  </div>
+                                </div>
+                                <div className="h-8 w-px bg-slate-200 dark:bg-neutral-700" />
+                                <div className="flex-1">
+                                  <div className="text-xs font-medium text-slate-500 dark:text-neutral-400">
+                                    Rétt
+                                  </div>
+                                  <div className="mt-0.5 text-base font-semibold text-slate-700 dark:text-neutral-300">
+                                    {p.correct1x2}
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>

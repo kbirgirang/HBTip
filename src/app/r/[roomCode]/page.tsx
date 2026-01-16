@@ -393,6 +393,43 @@ export default function RoomPage() {
     }
   }
 
+  // Helper function to get date string (YYYY-MM-DD) from match
+  const getMatchDate = (startsAt: string): string => {
+    const date = new Date(startsAt);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Helper function to format date in Icelandic
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Check if it's today, tomorrow, or yesterday
+    const dateOnly = date.toDateString();
+    const todayOnly = today.toDateString();
+    const tomorrowOnly = tomorrow.toDateString();
+    const yesterdayOnly = yesterday.toDateString();
+
+    if (dateOnly === todayOnly) {
+      return "Í dag";
+    } else if (dateOnly === tomorrowOnly) {
+      return "Á morgun";
+    } else if (dateOnly === yesterdayOnly) {
+      return "Í gær";
+    } else {
+      // Format as "dd. MMMM yyyy" in Icelandic
+      return date.toLocaleDateString('is-IS', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+    }
+  };
+
   const header = useMemo(() => {
     if (!data) return null;
     const allRooms = data.allRooms || [data];
@@ -585,9 +622,37 @@ export default function RoomPage() {
                           </button>
                           {showFinishedMatches && (
                             <div className="space-y-3">
-                            {finishedMatches.map((m) => {
-                              const started = new Date(m.starts_at).getTime() <= now;
-                              const locked = started || m.result != null;
+                            {(() => {
+                              // Group finished matches by date
+                              const matchesByDate = new Map<string, Array<typeof finishedMatches[0]>>();
+                              for (const m of finishedMatches) {
+                                const dateKey = getMatchDate(m.starts_at);
+                                if (!matchesByDate.has(dateKey)) {
+                                  matchesByDate.set(dateKey, []);
+                                }
+                                matchesByDate.get(dateKey)!.push(m);
+                              }
+                              
+                              // Sort dates (newest first for finished matches)
+                              const sortedDates = Array.from(matchesByDate.keys()).sort((a, b) => b.localeCompare(a));
+                              
+                              return sortedDates.flatMap((dateKey) => {
+                                const matchesForDate = matchesByDate.get(dateKey)!;
+                                return [
+                                  // Date header
+                                  <div key={`date-${dateKey}`} className="mt-4 mb-2 first:mt-0">
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-px flex-1 bg-slate-300 dark:bg-neutral-700"></div>
+                                      <span className="text-sm font-semibold text-slate-600 dark:text-neutral-400 px-2">
+                                        {formatDate(dateKey)}
+                                      </span>
+                                      <div className="h-px flex-1 bg-slate-300 dark:bg-neutral-700"></div>
+                                    </div>
+                                  </div>,
+                                  // Matches for this date
+                                  ...matchesForDate.map((m) => {
+                                    const started = new Date(m.starts_at).getTime() <= now;
+                                    const locked = started || m.result != null;
 
                   async function pick(p: Pick) {
                                 if (locked) return;
@@ -727,7 +792,10 @@ export default function RoomPage() {
                       )}
                     </div>
                   );
-                            })}
+                                  })
+                                ];
+                              });
+                            })()}
                             </div>
                           )}
                         </div>
@@ -754,9 +822,37 @@ export default function RoomPage() {
                             </div>
                           </div>
                           <div className="space-y-3">
-                            {upcomingMatches.map((m) => {
-                              const started = new Date(m.starts_at).getTime() <= now;
-                              const locked = started || m.result != null;
+                            {(() => {
+                              // Group upcoming matches by date
+                              const matchesByDate = new Map<string, Array<typeof upcomingMatches[0]>>();
+                              for (const m of upcomingMatches) {
+                                const dateKey = getMatchDate(m.starts_at);
+                                if (!matchesByDate.has(dateKey)) {
+                                  matchesByDate.set(dateKey, []);
+                                }
+                                matchesByDate.get(dateKey)!.push(m);
+                              }
+                              
+                              // Sort dates (oldest first for upcoming matches)
+                              const sortedDates = Array.from(matchesByDate.keys()).sort((a, b) => a.localeCompare(b));
+                              
+                              return sortedDates.flatMap((dateKey) => {
+                                const matchesForDate = matchesByDate.get(dateKey)!;
+                                return [
+                                  // Date header
+                                  <div key={`date-${dateKey}`} className="mt-4 mb-2 first:mt-0">
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-px flex-1 bg-slate-300 dark:bg-neutral-700"></div>
+                                      <span className="text-sm font-semibold text-slate-600 dark:text-neutral-400 px-2">
+                                        {formatDate(dateKey)}
+                                      </span>
+                                      <div className="h-px flex-1 bg-slate-300 dark:bg-neutral-700"></div>
+                                    </div>
+                                  </div>,
+                                  // Matches for this date
+                                  ...matchesForDate.map((m) => {
+                                    const started = new Date(m.starts_at).getTime() <= now;
+                                    const locked = started || m.result != null;
 
                               async function pick(p: Pick) {
                                 if (locked) return;
@@ -914,7 +1010,10 @@ export default function RoomPage() {
                                   )}
                                 </div>
                               );
-                            })}
+                                  })
+                                ];
+                              });
+                            })()}
                           </div>
                         </div>
                       )}

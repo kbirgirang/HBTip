@@ -89,6 +89,7 @@ export default function HomePage() {
   // Simple login form state (just username/password)
   const [slUsername, setSlUsername] = useState("");
   const [slPassword, setSlPassword] = useState("");
+  const [slRememberMe, setSlRememberMe] = useState(false);
   const [simpleLoginLoading, setSimpleLoginLoading] = useState(false);
   const [simpleLoginError, setSimpleLoginError] = useState<string | null>(null);
 
@@ -97,6 +98,7 @@ export default function HomePage() {
   const [jJoinPassword, setJJoinPassword] = useState("");
   const [jUsername, setJUsername] = useState("");
   const [jPassword, setJPassword] = useState("");
+  const [jRememberMe, setJRememberMe] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
   const [roomSearchQuery, setRoomSearchQuery] = useState("");
@@ -125,6 +127,29 @@ export default function HomePage() {
   const [tournaments, setTournaments] = useState<Array<{ id: string; slug: string; name: string }>>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [loadingTournaments, setLoadingTournaments] = useState(false);
+
+  // Load saved credentials from localStorage on mount
+  useEffect(() => {
+    try {
+      // Load simple login credentials
+      const savedSlUsername = localStorage.getItem("remember_sl_username");
+      const savedSlPassword = localStorage.getItem("remember_sl_password");
+      if (savedSlUsername) setSlUsername(savedSlUsername);
+      if (savedSlPassword) setSlPassword(savedSlPassword);
+
+      // Load join credentials
+      const savedJUsername = localStorage.getItem("remember_j_username");
+      const savedJPassword = localStorage.getItem("remember_j_password");
+      const savedJRoomCode = localStorage.getItem("remember_j_roomCode");
+      const savedJJoinPassword = localStorage.getItem("remember_j_joinPassword");
+      if (savedJUsername) setJUsername(savedJUsername);
+      if (savedJPassword) setJPassword(savedJPassword);
+      if (savedJRoomCode) setJRoomCode(savedJRoomCode);
+      if (savedJJoinPassword) setJJoinPassword(savedJJoinPassword);
+    } catch (err) {
+      // Ignore localStorage errors
+    }
+  }, []);
 
   // Load rooms list on mount
   useEffect(() => {
@@ -296,6 +321,23 @@ export default function HomePage() {
 
       // Fara beint í deildina
       if ("roomCode" in data) {
+        // Vista gögn ef "Mundu mig" er valið
+        if (slRememberMe) {
+          try {
+            localStorage.setItem("remember_sl_username", slUsername);
+            localStorage.setItem("remember_sl_password", slPassword);
+          } catch (err) {
+            // Ignore localStorage errors
+          }
+        } else {
+          // Hreinsa vistað gögn ef "Mundu mig" er ekki valið
+          try {
+            localStorage.removeItem("remember_sl_username");
+            localStorage.removeItem("remember_sl_password");
+          } catch (err) {
+            // Ignore localStorage errors
+          }
+        }
         window.location.href = `/r/${encodeURIComponent(data.roomCode)}`;
       }
     } catch {
@@ -332,6 +374,28 @@ export default function HomePage() {
       if (!res.ok || "error" in data) {
         setJoinError("error" in data ? data.error : "Ekki tókst að skrá sig í deild.");
         return;
+      }
+
+      // Vista gögn ef "Mundu mig" er valið
+      if (jRememberMe) {
+        try {
+          localStorage.setItem("remember_j_username", jUsername);
+          localStorage.setItem("remember_j_password", jPassword);
+          localStorage.setItem("remember_j_roomCode", jRoomCode);
+          localStorage.setItem("remember_j_joinPassword", jJoinPassword);
+        } catch (err) {
+          // Ignore localStorage errors
+        }
+      } else {
+        // Hreinsa vistað gögn ef "Mundu mig" er ekki valið
+        try {
+          localStorage.removeItem("remember_j_username");
+          localStorage.removeItem("remember_j_password");
+          localStorage.removeItem("remember_j_roomCode");
+          localStorage.removeItem("remember_j_joinPassword");
+        } catch (err) {
+          // Ignore localStorage errors
+        }
       }
 
       window.location.href = `/r/${encodeURIComponent(data.roomCode)}`;
@@ -566,10 +630,9 @@ export default function HomePage() {
             {joinTab === "login" && (
               <form onSubmit={handleSimpleLogin} className="space-y-4">
                 <div>
-                  {/*<label className="text-sm text-slate-700 dark:text-neutral-200">
+                  <label className="text-sm text-slate-700 dark:text-neutral-200">
                     Notandanafn
-                    <InfoTooltip text="Notandanafn sem þú notar. Þú verður skráður inn á fyrstu deild sem þú ert í." />
-                  </label>*/}
+                  </label>
                   <input
                     className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                     value={slUsername}
@@ -589,6 +652,19 @@ export default function HomePage() {
                     onChange={(e) => setSlPassword(e.target.value)}
                     placeholder="Lykilorð þitt"
                   />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="sl-remember-me"
+                    checked={slRememberMe}
+                    onChange={(e) => setSlRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-800"
+                  />
+                  <label htmlFor="sl-remember-me" className="text-sm text-slate-700 dark:text-neutral-200 cursor-pointer">
+                    Mundu mig
+                  </label>
                 </div>
 
                 {simpleLoginError && (
@@ -730,6 +806,19 @@ export default function HomePage() {
                     onChange={(e) => setJPassword(e.target.value)}
                     placeholder="Lykilorð þitt"
                   />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="j-remember-me"
+                    checked={jRememberMe}
+                    onChange={(e) => setJRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-800"
+                  />
+                  <label htmlFor="j-remember-me" className="text-sm text-slate-700 dark:text-neutral-200 cursor-pointer">
+                    Mundu mig
+                  </label>
                 </div>
 
                 {joinError && (

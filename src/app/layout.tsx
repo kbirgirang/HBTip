@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Í handbolta 2026 – Vinnustaðakeppni",
-  description: "Spáðu í úrslit EM í handbolta 2026",
+  title: "Betlihem – Tippasíða",
+  description: "Tippasíða fyrir ýmsar keppnir og mót",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

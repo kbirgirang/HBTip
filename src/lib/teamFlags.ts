@@ -2,7 +2,7 @@
 // Used for displaying flag emojis
 // All European countries + common variations
 const teamToCountryCode: Record<string, string> = {
-  // EHF Euro 2026 teams
+  // Common European teams
   "Austurríki": "AT",
   "Austria": "AT",
   "Danmörk": "DK",

@@ -47,7 +47,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Join password þarf að vera amk 6 stafir" }, { status: 400 });
   }
 
-  const tournamentSlug = body.tournamentSlug || "mens-ehf-euro-2026";
+  const tournamentSlug = body.tournamentSlug;
+  
+  if (!tournamentSlug) {
+    return NextResponse.json({ error: "Keppni verður að vera valin" }, { status: 400 });
+  }
 
   const { data: tournament, error: tErr } = await supabaseServer
     .from("tournaments")

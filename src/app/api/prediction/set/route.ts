@@ -56,27 +56,28 @@ export async function POST(req: Request) {
   // Sækja allar deildir sem notandi er í með sama username
   const { data: allMyMembers, error: allErr } = await supabaseServer
     .from("room_members")
-    .select("id, room_id")
+    .select("id, room_id, username")
     .ilike("username", currentMember.username);
 
   if (allErr) {
     return NextResponse.json({ error: allErr.message }, { status: 500 });
   }
 
+  if (!allMyMembers || allMyMembers.length === 0) {
+    return NextResponse.json({ error: "Engar deildir fundust" }, { status: 400 });
+  }
+
   // ✅ Vista spá fyrir ALLAR deildir sem notandi er í
-  const predictionsToInsert = (allMyMembers ?? []).map((member: any) => ({
+  const predictionsToInsert = allMyMembers.map((member: any) => ({
     room_id: member.room_id,
     member_id: member.id,
     match_id: body.matchId,
     pick: body.pick,
   }));
 
-  if (predictionsToInsert.length === 0) {
-    return NextResponse.json({ error: "Engar deildir fundust" }, { status: 400 });
-  }
-
   // Upsert predictions fyrir allar deildir
   // Nota ignoreDuplicates: false til að tryggja að pick sé alltaf uppfært
+  // Einnig tryggja að allar spár séu vistaðar með batch insert
   const { error: pErr } = await supabaseServer
     .from("predictions")
     .upsert(predictionsToInsert, { 
@@ -86,8 +87,28 @@ export async function POST(req: Request) {
 
   if (pErr) {
     console.error("Error upserting predictions:", pErr);
+    console.error("Predictions to insert:", JSON.stringify(predictionsToInsert, null, 2));
+    console.error("All members found:", JSON.stringify(allMyMembers, null, 2));
     return NextResponse.json({ error: pErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, roomsUpdated: predictionsToInsert.length });
+  // Athuga hvort allar spár séu vistaðar
+  const { data: verifyPreds, error: verifyErr } = await supabaseServer
+    .from("predictions")
+    .select("member_id, room_id, match_id, pick")
+    .eq("match_id", body.matchId)
+    .in("member_id", allMyMembers.map((m: any) => m.id));
+
+  if (verifyErr) {
+    console.error("Error verifying predictions:", verifyErr);
+  } else {
+    console.log(`Verified ${verifyPreds?.length || 0} predictions for ${allMyMembers.length} members`);
+  }
+
+  return NextResponse.json({ 
+    ok: true, 
+    roomsUpdated: predictionsToInsert.length,
+    membersFound: allMyMembers.length,
+    predictionsInserted: predictionsToInsert.length
+  });
 }

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { adminAuth } from "@/lib/adminAuth";
+import { requireAdminSession } from "@/lib/adminAuth";
 
 // API endpoint til að samstilla spár fyrir alla meðlimi með sama username
 // Þetta er admin endpoint sem uppfærir spár fyrir alla meðlimi með sama username
 export async function POST(req: Request) {
-  const auth = await adminAuth();
-  if (!auth) {
-    return NextResponse.json({ error: "Ekki heimild" }, { status: 401 });
+  const authError = await requireAdminSession();
+  if (authError) {
+    return authError;
   }
 
   try {

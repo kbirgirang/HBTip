@@ -357,6 +357,7 @@ export default function AdminPage() {
   const [pointsPer1x2, setPointsPer1x2] = useState<number>(1);
   const [pointsPerX, setPointsPerX] = useState<number | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [syncingPredictions, setSyncingPredictions] = useState(false);
 
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault();
@@ -388,6 +389,29 @@ export default function AdminPage() {
       setErr("Tenging klikkaði.");
     } finally {
       setSavingSettings(false);
+    }
+  }
+
+  async function syncPredictions() {
+    if (!confirm("Ertu viss um að þú viljir samstilla spár fyrir alla meðlimi með sama username? Þetta bætir aðeins við spám sem vantar, ekki yfirskrifa fyrirliggjandi spár.")) {
+      return;
+    }
+
+    clearAlerts();
+    setSyncingPredictions(true);
+    try {
+      const res = await fetch("/api/admin/sync-predictions", {
+        method: "POST",
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að samstilla spár.");
+
+      flash(json.message || `Samstillt ${json.predictionsSynced || 0} spár ✅`);
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSyncingPredictions(false);
     }
   }
 
@@ -2086,10 +2110,24 @@ export default function AdminPage() {
 
             <Card title="Hraðleið" subtitle="Mælt: bulk innsetning → bónus (eitt field) → úrslit.">
               <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-neutral-300">
-                <li>Settu inn alla leiki í einu með “bulk”.</li>
+                <li>Settu inn alla leiki í einu með "bulk".</li>
                 <li>Settu bónus með því að velja leik og skrifa spurningu.</li>
                 <li>Ef þú setur tvítekningar: Eyða í úrslita listanum.</li>
               </ul>
+            </Card>
+
+            <Card title="Samstilla spár" subtitle="Samstilla spár fyrir alla meðlimi með sama username. Bætir aðeins við spám sem vantar, ekki yfirskrifa fyrirliggjandi spár.">
+              <button
+                onClick={syncPredictions}
+                disabled={syncingPredictions}
+                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+              >
+                {syncingPredictions ? "Samstilla..." : "Samstilla spár"}
+              </button>
+              <p className="mt-3 text-xs text-slate-500 dark:text-neutral-500">
+                Þetta mun finna alla meðlimi með sama username og bæta við spám sem vantar. 
+                Fyrirliggjandi spár verða ekki breyttar.
+              </p>
             </Card>
           </div>
         )}

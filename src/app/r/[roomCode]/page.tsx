@@ -1300,221 +1300,88 @@ export default function RoomPage() {
                 const sortedRooms = [...allRooms].sort((a, b) => 
                   a.room.name.localeCompare(b.room.name, 'is')
                 );
-                return sortedRooms.map((roomData) => {
-                  const maxPoints = roomData.leaderboard[0]?.points || 1;
-                  const isCurrentUser = (memberId: string) => memberId === roomData.me.id;
+                return sortedRooms.map((roomData) => (
+                  <div key={roomData.room.code} className="mb-8 space-y-4">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+                      {roomData.room.name} <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">({roomData.room.code})</span>
+                      {roomData.me.is_owner && (
+                        <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-300">
+                          Stjórnandi
+                        </span>
+                      )}
+                    </h2>
+                    {/* Desktop Table View */}
+                    <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 md:block">
+                      <table className="w-full text-sm">
+                        <thead className="bg-blue-600 text-white dark:bg-neutral-950/60 dark:text-neutral-300">
+                          <tr>
+                            <th className="px-3 py-2 text-left">#</th>
+                            <th className="px-3 py-2 text-left">Þitt nafn (í stigatöflu)</th>
+                      <th className="px-3 py-2 text-right">Stig</th>
+                      <th className="px-3 py-2 text-right">1X2</th>
+                      <th className="px-3 py-2 text-right">Bónus</th>
+                    </tr>
+                  </thead>
+                        <tbody>
+                          {roomData.leaderboard.map((p, idx) => {
+                            const rank = idx + 1;
+                            const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                            return (
+                              <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
+                                <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
+                                  {medal ? <span className="mr-1">{medal}</span> : null}
+                                  {rank}
+                                </td>
+                                <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
+                                <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
+                                <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.points1x2 || 0}</td>
+                                <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
 
-                  return (
-                    <div key={roomData.room.code} className="mb-8 space-y-4">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-                        {roomData.room.name} <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">({roomData.room.code})</span>
-                        {roomData.me.is_owner && (
-                          <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-300">
-                            Stjórnandi
-                          </span>
-                        )}
-                      </h2>
-                      {/* Desktop Table View */}
-                      <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 md:block shadow-sm">
-                        <table className="w-full text-sm">
-                          <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white dark:from-blue-700 dark:to-blue-800">
-                            <tr>
-                              <th className="px-4 py-3 text-left font-semibold">#</th>
-                              <th className="px-4 py-3 text-left font-semibold">Þitt nafn (í stigatöflu)</th>
-                              <th className="px-4 py-3 text-right font-semibold">Stig</th>
-                              <th className="px-4 py-3 text-right font-semibold">1X2</th>
-                              <th className="px-4 py-3 text-right font-semibold">Bónus</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200 dark:divide-neutral-800">
-                            {roomData.leaderboard.map((p, idx) => {
-                              const rank = idx + 1;
-                              const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
-                              const isMe = isCurrentUser(p.memberId);
-                              const isTop3 = rank <= 3;
-                              const progressPercent = maxPoints > 0 ? (p.points / maxPoints) * 100 : 0;
-
-                              // Ákveða bakgrunnslit
-                              let bgClass = "bg-white dark:bg-neutral-950/40";
-                              if (isMe && !isTop3) {
-                                bgClass = "bg-blue-50 dark:bg-blue-950/20";
-                              } else if (rank === 1) {
-                                bgClass = "bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-950/30 dark:to-transparent";
-                              } else if (rank === 2) {
-                                bgClass = "bg-gradient-to-r from-slate-100/50 to-transparent dark:from-slate-900/50 dark:to-transparent";
-                              } else if (rank === 3) {
-                                bgClass = "bg-gradient-to-r from-amber-100/30 to-transparent dark:from-amber-950/20 dark:to-transparent";
-                              }
-
-                              return (
-                                <tr
-                                  key={p.memberId}
-                                  className={`${bgClass} transition-colors hover:bg-opacity-80 ${isMe ? "ring-2 ring-blue-500/30 dark:ring-blue-400/30" : ""}`}
-                                >
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center gap-2">
-                                      {medal && <span className="text-xl">{medal}</span>}
-                                      <span className={`font-bold ${isTop3 ? "text-lg" : "text-base"} text-slate-900 dark:text-neutral-100`}>
-                                        {rank}
-                                      </span>
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center gap-2">
-                                      <span className={`font-medium ${isTop3 ? "text-base" : "text-sm"} text-slate-900 dark:text-neutral-100`}>
-                                        {p.displayName}
-                                      </span>
-                                      {isMe && (
-                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
-                                          Þú
-                                        </span>
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center justify-end gap-2">
-                                      <div className="flex-1 max-w-[120px]">
-                                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-800">
-                                          <div
-                                            className={`h-full transition-all ${
-                                              rank === 1
-                                                ? "bg-gradient-to-r from-amber-400 to-amber-500"
-                                                : rank === 2
-                                                ? "bg-gradient-to-r from-slate-400 to-slate-500"
-                                                : rank === 3
-                                                ? "bg-gradient-to-r from-amber-600 to-amber-700"
-                                                : "bg-gradient-to-r from-blue-500 to-blue-600"
-                                            }`}
-                                            style={{ width: `${progressPercent}%` }}
-                                          />
-                                        </div>
-                                      </div>
-                                      <span className={`font-bold ${isTop3 ? "text-lg" : "text-base"} text-slate-900 dark:text-neutral-100`}>
-                                        {p.points}
-                                      </span>
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-400">
-                                    {p.points1x2 || 0}
-                                  </td>
-                                  <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-400">
-                                    {p.bonusPoints || 0}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Mobile Card View */}
-                      <div className="space-y-3 md:hidden">
-                        {roomData.leaderboard.map((p, idx) => {
-                          const rank = idx + 1;
-                          const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
-                          const isMe = isCurrentUser(p.memberId);
-                          const isTop3 = rank <= 3;
-                          const progressPercent = maxPoints > 0 ? (p.points / maxPoints) * 100 : 0;
-
-                          // Ákveða litfyrir efstu 3
-                          let borderClass = "border-slate-200 dark:border-neutral-800";
-                          let bgClass = "bg-white dark:bg-neutral-950/40";
-                          if (isMe && !isTop3) {
-                            borderClass = "border-blue-400 dark:border-blue-600";
-                            bgClass = "bg-blue-50 dark:bg-blue-950/20";
-                          } else if (rank === 1) {
-                            borderClass = "border-amber-400 dark:border-amber-600";
-                            bgClass = "bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/30 dark:to-neutral-950/40";
-                          } else if (rank === 2) {
-                            borderClass = "border-slate-400 dark:border-slate-600";
-                            bgClass = "bg-gradient-to-br from-slate-100/50 to-white dark:from-slate-900/50 dark:to-neutral-950/40";
-                          } else if (rank === 3) {
-                            borderClass = "border-amber-600 dark:border-amber-800";
-                            bgClass = "bg-gradient-to-br from-amber-100/30 to-white dark:from-amber-950/20 dark:to-neutral-950/40";
-                          }
-
-                          return (
-                            <div
-                              key={p.memberId}
-                              className={`rounded-xl border-2 ${borderClass} ${bgClass} p-4 shadow-sm transition-all ${
-                                isMe ? "ring-2 ring-blue-500/30 dark:ring-blue-400/30" : ""
-                              }`}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                  <div className="flex-shrink-0">
-                                    {medal ? (
-                                      <span className="text-2xl">{medal}</span>
-                                    ) : (
-                                      <div
-                                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                                          isTop3
-                                            ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                                            : "bg-slate-200 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300"
-                                        } font-bold`}
-                                      >
-                                        {rank}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span
-                                        className={`font-semibold text-slate-900 dark:text-neutral-100 ${
-                                          isTop3 ? "text-base" : "text-sm"
-                                        }`}
-                                      >
-                                        {p.displayName}
-                                      </span>
-                                      {isMe && (
-                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white flex-shrink-0">
-                                          Þú
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="mt-1.5 w-full">
-                                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-800">
-                                        <div
-                                          className={`h-full transition-all ${
-                                            rank === 1
-                                              ? "bg-gradient-to-r from-amber-400 to-amber-500"
-                                              : rank === 2
-                                              ? "bg-gradient-to-r from-slate-400 to-slate-500"
-                                              : rank === 3
-                                              ? "bg-gradient-to-r from-amber-600 to-amber-700"
-                                              : "bg-gradient-to-r from-blue-500 to-blue-600"
-                                          }`}
-                                          style={{ width: `${progressPercent}%` }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex-shrink-0 text-right">
-                                  <div className={`font-bold ${isTop3 ? "text-xl" : "text-lg"} text-slate-900 dark:text-neutral-100`}>
-                                    {p.points}
-                                  </div>
-                                  <div className="text-xs text-slate-500 dark:text-neutral-400">stig</div>
-                                </div>
+                    {/* Mobile Card View */}
+                    <div className="space-y-2 md:hidden">
+                      {roomData.leaderboard.map((p, idx) => {
+                        const rank = idx + 1;
+                        const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                        return (
+                          <div
+                            key={p.memberId}
+                            className="rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950/40"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                                  {medal ? <span className="mr-1">{medal}</span> : null}
+                                  {rank}
+                                </span>
+                                <span className="font-medium text-slate-900 dark:text-neutral-100">{p.displayName}</span>
                               </div>
-                              <div className="mt-3 flex items-center justify-between gap-4 border-t border-slate-200/80 pt-3 dark:border-neutral-800/80">
-                                <div className="flex-1 text-center">
-                                  <div className="text-xs text-slate-500 dark:text-neutral-400 mb-0.5">1X2</div>
-                                  <div className="font-semibold text-slate-700 dark:text-neutral-300">{p.points1x2 || 0}</div>
-                                </div>
-                                <div className="h-6 w-px bg-slate-200 dark:bg-neutral-800" />
-                                <div className="flex-1 text-center">
-                                  <div className="text-xs text-slate-500 dark:text-neutral-400 mb-0.5">Bónus</div>
-                                  <div className="font-semibold text-slate-700 dark:text-neutral-300">{p.bonusPoints || 0}</div>
-                                </div>
+                              <div className="text-right">
+                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{p.points}</div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">stig</div>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
+                            <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs dark:border-neutral-800">
+                              <div>
+                                <span className="text-slate-500 dark:text-neutral-400">1X2:</span>{" "}
+                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.points1x2 || 0}</span>
+                              </div>
+                              <div>
+                                <span className="text-slate-500 dark:text-neutral-400">Bónus:</span>{" "}
+                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.bonusPoints || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                });
+                  </div>
+                ));
               })()}
             </>
           )}

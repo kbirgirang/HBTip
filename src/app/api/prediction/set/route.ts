@@ -76,11 +76,16 @@ export async function POST(req: Request) {
   }
 
   // Upsert predictions fyrir allar deildir
+  // Nota ignoreDuplicates: false til að tryggja að pick sé alltaf uppfært
   const { error: pErr } = await supabaseServer
     .from("predictions")
-    .upsert(predictionsToInsert, { onConflict: "member_id,match_id" });
+    .upsert(predictionsToInsert, { 
+      onConflict: "member_id,match_id",
+      ignoreDuplicates: false 
+    });
 
   if (pErr) {
+    console.error("Error upserting predictions:", pErr);
     return NextResponse.json({ error: pErr.message }, { status: 500 });
   }
 

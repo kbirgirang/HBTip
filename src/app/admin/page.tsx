@@ -358,6 +358,7 @@ export default function AdminPage() {
   const [pointsPerX, setPointsPerX] = useState<number | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const [syncingPredictions, setSyncingPredictions] = useState(false);
+  const [syncingBonusAnswers, setSyncingBonusAnswers] = useState(false);
 
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault();
@@ -412,6 +413,29 @@ export default function AdminPage() {
       setErr("Tenging klikkaði.");
     } finally {
       setSyncingPredictions(false);
+    }
+  }
+
+  async function syncBonusAnswers() {
+    if (!confirm("Ertu viss um að þú viljir samstilla bónus svör fyrir alla meðlimi með sama username? Þetta bætir aðeins við svörum sem vantar, ekki yfirskrifa fyrirliggjandi svör.")) {
+      return;
+    }
+
+    clearAlerts();
+    setSyncingBonusAnswers(true);
+    try {
+      const res = await fetch("/api/admin/sync-bonus-answers", {
+        method: "POST",
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að samstilla bónus svör.");
+
+      flash(json.message || `Samstillt ${json.answersSynced || 0} bónus svör ✅`);
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSyncingBonusAnswers(false);
     }
   }
 
@@ -2127,6 +2151,20 @@ export default function AdminPage() {
               <p className="mt-3 text-xs text-slate-500 dark:text-neutral-500">
                 Þetta mun finna alla meðlimi með sama username og bæta við spám sem vantar. 
                 Fyrirliggjandi spár verða ekki breyttar.
+              </p>
+            </Card>
+
+            <Card title="Samstilla bónus svör" subtitle="Samstilla bónus svör fyrir alla meðlimi með sama username. Bætir aðeins við svörum sem vantar, ekki yfirskrifa fyrirliggjandi svör.">
+              <button
+                onClick={syncBonusAnswers}
+                disabled={syncingBonusAnswers}
+                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+              >
+                {syncingBonusAnswers ? "Samstilla..." : "Samstilla bónus svör"}
+              </button>
+              <p className="mt-3 text-xs text-slate-500 dark:text-neutral-500">
+                Þetta mun finna alla meðlimi með sama username og bæta við bónus svörum sem vantar. 
+                Fyrirliggjandi svör verða ekki breytt.
               </p>
             </Card>
           </div>

@@ -56,7 +56,7 @@ type RoomData = {
       my_answer_player_name?: string | null; // For display
     };
   }>;
-  leaderboard: Array<{ memberId: string; displayName: string; username: string; points: number; correct1x2: number; bonusPoints: number }>;
+  leaderboard: Array<{ memberId: string; displayName: string; username: string; points: number; correct1x2: number; points1x2: number; bonusPoints: number }>;
 };
 
 type ViewData = RoomData & {
@@ -1334,7 +1334,7 @@ export default function RoomPage() {
                                 </td>
                                 <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">{p.displayName}</td>
                                 <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
-                                <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.correct1x2}</td>
+                                <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.points1x2 || 0}</td>
                                 <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.bonusPoints || 0}</td>
                               </tr>
                             );
@@ -1369,7 +1369,7 @@ export default function RoomPage() {
                             <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs dark:border-neutral-800">
                               <div>
                                 <span className="text-slate-500 dark:text-neutral-400">1X2:</span>{" "}
-                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.correct1x2}</span>
+                                <span className="font-medium text-slate-700 dark:text-neutral-300">{p.points1x2 || 0}</span>
                               </div>
                               <div>
                                 <span className="text-slate-500 dark:text-neutral-400">Bónus:</span>{" "}

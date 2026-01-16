@@ -227,6 +227,7 @@ export async function GET() {
 
       const leaderboard = (roomMembers ?? []).map((m: any) => {
         let correct1x2 = 0;
+        let points1x2 = 0;
         let points = 0;
 
         // 1X2 stig
@@ -242,6 +243,7 @@ export async function GET() {
               pointsForThis = Math.round(pointsForThis * match.underdog_multiplier);
             }
 
+            points1x2 += pointsForThis;
             points += pointsForThis;
           }
         }
@@ -271,7 +273,7 @@ export async function GET() {
           }
         }
 
-        return { memberId: m.id, displayName: m.display_name, username: m.username, points, correct1x2, bonusPoints };
+        return { memberId: m.id, displayName: m.display_name, username: m.username, points, correct1x2, points1x2, bonusPoints };
       });
 
       leaderboard.sort(

@@ -411,7 +411,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mx-auto max-w-4xl px-4 py-10">
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Velkominn á Tippistan 2026</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Velkominn á Betlihem 2026</h1>
           {/* <p className="mt-2 text-slate-600 dark:text-neutral-300">
             Skráðu þig í deild eða búðu til nýja
           </p> */}

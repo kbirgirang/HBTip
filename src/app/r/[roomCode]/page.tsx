@@ -1541,7 +1541,7 @@ function MemberPicksModal({
                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                         : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                     }`}>
-                      {match.isFinished ? "Leikur búinn" : "Leikur í gangi"}
+                      {match.isFinished ? "Leik lokið" : "Leikur í gangi"}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-400">

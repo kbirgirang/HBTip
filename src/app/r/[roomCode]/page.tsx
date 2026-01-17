@@ -1463,10 +1463,15 @@ function MemberPicksModal({
     .map((match) => {
       const memberPicks = match.memberPicks || [];
       const memberPick = memberPicks.find((mp) => mp.memberId === memberId);
+      const matchStarted = new Date(match.starts_at).getTime() <= now;
+      const isFinished = match.result != null;
+      const isInProgress = matchStarted && !isFinished;
       
       return {
         ...match,
         pick: memberPick?.pick ?? null,
+        isFinished,
+        isInProgress,
       };
     })
     .filter((m) => m.pick != null); // Bara ef meðlimurinn spáði
@@ -1527,8 +1532,17 @@ function MemberPicksModal({
                   key={match.id}
                   className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/40"
                 >
-                  <div className="mb-2 text-sm font-medium text-slate-700 dark:text-neutral-300">
-                    {match.home_team} vs {match.away_team}
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
+                      {match.home_team} vs {match.away_team}
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-1 rounded ${
+                      match.isFinished 
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                    }`}>
+                      {match.isFinished ? "Leikur búinn" : "Leikur í gangi"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-400">
                     <span>

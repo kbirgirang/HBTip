@@ -189,6 +189,22 @@ export async function GET() {
 
       if (memErr) return null;
 
+      // ✅ Búa til map af spám allra meðlima fyrir hvern leik
+      const picksByMatchId = new Map<string, Array<{ memberId: string; displayName: string; pick: Pick }>>();
+      for (const pr of roomPreds) {
+        const member = (roomMembers ?? []).find((m: any) => m.id === pr.member_id);
+        if (!member) continue;
+        
+        if (!picksByMatchId.has(pr.match_id)) {
+          picksByMatchId.set(pr.match_id, []);
+        }
+        picksByMatchId.get(pr.match_id)!.push({
+          memberId: member.id,
+          displayName: member.display_name,
+          pick: pr.pick as Pick,
+        });
+      }
+
       // Leaderboard fyrir þessa deild
       const matchById = new Map(roomMatches.map((x: any) => [x.id, x]));
 
@@ -293,6 +309,8 @@ export async function GET() {
           ...m,
           myPick: myPicks.get(m.id) ?? null,
           bonus: bonusByMatchId.get(m.id) ?? null,
+          // ✅ Spár allra meðlima fyrir þennan leik
+          memberPicks: picksByMatchId.get(m.id) ?? [],
         })),
         leaderboard,
       };

@@ -30,6 +30,8 @@ type RoomData = {
     myPick?: Pick | null;
     underdog_team?: "1" | "2" | null;
     underdog_multiplier?: number | null;
+    // ✅ Spár allra meðlima fyrir þennan leik
+    memberPicks?: Array<{ memberId: string; displayName: string; pick: Pick }>;
 
     bonus?: null | {
       id: string;
@@ -100,6 +102,9 @@ export default function RoomPage() {
 
   // State fyrir hvaða leikjum eru með sýndum bónus
   const [showBonusForMatch, setShowBonusForMatch] = useState<Set<string>>(new Set());
+
+  // State fyrir valinn meðlim til að skoða spár
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   // Theme toggle state
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -595,6 +600,37 @@ export default function RoomPage() {
 
           {data && tab === "matches" && (
             <div className="space-y-6">
+              {/* Banner fyrir valinn meðlim */}
+              {selectedMemberId && (() => {
+                const allRooms = data.allRooms || [data];
+                const selectedMember = allRooms
+                  .flatMap(r => r.leaderboard)
+                  .find(l => l.memberId === selectedMemberId);
+                
+                if (!selectedMember) return null;
+                
+                return (
+                  <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-3 dark:border-blue-600 dark:bg-blue-950/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                          Skoðar spár: {selectedMember.displayName}
+                        </span>
+                        <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                          Þú sérð spár {selectedMember.displayName} í leikjum sem eru búnir að loka
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedMemberId(null)}
+                        className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                      >
+                        ✕ Hætta við
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {(() => {
                 const allRooms = data.allRooms || [data];
                 // Sameina allar leikir úr öllum deildum (unique by match id)
@@ -1030,6 +1066,50 @@ export default function RoomPage() {
                                       </span>
                                     )}
 
+                                    {/* Sýna spá valins meðlims - aðeins fyrir lokaða leiki */}
+                                    {(() => {
+                                      // Aðeins sýna ef meðlimur er valinn OG leikurinn er lokaður
+                                      if (!selectedMemberId) return null;
+                                      
+                                      const started = new Date(m.starts_at).getTime() <= now;
+                                      const locked = started || m.result != null;
+                                      
+                                      if (!locked) return null; // Ekki sýna fyrir leiki sem eru ekki lokaðir
+                                      
+                                      const allRooms = data.allRooms || [data];
+                                      const currentRoomData = allRooms.find((r) => 
+                                        r.matches.some((match) => match.id === m.id)
+                                      );
+                                      
+                                      if (!currentRoomData) return null;
+                                      
+                                      // Finna spá valins meðlims fyrir þennan leik
+                                      const memberPicks = currentRoomData.matches.find(match => match.id === m.id)?.memberPicks || [];
+                                      const selectedMemberPick = memberPicks.find(mp => mp.memberId === selectedMemberId);
+                                      
+                                      if (!selectedMemberPick) return null;
+                                      
+                                      const selectedMember = currentRoomData.leaderboard.find(l => l.memberId === selectedMemberId);
+                                      
+                                      return (
+                                        <span className="text-xs">
+                                          {selectedMember?.displayName}:{" "}
+                                          <span
+                                            className={[
+                                              "font-mono px-2 py-0.5 rounded",
+                                              m.result != null
+                                                ? selectedMemberPick.pick === m.result
+                                                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                                  : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                                : "text-slate-500 dark:text-neutral-400",
+                                            ].join(" ")}
+                                          >
+                                            {selectedMemberPick.pick}
+                                          </span>
+                                        </span>
+                                      );
+                                    })()}
+
                                     {locked && <span className="text-xs text-slate-500 dark:text-neutral-400">(lokað)</span>}
                                   </div>
 
@@ -1327,7 +1407,16 @@ export default function RoomPage() {
                             const rank = idx + 1;
                             const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
                             return (
-                              <tr key={p.memberId} className="border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40">
+                              <tr 
+                                key={p.memberId} 
+                                className={`border-t border-slate-200 bg-white cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors ${
+                                  selectedMemberId === p.memberId ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/20' : ''
+                                }`}
+                                onClick={() => {
+                                  setSelectedMemberId(selectedMemberId === p.memberId ? null : p.memberId);
+                                  setTab("matches"); // Skipta yfir í matches flipa
+                                }}
+                              >
                                 <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
                                   {medal ? <span className="mr-1">{medal}</span> : null}
                                   {rank}
@@ -1351,7 +1440,13 @@ export default function RoomPage() {
                         return (
                           <div
                             key={p.memberId}
-                            className="rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950/40"
+                            className={`rounded-xl border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors ${
+                              selectedMemberId === p.memberId ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/20' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedMemberId(selectedMemberId === p.memberId ? null : p.memberId);
+                              setTab("matches"); // Skipta yfir í matches flipa
+                            }}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">

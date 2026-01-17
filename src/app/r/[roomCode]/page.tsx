@@ -1517,7 +1517,11 @@ function MemberPicksModal({
               Engar spár fundust í lokaðum leikjum
             </p>
           ) : (
-            <div className="space-y-3">
+            <>
+              <p className="mb-3 text-sm text-slate-600 dark:text-neutral-400">
+                Hér eru síðustu 5 leikir
+              </p>
+              <div className="space-y-3">
               {matchesWithPicks.map((match) => (
                 <div
                   key={match.id}
@@ -1550,7 +1554,8 @@ function MemberPicksModal({
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>

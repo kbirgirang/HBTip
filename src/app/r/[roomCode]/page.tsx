@@ -103,8 +103,8 @@ export default function RoomPage() {
   // State fyrir hvaða leikjum eru með sýndum bónus
   const [showBonusForMatch, setShowBonusForMatch] = useState<Set<string>>(new Set());
 
-  // State fyrir valinn meðlim til að skoða spár (fyrir tooltip í leaderboard)
-  const [hoveredMemberId, setHoveredMemberId] = useState<string | null>(null);
+  // State fyrir valinn meðlim til að skoða spár (fyrir popup í leaderboard)
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   // Theme toggle state
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -1334,22 +1334,15 @@ export default function RoomPage() {
                             return (
                               <tr 
                                 key={p.memberId} 
-                                className={`border-t border-slate-200 bg-white cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors relative group ${
-                                  hoveredMemberId === p.memberId ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/20' : ''
-                                }`}
-                                onMouseEnter={() => setHoveredMemberId(p.memberId)}
-                                onMouseLeave={() => setHoveredMemberId(null)}
-                                onClick={() => setHoveredMemberId(hoveredMemberId === p.memberId ? null : p.memberId)}
+                                className="border-t border-slate-200 bg-white cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors"
+                                onClick={() => setSelectedMemberId(p.memberId)}
                               >
                                 <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
                                   {medal ? <span className="mr-1">{medal}</span> : null}
                                   {rank}
                                 </td>
-                                <td className="px-3 py-2 text-slate-900 dark:text-neutral-100 relative">
+                                <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
                                   {p.displayName}
-                                  {hoveredMemberId === p.memberId && (
-                                    <MemberPicksTooltip memberId={p.memberId} roomData={roomData} now={now} />
-                                  )}
                                 </td>
                                 <td className="px-3 py-2 text-right font-semibold text-slate-900 dark:text-neutral-100">{p.points}</td>
                                 <td className="px-3 py-2 text-right text-slate-600 dark:text-neutral-400">{p.points1x2 || 0}</td>
@@ -1369,24 +1362,17 @@ export default function RoomPage() {
                         return (
                           <div
                             key={p.memberId}
-                            className={`rounded-xl border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors relative group ${
-                              hoveredMemberId === p.memberId ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/20' : ''
-                            }`}
-                            onMouseEnter={() => setHoveredMemberId(p.memberId)}
-                            onMouseLeave={() => setHoveredMemberId(null)}
-                            onClick={() => setHoveredMemberId(hoveredMemberId === p.memberId ? null : p.memberId)}
+                            className="rounded-xl border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors"
+                            onClick={() => setSelectedMemberId(p.memberId)}
                           >
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 relative">
+                              <div className="flex items-center gap-2">
                                 <span className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
                                   {medal ? <span className="mr-1">{medal}</span> : null}
                                   {rank}
                                 </span>
-                                <span className="font-medium text-slate-900 dark:text-neutral-100 relative">
+                                <span className="font-medium text-slate-900 dark:text-neutral-100">
                                   {p.displayName}
-                                  {hoveredMemberId === p.memberId && (
-                                    <MemberPicksTooltip memberId={p.memberId} roomData={roomData} now={now} />
-                                  )}
                                 </span>
                               </div>
                               <div className="text-right">
@@ -1417,28 +1403,49 @@ export default function RoomPage() {
           {!data && !err && roomCode && <p className="mt-4 text-xs text-slate-500 dark:text-neutral-500">Deild param: {roomCode}</p>}
         </div>
       </div>
+
+      {/* Popup modal fyrir spár meðlims */}
+      {data && selectedMemberId && (() => {
+        const allRooms = data.allRooms || [data];
+        const selectedRoomData = allRooms.find((r) => 
+          r.leaderboard.some((l) => l.memberId === selectedMemberId)
+        );
+        
+        if (!selectedRoomData) return null;
+        
+        return (
+          <MemberPicksModal 
+            memberId={selectedMemberId} 
+            roomData={selectedRoomData} 
+            now={now}
+            onClose={() => setSelectedMemberId(null)}
+          />
+        );
+      })()}
     </main>
   );
 }
 
 /* -----------------------------
-   MEMBER PICKS TOOLTIP COMPONENT
+   MEMBER PICKS MODAL COMPONENT
 ----------------------------- */
 
-function MemberPicksTooltip({ 
+function MemberPicksModal({ 
   memberId, 
   roomData,
-  now
+  now,
+  onClose
 }: { 
   memberId: string; 
   roomData: RoomData;
   now: number;
+  onClose: () => void;
 }) {
-  // Finna síðustu 5 lokaðu leikina
+  // Finna síðustu 5 lokaðu leikina - aðeins leiki sem eru með result EÐA hafa byrjað
   const finishedMatches = roomData.matches
     .filter((match) => {
       const matchStarted = new Date(match.starts_at).getTime() <= now;
-      return matchStarted || match.result != null;
+      return match.result != null || matchStarted; // Aðeins leiki sem eru með úrslit eða hafa byrjað
     })
     .sort((a, b) => {
       // Raða eftir því hvenær þeir lokuðu (nýjast fyrst)
@@ -1464,47 +1471,87 @@ function MemberPicksTooltip({
     })
     .filter((m) => m.pick != null); // Bara ef meðlimurinn spáði
 
-  if (matchesWithPicks.length === 0) return null;
-
   const member = roomData.leaderboard.find(l => l.memberId === memberId);
 
+  // Click outside to close
+  React.useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    }
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
   return (
-    <div className="absolute left-full top-0 z-50 ml-2 w-72 rounded-lg border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900 max-md:left-0 max-md:top-full max-md:mt-2 max-md:ml-0">
-      <div className="max-h-96 overflow-y-auto p-3">
-        <div className="mb-2 text-xs font-semibold text-slate-700 dark:text-neutral-300">
-          Spár {member?.displayName} - Síðustu {matchesWithPicks.length} lokaðu leikir
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="w-full max-w-lg rounded-xl border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900 max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-neutral-800">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+            Spár {member?.displayName}
+          </h2>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            aria-label="Loka"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div className="space-y-2">
-          {matchesWithPicks.map((match) => (
-            <div
-              key={match.id}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-neutral-800 dark:bg-neutral-900/40"
-            >
-              <div className="mb-1 text-xs font-medium text-slate-700 dark:text-neutral-300">
-                {match.home_team} vs {match.away_team}
-              </div>
-              <div className="mb-1 flex items-center gap-2 text-xs text-slate-600 dark:text-neutral-400">
-                <span>Úrslit: <span className="font-mono">{match.result ?? "-"}</span></span>
-                {match.pick && (
-                  <span>
-                    Spá:{" "}
-                    <span
-                      className={[
-                        "font-mono px-1.5 py-0.5 rounded",
-                        match.result != null
-                          ? match.pick === match.result
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
-                          : "text-slate-500 dark:text-neutral-400",
-                      ].join(" ")}
-                    >
-                      {match.pick}
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {matchesWithPicks.length === 0 ? (
+            <p className="text-center text-slate-600 dark:text-neutral-400">
+              Engar spár fundust í lokaðum leikjum
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {matchesWithPicks.map((match) => (
+                <div
+                  key={match.id}
+                  className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/40"
+                >
+                  <div className="mb-2 text-sm font-medium text-slate-700 dark:text-neutral-300">
+                    {match.home_team} vs {match.away_team}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-400">
+                    <span>
+                      Úrslit: <span className="font-mono font-semibold">{match.result ?? "-"}</span>
                     </span>
-                  </span>
-                )}
-              </div>
+                    {match.pick && (
+                      <span>
+                        Spá:{" "}
+                        <span
+                          className={[
+                            "font-mono px-2 py-1 rounded font-semibold",
+                            match.result != null
+                              ? match.pick === match.result
+                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                : "bg-red-500/20 text-red-400 border border-red-500/30"
+                              : "bg-slate-200 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400",
+                          ].join(" ")}
+                        >
+                          {match.pick}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

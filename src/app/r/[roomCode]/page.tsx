@@ -147,10 +147,14 @@ export default function RoomPage() {
         // Safari á iOS þarft iOS 16.4+ og PWA (standalone mode)
         if (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad")) {
           const nav = navigator as any;
-          const isStandalone = nav.standalone || 
-                               (typeof window !== "undefined" && 
-                                typeof window.matchMedia === "function" && 
-                                window.matchMedia("(display-mode: standalone)").matches);
+          let isStandalone = nav.standalone || false;
+          if (!isStandalone && typeof window.matchMedia === "function") {
+            try {
+              isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+            } catch (e) {
+              // Ignore
+            }
+          }
           if (!isStandalone) {
             console.warn("Safari á iOS þarft að nota Progressive Web App (PWA) - bættu við Home Screen og opna sem PWA");
           } else {

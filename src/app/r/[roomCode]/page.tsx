@@ -1468,23 +1468,21 @@ function MemberPicksModal({
     })
     .slice(0, 5); // Síðustu 5
 
-  // Finna spár valins meðlims í þessum leikjum
-  const matchesWithPicks = finishedMatches
-    .map((match) => {
-      const memberPicks = match.memberPicks || [];
-      const memberPick = memberPicks.find((mp) => mp.memberId === memberId);
-      const matchStarted = new Date(match.starts_at).getTime() <= now;
-      const isFinished = match.result != null;
-      const isInProgress = matchStarted && !isFinished;
-      
-      return {
-        ...match,
-        pick: memberPick?.pick ?? null,
-        isFinished,
-        isInProgress,
-      };
-    })
-    .filter((m) => m.pick != null); // Bara ef meðlimurinn spáði
+  // Finna spár valins meðlims í þessum leikjum - sýna ALLA lokaða leiki
+  const matchesWithPicks = finishedMatches.map((match) => {
+    const memberPicks = match.memberPicks || [];
+    const memberPick = memberPicks.find((mp) => mp.memberId === memberId);
+    const matchStarted = new Date(match.starts_at).getTime() <= now;
+    const isFinished = match.result != null;
+    const isInProgress = matchStarted && !isFinished;
+    
+    return {
+      ...match,
+      pick: memberPick?.pick ?? null,
+      isFinished,
+      isInProgress,
+    };
+  });
 
   const member = roomData.leaderboard.find(l => l.memberId === memberId);
 
@@ -1529,7 +1527,7 @@ function MemberPicksModal({
         <div className="flex-1 overflow-y-auto p-4">
           {matchesWithPicks.length === 0 ? (
             <p className="text-center text-slate-600 dark:text-neutral-400">
-              Engar spár fundust í lokaðum leikjum
+              Engir lokaðir leikir fundust
             </p>
           ) : (
             <>

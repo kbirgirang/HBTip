@@ -100,26 +100,46 @@ export async function POST(req: Request) {
     });
 
     const results = await Promise.allSettled(
-      subscriptions.map((sub) =>
-        webpush.sendNotification(sub.subscription, payload)
+      subscriptions.map((sub, index) =>
+        webpush
+          .sendNotification(sub.subscription, payload)
+          .catch((error) => {
+            // Log details about failed push
+            console.error(`Push failed for subscription ${index}:`, {
+              memberId: sub.member_id,
+              endpoint: sub.subscription?.endpoint?.substring(0, 50) + "...",
+              errorCode: error.statusCode,
+              errorMessage: error.message,
+            });
+            throw error;
+          })
       )
     );
 
     const successful = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.filter((r) => r.status === "rejected").length;
 
-    // Ef subscription er ógild, eyða henni
+    // Debug: Log failed subscriptions
+    const failedDetails: any[] = [];
     for (let i = 0; i < results.length; i++) {
       if (results[i].status === "rejected") {
         const reason = (results[i] as PromiseRejectedResult).reason;
+        const sub = subscriptions[i];
+        failedDetails.push({
+          memberId: sub.member_id,
+          statusCode: reason?.statusCode,
+          message: reason?.message,
+          endpoint: sub.subscription?.endpoint?.substring(0, 50) + "...",
+        });
+
         if (reason?.statusCode === 410 || reason?.statusCode === 404) {
           // Subscription er ógild, eyða henni
-          const sub = subscriptions[i];
           try {
             await supabaseServer
               .from("push_subscriptions")
               .delete()
               .eq("id", sub.id);
+            console.log(`Deleted invalid subscription for member ${sub.member_id}`);
           } catch {
             // Ignore delete errors
           }
@@ -127,11 +147,20 @@ export async function POST(req: Request) {
       }
     }
 
+    // Log successful pushes
+    if (successful > 0) {
+      console.log(`Successfully sent ${successful} push notifications`);
+    }
+    if (failed > 0) {
+      console.error(`Failed to send ${failed} push notifications:`, failedDetails);
+    }
+
     return NextResponse.json({
       ok: true,
       sent: successful,
       failed,
       total: subscriptions.length,
+      failedDetails: failedDetails.length > 0 ? failedDetails : undefined,
     });
   } catch (error: any) {
     console.error("Push notification error:", error);

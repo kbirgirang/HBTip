@@ -10,13 +10,13 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/BET-appicon-dark-0126.svg",
+      "src": "/BET-appicon-dark-0126.svg?v=1",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/BET-appicon-dark-0126.svg",
+      "src": "/BET-appicon-dark-0126.svg?v=1",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"

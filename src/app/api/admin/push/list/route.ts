@@ -13,6 +13,7 @@ export async function GET() {
       id,
       member_id,
       created_at,
+      subscription,
       room_members!inner (
         id,
         username,
@@ -26,13 +27,22 @@ export async function GET() {
   }
 
   // Flatten results
-  const users = (subscriptions || []).map((sub: any) => ({
-    subscriptionId: sub.id,
-    memberId: sub.member_id,
-    username: sub.room_members?.username || "Unknown",
-    displayName: sub.room_members?.display_name || "Unknown",
-    subscribedAt: sub.created_at,
-  }));
+  const users = (subscriptions || []).map((sub: any) => {
+    const endpoint = sub.subscription?.endpoint || "unknown";
+    const isIOS = 
+      endpoint.includes("push.apple.com") || 
+      endpoint.includes("safari") ||
+      endpoint.includes("apns");
+    return {
+      subscriptionId: sub.id,
+      memberId: sub.member_id,
+      username: sub.room_members?.username || "Unknown",
+      displayName: sub.room_members?.display_name || "Unknown",
+      subscribedAt: sub.created_at,
+      type: isIOS ? "iOS/Safari" : "Other",
+      endpoint: endpoint.substring(0, 60),
+    };
+  });
 
   return NextResponse.json({ users });
 }

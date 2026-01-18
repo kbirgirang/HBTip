@@ -236,22 +236,14 @@ export default function RoomPage() {
         }
 
         // Subscribe to push notifications
-        console.log("Creating push subscription with VAPID key...");
-        let subscription;
-        try {
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
-          });
-          console.log("Push subscription created successfully:", subscription.endpoint);
-        } catch (subError: any) {
-          console.error("Failed to create push subscription:", subError);
-          console.error("Error details:", subError.message, subError.code);
-          return;
-        }
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+        });
+
+        console.log("Push subscription created:", subscription.endpoint);
 
         // Save subscription to server
-        console.log("Saving push subscription to server...");
         const res = await fetch("/api/push/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -259,12 +251,10 @@ export default function RoomPage() {
         });
 
         if (res.ok) {
-          const result = await res.json().catch(() => ({}));
-          console.log("✅ Push subscription saved successfully!", result);
+          console.log("Push subscription saved successfully");
         } else {
           const error = await res.json().catch(() => ({}));
-          console.error("❌ Failed to save push subscription:", error);
-          console.error("Response status:", res.status);
+          console.error("Failed to save push subscription:", error);
         }
       } catch (error) {
         console.error("Push notification setup error:", error);

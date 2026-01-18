@@ -2322,13 +2322,22 @@ export default function AdminPage() {
                     </p>
                   ) : (
                     <div className="mt-2 max-h-40 space-y-1 overflow-y-auto rounded border border-slate-200 bg-slate-50 p-2 dark:border-neutral-800 dark:bg-neutral-900/40">
-                      {pushUsers.map((user) => (
+                      {pushUsers.map((user: any) => (
                         <div
                           key={user.subscriptionId}
                           className="rounded bg-white px-2 py-1 text-xs dark:bg-neutral-950"
                         >
                           <span className="font-medium">{user.displayName}</span>{" "}
-                          <span className="text-slate-500">(@{user.username})</span>
+                          <span className="text-slate-500">(@{user.username})</span>{" "}
+                          {user.type && (
+                            <span className={`ml-1 rounded px-1 text-[10px] ${
+                              user.type === "iOS/Safari" 
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                            }`}>
+                              {user.type}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>

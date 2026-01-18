@@ -104,11 +104,18 @@ export async function POST(req: Request) {
     const subscriptionInfo: any[] = [];
     subscriptions.forEach((sub, idx) => {
       const endpoint = sub.subscription?.endpoint || "unknown";
-      const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
+      // Safari iOS push endpoints eru venjulega frá Apple Push Notification Service
+      // En þau geta líka verið frá FCM eða öðrum push services
+      // Athugum bæði endpoint og user-agent ef við getum
+      const isIOS = 
+        endpoint.includes("push.apple.com") || 
+        endpoint.includes("safari") ||
+        endpoint.includes("apns"); // Apple Push Notification Service
       subscriptionInfo.push({
         memberId: sub.member_id,
         type: isIOS ? "iOS/Safari" : "Other",
         endpoint: endpoint.substring(0, 80),
+        fullEndpoint: endpoint, // Geymum full endpoint fyrir debugging
       });
       console.log(`  ${idx + 1}. Member ${sub.member_id} - ${isIOS ? "iOS/Safari" : "Other"} - ${endpoint.substring(0, 60)}...`);
     });

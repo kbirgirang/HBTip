@@ -106,6 +106,9 @@ export default function RoomPage() {
   // State fyrir valinn meðlim til að skoða spár (fyrir popup í leaderboard)
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
+  // State fyrir info popup
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
+
   // Theme toggle state
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
@@ -733,7 +736,36 @@ export default function RoomPage() {
               </TabButton>
             ) : null;
           })()}
+          <button
+            onClick={() => setShowInfoPopup(true)}
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            title="Upplýsingar"
+          >
+            ℹ️
+          </button>
         </div>
+
+        {/* Info Popup */}
+        {showInfoPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInfoPopup(false)}>
+            <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Upplýsingar</h3>
+                <button
+                  onClick={() => setShowInfoPopup(false)}
+                  className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-3 text-sm text-slate-600 dark:text-neutral-300">
+                <p>Farðu í Safari → opnaðu betlihem.com → ýttu á Share → More → Add to Home Screen</p>
+                <p>Opnaðu Betlihem appið → skráðu þig inn</p>
+                <p>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-3 md:mt-4 md:p-4">
           {!data && !err && <p className="text-slate-600 dark:text-neutral-300">Hleð...</p>}

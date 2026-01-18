@@ -758,10 +758,25 @@ export default function RoomPage() {
                   ✕
                 </button>
               </div>
-              <div className="space-y-3 text-sm text-slate-600 dark:text-neutral-300">
-                <p>Farðu í Safari → opnaðu betlihem.com → ýttu á Share → More → Add to Home Screen</p>
-                <p>Opnaðu Betlihem appið → skráðu þig inn</p>
-                <p>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</p>
+              <div className="space-y-4 text-sm text-slate-600 dark:text-neutral-300">
+                <div>
+                  <p className="font-semibold mb-2">iPhone</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Farðu í Safari → opnaðu betlihem.com → ýttu á Share → More → Add to Home Screen</li>
+                    <li>Opnaðu Betlihem appið → skráðu þig inn</li>
+                    <li>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</li>
+                  </ul>
+                </div>
+                <div className="border-t border-slate-200 pt-4 dark:border-neutral-700">
+                  <p className="font-semibold mb-2">Android</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Opna síðuna í Chrome á Android</li>
+                    <li>Samþykkja notification permission þegar beðið er um það</li>
+                    <li>Ekki þarf að bæta við Home Screen (ólíkt iOS)</li>
+                    <li>Opnaðu Betlihem appið → skráðu þig inn</li>
+                    <li>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -1026,7 +1041,6 @@ export default function RoomPage() {
                           )}
                         </div>
                       )}
-
                       {upcomingMatches.length > 0 && (
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-4">

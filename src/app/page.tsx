@@ -419,6 +419,13 @@ export default function HomePage() {
     <main className="min-h-screen bg-white text-slate-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mx-auto max-w-4xl px-4 py-10">
         <header className="mb-8 text-center">
+          <div className="mb-4 flex justify-center">
+            <img 
+              src="/Bet-logo-0126.svg" 
+              alt="Betlihem" 
+              className="h-16 w-auto dark:invert"
+            />
+          </div>
           <h1 className="text-3xl font-bold tracking-tight">Velkominn á BETlihem Vinnustaðatippsíðu</h1>
           {/* <p className="mt-2 text-slate-600 dark:text-neutral-300">
             Skráðu þig í deild eða búðu til nýja

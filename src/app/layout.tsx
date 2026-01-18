@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/BET-appicon-dark-0126.svg?v=2", type: "image/svg+xml" },
-      { url: "/icon.png", type: "image/png" },
+      { url: "/BET-appicon-dark-0126.png?v=2", type: "image/png" },
     ],
     apple: [
       { url: "/BET-appicon-dark-0126.svg?v=2", type: "image/svg+xml" },

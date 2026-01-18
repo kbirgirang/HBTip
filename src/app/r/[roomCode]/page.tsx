@@ -121,6 +121,73 @@ export default function RoomPage() {
     }
   }, []);
 
+  // Push notifications setup
+  useEffect(() => {
+    async function setupPushNotifications() {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        return;
+      }
+
+      try {
+        // Register Service Worker
+        const registration = await navigator.serviceWorker.register("/sw.js");
+        console.log("Service Worker registered:", registration);
+
+        // Request push subscription
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          console.log("Notification permission denied");
+          return;
+        }
+
+        // Get VAPID public key from environment
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        if (!vapidPublicKey) {
+          console.warn("VAPID public key not set");
+          return;
+        }
+
+        // Convert VAPID key to Uint8Array
+        function urlBase64ToUint8Array(base64String: string): Uint8Array {
+          const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+          const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
+        }
+
+        // Subscribe to push notifications
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+        });
+
+        // Save subscription to server
+        const res = await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: subscription.toJSON() }),
+        });
+
+        if (res.ok) {
+          console.log("Push subscription saved");
+        } else {
+          console.error("Failed to save push subscription");
+        }
+      } catch (error) {
+        console.error("Push notification setup error:", error);
+      }
+    }
+
+    // Only run if user is authenticated (wait for data to load)
+    if (mounted) {
+      setupPushNotifications();
+    }
+  }, [mounted]);
+
   const handleThemeToggle = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);

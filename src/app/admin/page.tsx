@@ -360,6 +360,15 @@ export default function AdminPage() {
   const [syncingPredictions, setSyncingPredictions] = useState(false);
   const [syncingBonusAnswers, setSyncingBonusAnswers] = useState(false);
 
+  // Push notifications state
+  const [pushUsers, setPushUsers] = useState<any[]>([]);
+  const [loadingPushUsers, setLoadingPushUsers] = useState(false);
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushMessage, setPushMessage] = useState("");
+  const [selectedPushMemberId, setSelectedPushMemberId] = useState<string | null>(null);
+  const [sendingPush, setSendingPush] = useState(false);
+  const [sendPushToAll, setSendPushToAll] = useState(true);
+
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault();
     clearAlerts();
@@ -436,6 +445,77 @@ export default function AdminPage() {
       setErr("Tenging klikkaði.");
     } finally {
       setSyncingBonusAnswers(false);
+    }
+  }
+
+  // Load push users function
+  async function loadPushUsers() {
+    setLoadingPushUsers(true);
+    try {
+      const res = await fetch("/api/admin/push/list");
+      const json = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setPushUsers(json.users || []);
+      } else {
+        setErr(json.error || "Ekki tókst að sækja push notendur");
+      }
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoadingPushUsers(false);
+    }
+  }
+
+  // Load push users when settings tab opens
+  useEffect(() => {
+    if (tab === "settings") {
+      void loadPushUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Send push notification
+  async function sendPushNotification() {
+    if (!pushTitle.trim() || !pushMessage.trim()) {
+      setErr("Titill og skilaboð þurfa að vera til staðar");
+      return;
+    }
+
+    if (!sendPushToAll && !selectedPushMemberId) {
+      setErr("Veldu notanda eða veldu 'Send til allra'");
+      return;
+    }
+
+    clearAlerts();
+    setSendingPush(true);
+    try {
+      const res = await fetch("/api/admin/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: pushTitle.trim(),
+          message: pushMessage.trim(),
+          memberId: sendPushToAll ? null : selectedPushMemberId,
+          sendToAll: sendPushToAll,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(json.error || "Ekki tókst að senda push notification");
+        return;
+      }
+
+      flash(`Push notification sent! (${json.sent}/${json.total} successful)`);
+      setPushTitle("");
+      setPushMessage("");
+      setSelectedPushMemberId(null);
+      setSendPushToAll(true);
+      await loadPushUsers(); // Reload to update list
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSendingPush(false);
     }
   }
 
@@ -2201,6 +2281,120 @@ export default function AdminPage() {
                 Þetta mun finna alla meðlimi með sama username og bæta við bónus svörum sem vantar. 
                 Fyrirliggjandi svör verða ekki breytt.
               </p>
+            </Card>
+
+            <Card
+              title="Push Notifications"
+              subtitle="Sendir tilkynningar til notenda í vafranum/tölvu þeirra."
+            >
+              <div className="space-y-4">
+                {/* Listi af notendum með push subscriptions */}
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">
+                    Notendur með push subscriptions ({pushUsers.length})
+                  </label>
+                  {loadingPushUsers ? (
+                    <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">Hleð...</p>
+                  ) : pushUsers.length === 0 ? (
+                    <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">
+                      Engir notendur með push subscriptions.
+                    </p>
+                  ) : (
+                    <div className="mt-2 max-h-40 space-y-1 overflow-y-auto rounded border border-slate-200 bg-slate-50 p-2 dark:border-neutral-800 dark:bg-neutral-900/40">
+                      {pushUsers.map((user) => (
+                        <div
+                          key={user.subscriptionId}
+                          className="rounded bg-white px-2 py-1 text-xs dark:bg-neutral-950"
+                        >
+                          <span className="font-medium">{user.displayName}</span>{" "}
+                          <span className="text-slate-500">(@{user.username})</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={loadPushUsers}
+                    disabled={loadingPushUsers}
+                    className="mt-2 text-xs text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    Endurnýja lista
+                  </button>
+                </div>
+
+                {/* Send to all or one user */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-300">
+                    <input
+                      type="radio"
+                      checked={sendPushToAll}
+                      onChange={() => setSendPushToAll(true)}
+                      className="rounded"
+                    />
+                    Send til allra notenda
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-300">
+                    <input
+                      type="radio"
+                      checked={!sendPushToAll}
+                      onChange={() => setSendPushToAll(false)}
+                      className="rounded"
+                    />
+                    Send til einstaklings
+                  </label>
+                </div>
+
+                {/* Velja notanda (ef ekki "send to all") */}
+                {!sendPushToAll && (
+                  <div>
+                    <label className="text-sm text-slate-700 dark:text-neutral-300">Veldu notanda</label>
+                    <select
+                      value={selectedPushMemberId || ""}
+                      onChange={(e) => setSelectedPushMemberId(e.target.value || null)}
+                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                    >
+                      <option value="">-- Veldu notanda --</option>
+                      {pushUsers.map((user) => (
+                        <option key={user.memberId} value={user.memberId}>
+                          {user.displayName} (@{user.username})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Titill */}
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Titill</label>
+                  <input
+                    type="text"
+                    value={pushTitle}
+                    onChange={(e) => setPushTitle(e.target.value)}
+                    placeholder="T.d. Ný bónusspurning!"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  />
+                </div>
+
+                {/* Skilaboð */}
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-neutral-300">Skilaboð</label>
+                  <textarea
+                    value={pushMessage}
+                    onChange={(e) => setPushMessage(e.target.value)}
+                    placeholder="T.d. Ný bónusspurning hefur verið búin til fyrir leikinn!"
+                    rows={3}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  />
+                </div>
+
+                {/* Send takki */}
+                <button
+                  onClick={sendPushNotification}
+                  disabled={sendingPush || !pushTitle.trim() || !pushMessage.trim()}
+                  className="w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60 dark:bg-green-500 dark:text-neutral-900 dark:hover:bg-green-400"
+                >
+                  {sendingPush ? "Sendi..." : "Senda push notification"}
+                </button>
+              </div>
             </Card>
           </div>
         )}

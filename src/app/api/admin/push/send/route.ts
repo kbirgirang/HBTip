@@ -99,11 +99,14 @@ export async function POST(req: Request) {
         if (reason?.statusCode === 410 || reason?.statusCode === 404) {
           // Subscription er ógild, eyða henni
           const sub = subscriptions[i];
-          await supabaseServer
-            .from("push_subscriptions")
-            .delete()
-            .eq("id", sub.id)
-            .catch(() => {}); // Ignore delete errors
+          try {
+            await supabaseServer
+              .from("push_subscriptions")
+              .delete()
+              .eq("id", sub.id);
+          } catch {
+            // Ignore delete errors
+          }
         }
       }
     }

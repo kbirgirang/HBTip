@@ -20,8 +20,8 @@ self.addEventListener("push", function (event) {
   const title = data.title || "Ný tilkynning";
   const options = {
     body: data.body || "Ný skilaboð",
-    icon: "/BET-appicon-0126.svg",
-    badge: "/BET-appicon-0126.svg",
+    icon: "/BET-appicon-dark-0126.svg",
+    badge: "/BET-appicon-dark-0126.svg",
     data: data.url || "/",
     tag: "bonus-notification",
     requireInteraction: false,

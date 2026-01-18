@@ -612,7 +612,7 @@ export default function RoomPage() {
     
     return (
       <div className="flex flex-col gap-1">
-        <div className="mb-3 mt-4">
+        <div className="mb-3 mt-8">
           <img 
             src="/Bet-logo-0126.svg" 
             alt="Betlihem" 

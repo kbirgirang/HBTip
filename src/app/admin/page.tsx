@@ -1795,6 +1795,16 @@ export default function AdminPage() {
                   <div className="space-y-3">
                     {matchesWithBonus
                       .filter((x) => x.bonus)
+                      .sort((a, b) => {
+                        // Raða eftir stöðu: opið fyrst, síðan lokað
+                        const aClosed = new Date(a.bonus!.closes_at).getTime() <= Date.now();
+                        const bClosed = new Date(b.bonus!.closes_at).getTime() <= Date.now();
+                        if (aClosed !== bClosed) {
+                          return aClosed ? 1 : -1; // Opnar fyrst (false comes before true)
+                        }
+                        // Ef sama stöðu, raða eftir closes_at (fyrri lokun fyrst)
+                        return new Date(a.bonus!.closes_at).getTime() - new Date(b.bonus!.closes_at).getTime();
+                      })
                       .map((m) => {
                         const q = m.bonus!;
                         const closed = new Date(q.closes_at).getTime() <= Date.now();

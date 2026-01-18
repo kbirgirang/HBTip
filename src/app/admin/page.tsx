@@ -1901,156 +1901,221 @@ export default function AdminPage() {
               {matches.length === 0 ? (
                 <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
               ) : (() => {
-                // Flokka leiki í "komandi" og "eldri leikir"
+                // Flokka leiki í "Framundan", "Ígangi" og "Búnir"
                 const now = Date.now();
-                const upcoming = matches
-                  .filter(m => new Date(m.starts_at).getTime() > now)
+                const framundan = matches
+                  .filter(m => new Date(m.starts_at).getTime() > now && m.result === null)
                   .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-                const older = matches
-                  .filter(m => new Date(m.starts_at).getTime() <= now)
+                const igangi = matches
+                  .filter(m => new Date(m.starts_at).getTime() <= now && m.result === null)
+                  .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+                const bunir = matches
+                  .filter(m => m.result !== null)
                   .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
-                const renderMatch = (m: MatchRow) => (
-                  <div
-                    key={m.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-4 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <div className="font-semibold text-slate-900 dark:text-neutral-100">
-                        <span className="inline-flex items-center gap-1">
-                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                          {m.home_team}
-                        </span>{" "}
-                        vs{" "}
-                        <span className="inline-flex items-center gap-1">
-                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                          {m.away_team}
-                        </span>
-                        {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
+                const renderMatch = (m: MatchRow, showStatusBadge = false) => {
+                  const matchTime = new Date(m.starts_at).getTime();
+                  const isUpcoming = matchTime > now && m.result === null;
+                  const isOngoing = matchTime <= now && m.result === null;
+                  const isFinished = m.result !== null;
+
+                  return (
+                    <div
+                      key={m.id}
+                      className={`flex flex-col gap-3 rounded-2xl border p-4 transition-colors md:flex-row md:items-center md:justify-between ${
+                        isFinished
+                          ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                          : isOngoing
+                          ? "border-amber-200 bg-amber-50/50 dark:border-amber-900/50 dark:bg-amber-950/20"
+                          : "border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40"
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-start gap-2">
+                          {showStatusBadge && (
+                            <span
+                              className={`mt-0.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                isFinished
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                                  : isOngoing
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                              }`}
+                            >
+                              {isFinished ? "✓ Búinn" : isOngoing ? "⏱️ Ígangi" : "📅 Framundan"}
+                            </span>
+                          )}
+                          <div className="flex-1">
+                            <div className="font-semibold text-slate-900 dark:text-neutral-100">
+                              <span className="inline-flex items-center gap-1">
+                                {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                {m.home_team}
+                              </span>{" "}
+                              vs{" "}
+                              <span className="inline-flex items-center gap-1">
+                                {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                                {m.away_team}
+                              </span>
+                              {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
+                              {isFinished && m.result && (
+                                <span className="ml-2 rounded bg-emerald-200 px-2 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+                                  Úrslit: {m.result}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-600 dark:text-neutral-400">
+                              {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString("is-IS")}
+                              {m.match_no != null ? ` · #${m.match_no}` : ""}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-600 dark:text-neutral-400">
-                        {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
-                        {m.match_no != null ? ` · #${m.match_no}` : ""}
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-medium text-slate-700 dark:text-neutral-300">Úrslit:</span>
 
-                        <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
-                          1
-                        </ResultButton>
-
-                        {m.allow_draw && (
-                          <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
-                            X
+                          <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
+                            1
                           </ResultButton>
-                        )}
 
-                        <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
-                          2
-                        </ResultButton>
+                          {m.allow_draw && (
+                            <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
+                              X
+                            </ResultButton>
+                          )}
 
-                        <button
-                          onClick={() => setResult(m.id, null)}
-                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                        >
-                          Hreinsa
-                        </button>
+                          <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
+                            2
+                          </ResultButton>
 
-                        <button
-                          onClick={() => deleteMatch(m.id)}
-                          className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                        >
-                          Eyða
-                        </button>
-                      </div>
-
-                      {/* Underdog UI */}
-                      <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">🎯 Underdog:</span>
-                        
-                        <button
-                          onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
-                          className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                            m.underdog_team === "1"
-                              ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          }`}
-                        >
-                          {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
-                          1
-                        </button>
-
-                        <button
-                          onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
-                          className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                            m.underdog_team === "2"
-                              ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          }`}
-                        >
-                          {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
-                          2
-                        </button>
-
-                        {m.underdog_team && (
-                          <>
-                            <input
-                              type="number"
-                              min="1.0"
-                              max="10.0"
-                              step="0.1"
-                              value={m.underdog_multiplier ?? 3.0}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                if (val >= 1.0 && val <= 10.0) {
-                                  setUnderdog(m.id, m.underdog_team, val);
-                                }
-                              }}
-                              className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                              placeholder="3.0"
-                            />
-                            <span className="text-xs text-slate-600 dark:text-neutral-400">x stig</span>
-                          </>
-                        )}
-
-                        {m.underdog_team && (
                           <button
-                            onClick={() => setUnderdog(m.id, null, null)}
-                            className="rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            onClick={() => setResult(m.id, null)}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           >
                             Hreinsa
                           </button>
-                        )}
+
+                          <button
+                            onClick={() => deleteMatch(m.id)}
+                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                          >
+                            Eyða
+                          </button>
+                        </div>
+
+                        {/* Underdog UI */}
+                        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">🎯 Underdog:</span>
+                          
+                          <button
+                            onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                              m.underdog_team === "1"
+                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            }`}
+                          >
+                            {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
+                            1
+                          </button>
+
+                          <button
+                            onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                              m.underdog_team === "2"
+                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            }`}
+                          >
+                            {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
+                            2
+                          </button>
+
+                          {m.underdog_team && (
+                            <>
+                              <input
+                                type="number"
+                                min="1.0"
+                                max="10.0"
+                                step="0.1"
+                                value={m.underdog_multiplier ?? 3.0}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  if (val >= 1.0 && val <= 10.0) {
+                                    setUnderdog(m.id, m.underdog_team, val);
+                                  }
+                                }}
+                                className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="3.0"
+                              />
+                              <span className="text-xs text-slate-600 dark:text-neutral-400">x stig</span>
+                            </>
+                          )}
+
+                          {m.underdog_team && (
+                            <button
+                              onClick={() => setUnderdog(m.id, null, null)}
+                              className="rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            >
+                              Hreinsa
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
+                  );
+                };
 
                 return (
-                  <div className="space-y-6">
-                    {/* Komandi leikir */}
-                    {upcoming.length > 0 && (
+                  <div className="space-y-8">
+                    {/* Framundan leikir */}
+                    {framundan.length > 0 && (
                       <div>
-                        <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-neutral-100">
-                          Komandi leikir ({upcoming.length})
-                        </h3>
+                        <div className="mb-4 flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
+                            📅 Framundan
+                          </h3>
+                          <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                            {framundan.length}
+                          </span>
+                        </div>
                         <div className="space-y-3">
-                          {upcoming.map(renderMatch)}
+                          {framundan.map(m => renderMatch(m, false))}
                         </div>
                       </div>
                     )}
 
-                    {/* Eldri leikir */}
-                    {older.length > 0 && (
+                    {/* Ígangi leikir */}
+                    {igangi.length > 0 && (
                       <div>
-                        <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-neutral-100">
-                          Eldri leikir ({older.length})
-                        </h3>
+                        <div className="mb-4 flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
+                            ⏱️ Ígangi
+                          </h3>
+                          <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                            {igangi.length}
+                          </span>
+                        </div>
                         <div className="space-y-3">
-                          {older.map(renderMatch)}
+                          {igangi.map(m => renderMatch(m, false))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Búnir leikir */}
+                    {bunir.length > 0 && (
+                      <div>
+                        <div className="mb-4 flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
+                            ✓ Búnir
+                          </h3>
+                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                            {bunir.length}
+                          </span>
+                        </div>
+                        <div className="space-y-3">
+                          {bunir.map(m => renderMatch(m, false))}
                         </div>
                       </div>
                     )}

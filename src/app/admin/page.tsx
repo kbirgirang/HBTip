@@ -45,7 +45,7 @@ type AdminBonusListResponse = { matches: MatchWithBonus[] };
 type Tab = "create" | "results" | "settings" | "tournaments";
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<Tab>("create");
+  const [tab, setTab] = useState<Tab>("results");
 
   // Authentication state
   const [authenticated, setAuthenticated] = useState<boolean | null>(null); // null = checking

@@ -166,8 +166,14 @@ export default function RoomPage() {
           return;
         }
 
-        // Get VAPID public key from environment
-        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        // Get VAPID public key from API
+        const keyRes = await fetch("/api/push/vapid-key");
+        if (!keyRes.ok) {
+          console.error("Failed to get VAPID public key");
+          return;
+        }
+        const keyData = await keyRes.json().catch(() => ({}));
+        const vapidPublicKey = keyData.publicKey;
         if (!vapidPublicKey) {
           console.warn("VAPID public key not set");
           return;

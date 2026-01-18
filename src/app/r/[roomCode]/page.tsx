@@ -616,13 +616,10 @@ export default function RoomPage() {
           <img 
             src="/Bet-logo-0126.svg" 
             alt="Betlihem" 
-            className="h-12 w-auto dark:invert"
+            className="h-16 w-auto dark:invert"
           />
         </div>
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="text-2xl font-bold flex-1">
-            Leikir
-          </h1>
+        <div className="flex items-start justify-end gap-2">
           <div className="flex items-center gap-2">
             {mounted && (
               <button

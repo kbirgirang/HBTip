@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
-  
-  if (!vapidPublicKey) {
+  try {
+    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+    
+    if (!vapidPublicKey) {
+      console.error("VAPID public key not configured in environment variables");
+      return NextResponse.json(
+        { error: "VAPID public key not configured" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ publicKey: vapidPublicKey });
+  } catch (error) {
+    console.error("Error getting VAPID key:", error);
     return NextResponse.json(
-      { error: "VAPID public key not configured" },
+      { error: "Failed to get VAPID key" },
       { status: 500 }
     );
   }
-
-  return NextResponse.json({ publicKey: vapidPublicKey });
 }

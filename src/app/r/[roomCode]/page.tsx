@@ -612,6 +612,13 @@ export default function RoomPage() {
     
     return (
       <div className="flex flex-col gap-1">
+        <div className="mb-3">
+          <img 
+            src="/Bet-logo-0126.svg" 
+            alt="Betlihem" 
+            className="h-12 w-auto dark:invert"
+          />
+        </div>
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-2xl font-bold flex-1">
             Leikir

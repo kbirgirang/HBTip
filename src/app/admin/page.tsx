@@ -506,7 +506,28 @@ export default function AdminPage() {
         return;
       }
 
-      flash(`Push notification sent! (${json.sent}/${json.total} successful)`);
+      // Búa til detailed message
+      let message = `Push notification sent! (${json.sent}/${json.total} successful)`;
+      if (json.iosSubscriptions !== undefined) {
+        message += `\n\niOS/Safari: ${json.iosSubscriptions} subscriptions (${json.iosFailed || 0} failed)`;
+        message += `\nOther browsers: ${json.otherSubscriptions} subscriptions (${json.otherFailed || 0} failed)`;
+      }
+      if (json.failed > 0 && json.failedDetails) {
+        message += `\n\nFailed details:`;
+        json.failedDetails.forEach((fail: any) => {
+          message += `\n- Member ${fail.memberId}: ${fail.statusCode || "unknown"} - ${fail.message || "error"}`;
+        });
+      }
+
+      flash(message);
+      
+      // Ef iOS failed, birtum warning
+      if (json.iosFailed > 0) {
+        setTimeout(() => {
+          setErr(`iOS push notifications klikkaði fyrir ${json.iosFailed} notanda. Athugaðu að iOS þarft að vera í PWA mode (á Home Screen) og iOS 16.4+`);
+        }, 3000);
+      }
+
       setPushTitle("");
       setPushMessage("");
       setSelectedPushMemberId(null);

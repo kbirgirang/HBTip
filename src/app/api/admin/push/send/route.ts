@@ -101,9 +101,15 @@ export async function POST(req: Request) {
 
     // Log subscriptions fyrir debugging
     console.log(`Sending push to ${subscriptions.length} subscriptions:`);
+    const subscriptionInfo: any[] = [];
     subscriptions.forEach((sub, idx) => {
       const endpoint = sub.subscription?.endpoint || "unknown";
       const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
+      subscriptionInfo.push({
+        memberId: sub.member_id,
+        type: isIOS ? "iOS/Safari" : "Other",
+        endpoint: endpoint.substring(0, 80),
+      });
       console.log(`  ${idx + 1}. Member ${sub.member_id} - ${isIOS ? "iOS/Safari" : "Other"} - ${endpoint.substring(0, 60)}...`);
     });
 
@@ -171,11 +177,26 @@ export async function POST(req: Request) {
       console.error(`Failed to send ${failed} push notifications:`, failedDetails);
     }
 
+    // Greina iOS vs Other subscriptions
+    const iosSubscriptions = subscriptionInfo.filter((s) => s.type === "iOS/Safari").length;
+    const otherSubscriptions = subscriptionInfo.filter((s) => s.type === "Other").length;
+
+    // Greina iOS vs Other failed subscriptions
+    const iosFailed = failedDetails.filter((f: any) => 
+      f.endpoint?.includes("push.apple.com") || f.endpoint?.includes("safari")
+    ).length;
+    const otherFailed = failedDetails.length - iosFailed;
+
     return NextResponse.json({
       ok: true,
       sent: successful,
       failed,
       total: subscriptions.length,
+      iosSubscriptions,
+      otherSubscriptions,
+      iosFailed,
+      otherFailed,
+      subscriptionInfo,
       failedDetails: failedDetails.length > 0 ? failedDetails : undefined,
     });
   } catch (error: any) {

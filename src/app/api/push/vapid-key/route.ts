@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+    // Prófa bæði NEXT_PUBLIC_ (build-time) og VAPID_PUBLIC_KEY (runtime)
+    // API routes geta lesið ALLAR environment variables á runtime
+    const vapidPublicKey = 
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 
+      process.env.VAPID_PUBLIC_KEY || 
+      "";
     
     if (!vapidPublicKey) {
       console.error("VAPID public key not configured in environment variables");
@@ -11,7 +16,8 @@ export async function GET() {
         { 
           error: "VAPID public key not configured",
           debug: {
-            hasKey: Boolean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
+            hasNextPublicKey: Boolean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
+            hasVapidPublicKey: Boolean(process.env.VAPID_PUBLIC_KEY),
             allVapidKeys: Object.keys(process.env).filter(k => k.includes("VAPID")),
           }
         },

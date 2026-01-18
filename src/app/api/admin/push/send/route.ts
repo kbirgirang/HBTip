@@ -3,14 +3,28 @@ import { requireAdminSession } from "@/lib/adminAuth";
 import { supabaseServer } from "@/lib/supabaseServer";
 import webpush from "web-push";
 
-// VAPID keys úr environment variables
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "";
+// VAPID keys úr environment variables með fallback
+// Fallback keys - notaðir ef environment variables eru ekki aðgengilegir
+const FALLBACK_VAPID_PUBLIC_KEY = "BFU2gUkANWpqw0yciW3WoX5fl6OWGjlHXk-e5t_tSaqwWBbt5_lvCX59m3jMLydkuLlU735Ci2_CkT6v0pDCQeU";
+const FALLBACK_VAPID_PRIVATE_KEY = "EOOSFYMsthNfeX2YOK5tDo16SdjDejhxmPJPZOMqMtI";
+
+const VAPID_PUBLIC_KEY = 
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 
+  process.env.VAPID_PUBLIC_KEY || 
+  FALLBACK_VAPID_PUBLIC_KEY;
+const VAPID_PRIVATE_KEY = 
+  process.env.VAPID_PRIVATE_KEY || 
+  FALLBACK_VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:admin@example.com";
 
 // Setja upp VAPID details
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  
+  // Log ef fallback er notaður
+  if (VAPID_PUBLIC_KEY === FALLBACK_VAPID_PUBLIC_KEY || VAPID_PRIVATE_KEY === FALLBACK_VAPID_PRIVATE_KEY) {
+    console.warn("Using fallback VAPID keys - environment variables not found");
+  }
 }
 
 export async function POST(req: Request) {
@@ -27,9 +41,11 @@ export async function POST(req: Request) {
     );
   }
 
+  // VAPID keys eru alltaf til staðar (með fallback), svo þetta check er ekki lengur nauðsynlegt
+  // En við geymum þetta fyrir öryggi
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
     return NextResponse.json(
-      { error: "VAPID keys eru ekki settar upp. Setja þarf í .env.local" },
+      { error: "VAPID keys eru ekki settar upp. Setja þarf í .env.local eða Vercel environment variables" },
       { status: 500 }
     );
   }

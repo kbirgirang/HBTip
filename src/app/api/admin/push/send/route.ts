@@ -99,17 +99,33 @@ export async function POST(req: Request) {
       url: "/",
     });
 
+    // Log subscriptions fyrir debugging
+    console.log(`Sending push to ${subscriptions.length} subscriptions:`);
+    subscriptions.forEach((sub, idx) => {
+      const endpoint = sub.subscription?.endpoint || "unknown";
+      const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
+      console.log(`  ${idx + 1}. Member ${sub.member_id} - ${isIOS ? "iOS/Safari" : "Other"} - ${endpoint.substring(0, 60)}...`);
+    });
+
     const results = await Promise.allSettled(
       subscriptions.map((sub, index) =>
         webpush
           .sendNotification(sub.subscription, payload)
+          .then(() => {
+            const endpoint = sub.subscription?.endpoint || "unknown";
+            const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
+            console.log(`✅ Push sent successfully to member ${sub.member_id} (${isIOS ? "iOS/Safari" : "Other"})`);
+          })
           .catch((error) => {
             // Log details about failed push
-            console.error(`Push failed for subscription ${index}:`, {
+            const endpoint = sub.subscription?.endpoint || "unknown";
+            const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
+            console.error(`❌ Push failed for subscription ${index} (${isIOS ? "iOS/Safari" : "Other"}):`, {
               memberId: sub.member_id,
-              endpoint: sub.subscription?.endpoint?.substring(0, 50) + "...",
+              endpoint: endpoint.substring(0, 80) + "...",
               errorCode: error.statusCode,
               errorMessage: error.message,
+              errorBody: error.body,
             });
             throw error;
           })

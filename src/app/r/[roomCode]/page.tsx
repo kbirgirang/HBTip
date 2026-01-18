@@ -135,11 +135,24 @@ export default function RoomPage() {
         return;
       }
 
+      // Athuga hvort Notification API sé aðgengilegt
+      if (!("Notification" in window)) {
+        console.warn("Notification API er ekki aðgengilegt");
+        return;
+      }
+
+      // Athuga hvort PushManager sé aðgengilegt
       if (!("PushManager" in window)) {
         console.log("Push Manager er ekki studdur í þessum vafra");
         // Safari á iOS þarft iOS 16.4+ og PWA (standalone mode)
         if (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad")) {
-          console.warn("Safari á iOS þarft að nota Progressive Web App (PWA) - bættu við Home Screen");
+          const isStandalone = (window.navigator as any).standalone || 
+                               window.matchMedia("(display-mode: standalone)").matches;
+          if (!isStandalone) {
+            console.warn("Safari á iOS þarft að nota Progressive Web App (PWA) - bættu við Home Screen og opna sem PWA");
+          } else {
+            console.warn("Notar PWA en Push Manager er ekki aðgengilegt - iOS version kannski of gamall eða eitthvað annað");
+          }
         }
         return;
       }
@@ -170,9 +183,22 @@ export default function RoomPage() {
         }
 
         // Request push subscription
-        const permission = await Notification.requestPermission();
+        // Athuga fyrst hvort leyfi sé þegar gefið
+        let permission = Notification.permission;
+        console.log("Current notification permission:", permission);
+        
+        if (permission === "default") {
+          // Ekki ennþá spurt um leyfi
+          console.log("Requesting notification permission...");
+          permission = await Notification.requestPermission();
+          console.log("Permission result:", permission);
+        }
+        
         if (permission !== "granted") {
-          console.log("Notification permission denied");
+          console.warn("Notification permission denied or not granted:", permission);
+          if (permission === "denied") {
+            console.warn("Notification permission er bönnuð - notandinn þarf að leyfa það í stillingum");
+          }
           return;
         }
 

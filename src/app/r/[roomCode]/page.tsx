@@ -750,7 +750,7 @@ export default function RoomPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInfoPopup(false)}>
             <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Upplýsingar</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Leyfa tilkynningar</h3>
                 <button
                   onClick={() => setShowInfoPopup(false)}
                   className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
@@ -762,8 +762,8 @@ export default function RoomPage() {
                 <div>
                   <p className="font-semibold mb-2">iPhone</p>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>Farðu í Safari → opnaðu betlihem.com → ýttu á Share → More → Add to Home Screen</li>
-                    <li>Opnaðu Betlihem appið → skráðu þig inn</li>
+                    <li>Safari → opna betlihem.com → ýtta á Share → More → Add to Home Screen</li>
+                    <li>Opna Betlihem appið → skrá sig inn</li>
                     <li>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</li>
                   </ul>
                 </div>
@@ -773,7 +773,7 @@ export default function RoomPage() {
                     <li>Opna síðuna í Chrome á Android</li>
                     <li>Samþykkja notification permission þegar beðið er um það</li>
                     <li>Ekki þarf að bæta við Home Screen (ólíkt iOS)</li>
-                    <li>Opnaðu Betlihem appið → skráðu þig inn</li>
+                    <li>Opna Betlihem appið → skrá sig inn</li>
                     <li>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</li>
                   </ul>
                 </div>

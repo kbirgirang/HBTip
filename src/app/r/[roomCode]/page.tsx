@@ -740,7 +740,7 @@ export default function RoomPage() {
           })()}
           <button
             onClick={() => setShowInfoPopup(true)}
-            className="rounded-xl border-2 border-blue-500 bg-blue-500 px-4 py-2 text-lg font-semibold text-white shadow-md hover:bg-blue-600 hover:border-blue-600 dark:border-blue-400 dark:bg-blue-400 dark:text-white dark:hover:bg-blue-500 dark:hover:border-blue-500 transition-colors"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
             title="Upplýsingar"
           >
             ℹ️

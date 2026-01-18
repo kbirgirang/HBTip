@@ -1331,10 +1331,15 @@ export default function RoomPage() {
                           {roomData.leaderboard.map((p, idx) => {
                             const rank = idx + 1;
                             const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                            const isMe = p.memberId === roomData.me.id;
                             return (
                               <tr 
                                 key={p.memberId} 
-                                className="border-t border-slate-200 bg-white cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors"
+                                className={`border-t cursor-pointer transition-colors ${
+                                  isMe
+                                    ? "border-blue-300 bg-blue-50/80 hover:bg-blue-100/80 dark:border-blue-500 dark:bg-blue-950/40 dark:hover:bg-blue-900/50"
+                                    : "border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60"
+                                }`}
                                 onClick={() => setSelectedMemberId(p.memberId)}
                               >
                                 <td className="px-3 py-2 text-slate-900 dark:text-neutral-100">
@@ -1359,10 +1364,15 @@ export default function RoomPage() {
                       {roomData.leaderboard.map((p, idx) => {
                         const rank = idx + 1;
                         const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                        const isMe = p.memberId === roomData.me.id;
                         return (
                           <div
                             key={p.memberId}
-                            className="rounded-xl border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60 transition-colors"
+                            className={`rounded-xl border p-3 cursor-pointer transition-colors ${
+                              isMe
+                                ? "border-blue-300 bg-blue-50/80 hover:bg-blue-100/80 dark:border-blue-500 dark:bg-blue-950/40 dark:hover:bg-blue-900/50"
+                                : "border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60"
+                            }`}
                             onClick={() => setSelectedMemberId(p.memberId)}
                           >
                             <div className="flex items-center justify-between">

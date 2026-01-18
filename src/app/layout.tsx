@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/BET-appicon-dark-0126.svg?v=2", type: "image/svg+xml" },
-      { url: "/BET-appicon-dark-0126.png?v=2", type: "image/png" },
+      { url: "/BET-appicon-dark-0126.svg?v=3", type: "image/svg+xml" },
+      { url: "/BET-appicon-dark-0126.png?v=3", type: "image/png" },
     ],
     apple: [
-      { url: "/BET-appicon-dark-0126.svg?v=2", type: "image/svg+xml" },
+      { url: "/BET-appicon-dark-0126.svg?v=3", type: "image/svg+xml" },
     ],
   },
 };
@@ -45,7 +45,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Betlihem" />
-        <link rel="apple-touch-icon" href="/BET-appicon-dark-0126.svg?v=2" />
+        <link rel="apple-touch-icon" href="/BET-appicon-dark-0126.svg?v=3" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

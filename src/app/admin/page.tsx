@@ -1330,11 +1330,11 @@ export default function AdminPage() {
         </div>
 
         <div className="mt-6 flex gap-2">
-          <TabButton active={tab === "create"} onClick={() => setTab("create")}>
-            Setja inn leiki
-          </TabButton>
           <TabButton active={tab === "results"} onClick={() => setTab("results")}>
             Úrslit + bónus
+          </TabButton>
+          <TabButton active={tab === "create"} onClick={() => setTab("create")}>
+            Setja inn leiki
           </TabButton>
           <TabButton active={tab === "tournaments"} onClick={() => setTab("tournaments")}>
             Keppnir

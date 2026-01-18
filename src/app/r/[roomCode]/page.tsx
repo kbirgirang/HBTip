@@ -1543,6 +1543,7 @@ function MemberPicksModal({
     const isFinished = match.result != null;
     const isInProgress = matchStarted && !isFinished;
     
+    
     return {
       ...match,
       pick: memberPick?.pick ?? null,

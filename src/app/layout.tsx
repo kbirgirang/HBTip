@@ -16,10 +16,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Betlihem – Tippsíða",
   description: "Tippsíða fyrir ýmsar keppnir og mót",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Betlihem",
+  },
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
   },
 };

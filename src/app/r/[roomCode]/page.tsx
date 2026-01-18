@@ -129,8 +129,18 @@ export default function RoomPage() {
         return;
       }
 
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-        console.log("Service Worker eða Push Manager er ekki studdur");
+      // Athuga hvort Service Worker og Push Manager séu studdir
+      if (!("serviceWorker" in navigator)) {
+        console.log("Service Worker er ekki studdur í þessum vafra");
+        return;
+      }
+
+      if (!("PushManager" in window)) {
+        console.log("Push Manager er ekki studdur í þessum vafra");
+        // Safari á iOS þarft iOS 16.4+ og PWA (standalone mode)
+        if (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad")) {
+          console.warn("Safari á iOS þarft að nota Progressive Web App (PWA) - bættu við Home Screen");
+        }
         return;
       }
 

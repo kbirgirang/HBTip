@@ -147,10 +147,11 @@ export default function RoomPage() {
         // Safari á iOS þarft iOS 16.4+ og PWA (standalone mode)
         if (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad")) {
           const nav = navigator as any;
+          const win = window as any;
           let isStandalone = nav.standalone || false;
-          if (!isStandalone && typeof window.matchMedia === "function") {
+          if (!isStandalone && win.matchMedia) {
             try {
-              isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+              isStandalone = win.matchMedia("(display-mode: standalone)").matches;
             } catch (e) {
               // Ignore
             }

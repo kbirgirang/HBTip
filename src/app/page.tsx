@@ -426,7 +426,6 @@ export default function HomePage() {
               className="h-34 w-auto dark:invert"
             />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Velkominn á BETlihem Vinnustaðatippsíðu</h1>
           {/* <p className="mt-2 text-slate-600 dark:text-neutral-300">
             Skráðu þig í deild eða búðu til nýja
           </p> */}

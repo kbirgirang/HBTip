@@ -1901,8 +1901,26 @@ export default function AdminPage() {
               {matches.length === 0 ? (
                 <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
               ) : (() => {
-                // Flokka leiki í "Framundan", "Ígangi" og "Búnir"
-                const now = Date.now();
+                // Helper function to get date string for grouping (YYYY-MM-DD)
+                const getDateKey = (date: Date) => {
+                  return date.toISOString().split('T')[0];
+                };
+
+                // Helper function to format date for display
+                const formatDateLabel = (dateStr: string, now: Date) => {
+                  const date = new Date(dateStr + 'T00:00:00');
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  const tomorrow = new Date(today);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  
+                  if (getDateKey(date) === getDateKey(today)) {
+                    return "Í dag";
+                  } else if (getDateKey(date) === getDateKey(tomorrow)) {
+                    return "Á morgun";
+                  } else {
+                    return date.toLocaleDateString("is-IS", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                  }
+                };
                 
                 // Helper function to sort by match_no first, then starts_at
                 const sortMatches = (a: MatchRow, b: MatchRow) => {
@@ -1917,20 +1935,43 @@ export default function AdminPage() {
                   return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
                 };
 
-                const framundan = matches
-                  .filter(m => new Date(m.starts_at).getTime() > now && m.result === null)
-                  .sort(sortMatches);
-                const igangi = matches
-                  .filter(m => new Date(m.starts_at).getTime() <= now && m.result === null)
-                  .sort(sortMatches);
-                const bunir = matches
-                  .filter(m => m.result !== null)
-                  .sort(sortMatches);
+                const now = new Date();
+                
+                // Flokka leiki eftir dagsetningu
+                const matchesByDate = new Map<string, { bunir: MatchRow[]; obunir: MatchRow[] }>();
+                
+                matches.forEach(m => {
+                  const matchDate = new Date(m.starts_at);
+                  const dateKey = getDateKey(matchDate);
+                  
+                  if (!matchesByDate.has(dateKey)) {
+                    matchesByDate.set(dateKey, { bunir: [], obunir: [] });
+                  }
+                  
+                  const group = matchesByDate.get(dateKey)!;
+                  if (m.result !== null) {
+                    group.bunir.push(m);
+                  } else {
+                    group.obunir.push(m);
+                  }
+                });
+
+                // Röða hvern flokk
+                matchesByDate.forEach((group) => {
+                  group.bunir.sort(sortMatches);
+                  group.obunir.sort(sortMatches);
+                });
+
+                // Búa til lista af dagsetningum í réttri röð
+                const sortedDates = Array.from(matchesByDate.keys()).sort((a, b) => {
+                  return new Date(a).getTime() - new Date(b).getTime();
+                });
 
                 const renderMatch = (m: MatchRow, showStatusBadge = false) => {
                   const matchTime = new Date(m.starts_at).getTime();
-                  const isUpcoming = matchTime > now && m.result === null;
-                  const isOngoing = matchTime <= now && m.result === null;
+                  const nowTime = now.getTime();
+                  const isUpcoming = matchTime > nowTime && m.result === null;
+                  const isOngoing = matchTime <= nowTime && m.result === null;
                   const isFinished = m.result !== null;
 
                   return (
@@ -2083,56 +2124,40 @@ export default function AdminPage() {
 
                 return (
                   <div className="space-y-8">
-                    {/* Framundan leikir */}
-                    {framundan.length > 0 && (
-                      <div>
-                        <div className="mb-4 flex items-center gap-3">
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
-                            📅 Framundan
-                          </h3>
-                          <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                            {framundan.length}
-                          </span>
-                        </div>
-                        <div className="space-y-3">
-                          {framundan.map(m => renderMatch(m, false))}
-                        </div>
-                      </div>
-                    )}
+                    {sortedDates.map(dateKey => {
+                      const group = matchesByDate.get(dateKey)!;
+                      const total = group.bunir.length + group.obunir.length;
+                      const dateLabel = formatDateLabel(dateKey, now);
+                      
+                      if (total === 0) return null;
+                      
+                      return (
+                        <div key={dateKey} className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
+                              {dateLabel}
+                            </h3>
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 dark:bg-neutral-800 dark:text-neutral-300">
+                              {total} {total === 1 ? 'leikur' : 'leikir'}
+                            </span>
+                          </div>
 
-                    {/* Ígangi leikir */}
-                    {igangi.length > 0 && (
-                      <div>
-                        <div className="mb-4 flex items-center gap-3">
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
-                            ⏱️ Ígangi
-                          </h3>
-                          <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
-                            {igangi.length}
-                          </span>
-                        </div>
-                        <div className="space-y-3">
-                          {igangi.map(m => renderMatch(m, false))}
-                        </div>
-                      </div>
-                    )}
+                          {/* Óbúnir leikir fyrst */}
+                          {group.obunir.length > 0 && (
+                            <div className="space-y-3">
+                              {group.obunir.map(m => renderMatch(m, false))}
+                            </div>
+                          )}
 
-                    {/* Búnir leikir */}
-                    {bunir.length > 0 && (
-                      <div>
-                        <div className="mb-4 flex items-center gap-3">
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
-                            ✓ Búnir
-                          </h3>
-                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
-                            {bunir.length}
-                          </span>
+                          {/* Búnir leikir */}
+                          {group.bunir.length > 0 && (
+                            <div className="space-y-3">
+                              {group.bunir.map(m => renderMatch(m, false))}
+                            </div>
+                          )}
                         </div>
-                        <div className="space-y-3">
-                          {bunir.map(m => renderMatch(m, false))}
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
                 );
               })()}

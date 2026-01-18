@@ -612,14 +612,12 @@ export default function RoomPage() {
     
     return (
       <div className="flex flex-col gap-1">
-        <div className="mb-3 mt-8">
+        <div className="mb-3 mt-8 flex items-center justify-between gap-2">
           <img 
             src="/Bet-logo-0126.svg" 
             alt="Betlihem" 
             className="h-16 w-auto dark:invert"
           />
-        </div>
-        <div className="flex items-start justify-end gap-2">
           <div className="flex items-center gap-2">
             {mounted && (
               <button

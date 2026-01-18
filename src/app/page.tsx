@@ -136,6 +136,10 @@ export default function HomePage() {
       const savedSlPassword = localStorage.getItem("remember_sl_password");
       if (savedSlUsername) setSlUsername(savedSlUsername);
       if (savedSlPassword) setSlPassword(savedSlPassword);
+      // Set checkbox if credentials exist
+      if (savedSlUsername || savedSlPassword) {
+        setSlRememberMe(true);
+      }
 
       // Load join credentials
       const savedJUsername = localStorage.getItem("remember_j_username");
@@ -146,6 +150,10 @@ export default function HomePage() {
       if (savedJPassword) setJPassword(savedJPassword);
       if (savedJRoomCode) setJRoomCode(savedJRoomCode);
       if (savedJJoinPassword) setJJoinPassword(savedJJoinPassword);
+      // Set checkbox if credentials exist
+      if (savedJUsername || savedJPassword || savedJRoomCode || savedJJoinPassword) {
+        setJRememberMe(true);
+      }
     } catch (err) {
       // Ignore localStorage errors
     }

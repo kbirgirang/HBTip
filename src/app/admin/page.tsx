@@ -2380,40 +2380,34 @@ export default function AdminPage() {
               </form>
             </Card>
 
-            <Card title="Hraðleið" subtitle="Mælt: bulk innsetning → bónus (eitt field) → úrslit.">
-              <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-neutral-300">
-                <li>Settu inn alla leiki í einu með "bulk".</li>
-                <li>Settu bónus með því að velja leik og skrifa spurningu.</li>
-                <li>Ef þú setur tvítekningar: Eyða í úrslita listanum.</li>
-              </ul>
-            </Card>
+            <Card title="Samstilla" subtitle="Samstilla spár og bónus svör fyrir alla meðlimi með sama username. Bætir aðeins við sem vantar, ekki yfirskrifa fyrirliggjandi gögn.">
+              <div className="space-y-4">
+                <div>
+                  <button
+                    onClick={syncPredictions}
+                    disabled={syncingPredictions}
+                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  >
+                    {syncingPredictions ? "Samstilla..." : "Samstilla spár"}
+                  </button>
+                  <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">
+                    Finnur alla meðlimi með sama username og bætir við spám sem vantar. Fyrirliggjandi spár verða ekki breyttar.
+                  </p>
+                </div>
 
-            <Card title="Samstilla spár" subtitle="Samstilla spár fyrir alla meðlimi með sama username. Bætir aðeins við spám sem vantar, ekki yfirskrifa fyrirliggjandi spár.">
-              <button
-                onClick={syncPredictions}
-                disabled={syncingPredictions}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-              >
-                {syncingPredictions ? "Samstilla..." : "Samstilla spár"}
-              </button>
-              <p className="mt-3 text-xs text-slate-500 dark:text-neutral-500">
-                Þetta mun finna alla meðlimi með sama username og bæta við spám sem vantar. 
-                Fyrirliggjandi spár verða ekki breyttar.
-              </p>
-            </Card>
-
-            <Card title="Samstilla bónus svör" subtitle="Samstilla bónus svör fyrir alla meðlimi með sama username. Bætir aðeins við svörum sem vantar, ekki yfirskrifa fyrirliggjandi svör.">
-              <button
-                onClick={syncBonusAnswers}
-                disabled={syncingBonusAnswers}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-              >
-                {syncingBonusAnswers ? "Samstilla..." : "Samstilla bónus svör"}
-              </button>
-              <p className="mt-3 text-xs text-slate-500 dark:text-neutral-500">
-                Þetta mun finna alla meðlimi með sama username og bæta við bónus svörum sem vantar. 
-                Fyrirliggjandi svör verða ekki breytt.
-              </p>
+                <div className="border-t border-slate-200 pt-4 dark:border-neutral-700">
+                  <button
+                    onClick={syncBonusAnswers}
+                    disabled={syncingBonusAnswers}
+                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  >
+                    {syncingBonusAnswers ? "Samstilla..." : "Samstilla bónus svör"}
+                  </button>
+                  <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">
+                    Finnur alla meðlimi með sama username og bætir við bónus svörum sem vantar. Fyrirliggjandi svör verða ekki breytt.
+                  </p>
+                </div>
+              </div>
             </Card>
 
             <Card

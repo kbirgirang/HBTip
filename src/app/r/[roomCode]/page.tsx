@@ -124,7 +124,13 @@ export default function RoomPage() {
   // Push notifications setup
   useEffect(() => {
     async function setupPushNotifications() {
+      // Bíða eftir að notandinn sé skráður inn
+      if (!mounted || !data) {
+        return;
+      }
+
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        console.log("Service Worker eða Push Manager er ekki studdur");
         return;
       }
 
@@ -132,6 +138,26 @@ export default function RoomPage() {
         // Register Service Worker
         const registration = await navigator.serviceWorker.register("/sw.js");
         console.log("Service Worker registered:", registration);
+
+        // Athuga hvort subscription sé þegar til staðar
+        const existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription) {
+          console.log("Push subscription er þegar til staðar, prófa að vista aftur");
+          // Prófa að vista aftur í gagnagrunninum
+          const res = await fetch("/api/push/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subscription: existingSubscription.toJSON() }),
+          });
+
+          if (res.ok) {
+            console.log("Push subscription vistað aftur");
+          } else {
+            const error = await res.json().catch(() => ({}));
+            console.error("Failed to save push subscription:", error);
+          }
+          return;
+        }
 
         // Request push subscription
         const permission = await Notification.requestPermission();
@@ -165,6 +191,8 @@ export default function RoomPage() {
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
         });
 
+        console.log("Push subscription created:", subscription.endpoint);
+
         // Save subscription to server
         const res = await fetch("/api/push/subscribe", {
           method: "POST",
@@ -173,20 +201,21 @@ export default function RoomPage() {
         });
 
         if (res.ok) {
-          console.log("Push subscription saved");
+          console.log("Push subscription saved successfully");
         } else {
-          console.error("Failed to save push subscription");
+          const error = await res.json().catch(() => ({}));
+          console.error("Failed to save push subscription:", error);
         }
       } catch (error) {
         console.error("Push notification setup error:", error);
       }
     }
 
-    // Only run if user is authenticated (wait for data to load)
-    if (mounted) {
+    // Bíða eftir að notandinn sé skráður inn (data er til staðar)
+    if (mounted && data) {
       setupPushNotifications();
     }
-  }, [mounted]);
+  }, [mounted, data]);
 
   const handleThemeToggle = () => {
     const newTheme = theme === "dark" ? "light" : "dark";

@@ -1337,7 +1337,7 @@ export default function RoomPage() {
                                 key={p.memberId} 
                                 className={`border-t cursor-pointer transition-colors ${
                                   isMe
-                                    ? "border-blue-300 bg-blue-50/80 hover:bg-blue-100/80 dark:border-blue-500 dark:bg-blue-950/40 dark:hover:bg-blue-900/50"
+                                    ? "border-l-4 border-l-blue-500 border-t-slate-200 bg-blue-50/50 hover:bg-blue-50/70 dark:border-l-blue-400 dark:border-t-neutral-800 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
                                     : "border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60"
                                 }`}
                                 onClick={() => setSelectedMemberId(p.memberId)}
@@ -1370,7 +1370,7 @@ export default function RoomPage() {
                             key={p.memberId}
                             className={`rounded-xl border p-3 cursor-pointer transition-colors ${
                               isMe
-                                ? "border-blue-300 bg-blue-50/80 hover:bg-blue-100/80 dark:border-blue-500 dark:bg-blue-950/40 dark:hover:bg-blue-900/50"
+                                ? "border-l-4 border-l-blue-500 border-r border-t border-b border-slate-200 bg-blue-50/50 hover:bg-blue-50/70 dark:border-l-blue-400 dark:border-r dark:border-t dark:border-b dark:border-neutral-800 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
                                 : "border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 dark:hover:bg-neutral-900/60"
                             }`}
                             onClick={() => setSelectedMemberId(p.memberId)}

@@ -423,7 +423,7 @@ export default function HomePage() {
             <img 
               src="/Bet-logo-0126.svg" 
               alt="Betlihem" 
-              className="h-16 w-auto dark:invert"
+              className="h-34 w-auto dark:invert"
             />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Velkominn á BETlihem Vinnustaðatippsíðu</h1>

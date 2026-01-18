@@ -694,7 +694,7 @@ export default function RoomPage() {
               <> · <span className="font-semibold">{allRooms.length}</span> deildir</>
             )}
           </p>
-          {isInMultipleRooms && (
+          {/* {isInMultipleRooms && (
             <select
               value={data.room.code}
               onChange={(e) => {
@@ -711,7 +711,7 @@ export default function RoomPage() {
                 </option>
               ))}
             </select>
-          )}
+          )} */}
         </div>
       </div>
     );

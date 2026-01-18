@@ -146,8 +146,9 @@ export default function RoomPage() {
         console.log("Push Manager er ekki studdur í þessum vafra");
         // Safari á iOS þarft iOS 16.4+ og PWA (standalone mode)
         if (navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad")) {
-          const isStandalone = (window.navigator as any).standalone || 
-                               window.matchMedia("(display-mode: standalone)").matches;
+          const isStandalone = 
+            (typeof window !== "undefined" && (window.navigator as any).standalone) || 
+            (typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches);
           if (!isStandalone) {
             console.warn("Safari á iOS þarft að nota Progressive Web App (PWA) - bættu við Home Screen og opna sem PWA");
           } else {

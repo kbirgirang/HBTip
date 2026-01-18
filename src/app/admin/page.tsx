@@ -1903,15 +1903,29 @@ export default function AdminPage() {
               ) : (() => {
                 // Flokka leiki í "Framundan", "Ígangi" og "Búnir"
                 const now = Date.now();
+                
+                // Helper function to sort by match_no first, then starts_at
+                const sortMatches = (a: MatchRow, b: MatchRow) => {
+                  // Ef báðir hafa match_no, raða eftir því
+                  if (a.match_no != null && b.match_no != null) {
+                    return a.match_no - b.match_no;
+                  }
+                  // Ef aðeins annar hefur match_no, setja hann fremst
+                  if (a.match_no != null && b.match_no == null) return -1;
+                  if (a.match_no == null && b.match_no != null) return 1;
+                  // Ef hvorugur hefur match_no, raða eftir starts_at
+                  return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+                };
+
                 const framundan = matches
                   .filter(m => new Date(m.starts_at).getTime() > now && m.result === null)
-                  .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+                  .sort(sortMatches);
                 const igangi = matches
                   .filter(m => new Date(m.starts_at).getTime() <= now && m.result === null)
-                  .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+                  .sort(sortMatches);
                 const bunir = matches
                   .filter(m => m.result !== null)
-                  .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+                  .sort(sortMatches);
 
                 const renderMatch = (m: MatchRow, showStatusBadge = false) => {
                   const matchTime = new Date(m.starts_at).getTime();

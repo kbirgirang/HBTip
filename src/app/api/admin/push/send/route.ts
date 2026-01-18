@@ -93,6 +93,7 @@ export async function POST(req: Request) {
     }
 
     // Sendir push notification til allra subscriptions
+    // Safari iOS þarft einfalda JSON payload
     const payload = JSON.stringify({
       title,
       body: message,
@@ -121,28 +122,39 @@ export async function POST(req: Request) {
     });
 
     const results = await Promise.allSettled(
-      subscriptions.map((sub, index) =>
-        webpush
-          .sendNotification(sub.subscription, payload)
+      subscriptions.map((sub, index) => {
+        const endpoint = sub.subscription?.endpoint || "unknown";
+        const isIOS = 
+          endpoint.includes("push.apple.com") || 
+          endpoint.includes("safari") ||
+          endpoint.includes("apns");
+        
+        // Fyrir Safari iOS, prófa að senda með TTL og urgency options
+        const options: any = {};
+        if (isIOS) {
+          // Safari iOS þarft TTL og urgency
+          options.TTL = 86400; // 24 klukkustundir
+          options.urgency = "normal";
+        }
+        
+        return webpush
+          .sendNotification(sub.subscription, payload, options)
           .then(() => {
-            const endpoint = sub.subscription?.endpoint || "unknown";
-            const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
             console.log(`✅ Push sent successfully to member ${sub.member_id} (${isIOS ? "iOS/Safari" : "Other"})`);
           })
           .catch((error) => {
             // Log details about failed push
-            const endpoint = sub.subscription?.endpoint || "unknown";
-            const isIOS = endpoint.includes("push.apple.com") || endpoint.includes("safari");
             console.error(`❌ Push failed for subscription ${index} (${isIOS ? "iOS/Safari" : "Other"}):`, {
               memberId: sub.member_id,
               endpoint: endpoint.substring(0, 80) + "...",
               errorCode: error.statusCode,
               errorMessage: error.message,
               errorBody: error.body,
+              fullError: error,
             });
             throw error;
-          })
-      )
+          });
+      })
     );
 
     const successful = results.filter((r) => r.status === "fulfilled").length;

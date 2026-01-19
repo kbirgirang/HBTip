@@ -1742,27 +1742,29 @@ function MemberPicksModal({
   onClose: () => void;
 }) {
   // Finna síðustu 8 lokaðu leikina - aðeins leiki sem eru með result EÐA hafa byrjað
-  const finishedMatches = roomData.matches
+  // Tryggja að leikir sem eru í gangi séu alltaf með
+  const allClosedMatches = roomData.matches.filter((match) => {
+    const matchStarted = new Date(match.starts_at).getTime() <= now;
+    return match.result != null || matchStarted; // Aðeins leiki sem eru með úrslit eða hafa byrjað
+  });
+
+  // Aðskilja leiki sem eru í gangi og loknir
+  const inProgressMatches = allClosedMatches
     .filter((match) => {
       const matchStarted = new Date(match.starts_at).getTime() <= now;
-      return match.result != null || matchStarted; // Aðeins leiki sem eru með úrslit eða hafa byrjað
+      return matchStarted && match.result == null; // Í gangi = hefur byrjað en engin úrslit
     })
-    .sort((a, b) => {
-      const aStarted = new Date(a.starts_at).getTime() <= now;
-      const bStarted = new Date(b.starts_at).getTime() <= now;
-      
-      // Raða eftir því hvenær þeir lokuðu/byrjuðu (nýjast fyrst)
-      // Fyrst leikir með úrslit (loknir), síðan leikir sem eru í gangi
-      if (a.result && b.result) {
-        return new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime();
-      }
-      if (a.result) return -1; // a er lokinn, setja efst
-      if (b.result) return 1;  // b er lokinn, setja efst
-      
-      // Báðir eru án úrslita en hafa byrjað - raða eftir starts_at (nýjast fyrst)
-      return new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime();
-    })
-    .slice(0, 8); // Síðustu 8
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()); // Nýjast fyrst
+
+  const finishedMatchesWithResults = allClosedMatches
+    .filter((match) => match.result != null) // Loknir leikir með úrslit
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()); // Nýjast fyrst
+
+  // Kombina: Fyrst leikir í gangi, síðan loknir leikir - hámark 8 samtals
+  const finishedMatches = [
+    ...inProgressMatches,
+    ...finishedMatchesWithResults
+  ].slice(0, 8);
 
   // Finna spár valins meðlims í þessum leikjum - sýna ALLA lokaða leiki
   const matchesWithPicks = finishedMatches.map((match) => {

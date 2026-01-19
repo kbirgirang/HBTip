@@ -778,8 +778,7 @@ export default function RoomPage() {
                   <p className="font-semibold mb-2">Android</p>
                   <ul className="space-y-1 list-disc list-inside">
                     <li>Opna síðuna í Chrome á Android</li>
-                    <li>Samþykkja notification permission þegar beðið er um það</li>
-                    <li>Ekki þarf að bæta við Home Screen (ólíkt iOS)</li>
+                    <li>Samþykkja notification permission þegar beðið er um það.</li>
                   </ul>
                 </div>
               </div>

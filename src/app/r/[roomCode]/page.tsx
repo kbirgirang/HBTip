@@ -1064,15 +1064,13 @@ export default function RoomPage() {
                                   // Advertisement slot between days (except after last day)
                                   !isLastDate && (
                                     <div 
-                                      key={`ad-${dateKey}`} 
-                                      className="rounded-xl border border-slate-200 bg-white p-2 md:p-4 dark:border-neutral-800 dark:bg-neutral-950/40 flex items-center justify-center overflow-hidden"
-                                      style={{ minHeight: '100px' }}
+                                      key={`ad-${dateKey}`}
                                     >
                                       <a 
                                         href="https://rafganistan.is" 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="block w-full h-full"
+                                        className="block w-full"
                                       >
                                         <img 
                                           src="/Rafgan_Augl.png" 
@@ -1325,15 +1323,13 @@ export default function RoomPage() {
                                   // Advertisement slot between days (except after last day)
                                   !isLastDate && (
                                     <div 
-                                      key={`ad-${dateKey}`} 
-                                      className="rounded-xl border border-slate-200 bg-white p-2 md:p-4 dark:border-neutral-800 dark:bg-neutral-950/40 flex items-center justify-center overflow-hidden"
-                                      style={{ minHeight: '100px' }}
+                                      key={`ad-${dateKey}`}
                                     >
                                       <a 
                                         href="https://rafganistan.is" 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="block w-full h-full"
+                                        className="block w-full"
                                       >
                                         <img 
                                           src="/Rafgan_Augl.png" 

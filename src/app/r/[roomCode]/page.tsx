@@ -106,6 +106,9 @@ export default function RoomPage() {
   // State fyrir valinn meðlim til að skoða spár (fyrir popup í leaderboard)
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
+  // State fyrir valið lið til að sýna leiki
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+
   // State fyrir info popup
   const [showInfoPopup, setShowInfoPopup] = useState(false);
 
@@ -948,13 +951,24 @@ export default function RoomPage() {
                       <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                         <div className="text-center md:text-left">
                           <div className="font-semibold">
-                                        <span>{m.home_team}</span>{" "}
-                                        <span className="inline-flex items-center gap-1">
+                                        <button
+                                          onClick={() => setSelectedTeam(m.home_team)}
+                                          className="hover:underline cursor-pointer"
+                                        >
+                                          <span>{m.home_team}</span>{" "}
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                        </button>
+                                        <span className="inline-flex items-center gap-1 mx-2">
                                           vs
-                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                        </span>{" "}
-                                        <span>{m.away_team}</span>{" "}
+                                        </span>
+                                        <button
+                                          onClick={() => setSelectedTeam(m.away_team)}
+                                          className="hover:underline cursor-pointer"
+                                        >
+                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}{" "}
+                                          <span>{m.away_team}</span>
+                                        </button>
+                                        {" "}
                             {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                           </div>
                         </div>
@@ -1157,13 +1171,24 @@ export default function RoomPage() {
                                   <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                                     <div className="text-center md:text-left">
                                       <div className="font-semibold">
-                                        <span>{m.home_team}</span>{" "}
-                                        <span className="inline-flex items-center gap-1">
+                                        <button
+                                          onClick={() => setSelectedTeam(m.home_team)}
+                                          className="hover:underline cursor-pointer"
+                                        >
+                                          <span>{m.home_team}</span>{" "}
                                           {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                        </button>
+                                        <span className="inline-flex items-center gap-1 mx-2">
                                           vs
-                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                        </span>{" "}
-                                        <span>{m.away_team}</span>{" "}
+                                        </span>
+                                        <button
+                                          onClick={() => setSelectedTeam(m.away_team)}
+                                          className="hover:underline cursor-pointer"
+                                        >
+                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}{" "}
+                                          <span>{m.away_team}</span>
+                                        </button>
+                                        {" "}
                                         {!m.allow_draw && <span className="ml-2 text-xs text-amber-200">X óvirkt</span>}
                                       </div>
                                     </div>
@@ -1626,6 +1651,16 @@ export default function RoomPage() {
           />
         );
       })()}
+
+      {/* Popup modal fyrir leiki valins liðs */}
+      {data && selectedTeam && (
+        <TeamMatchesModal
+          teamName={selectedTeam}
+          allRooms={data.allRooms || [data]}
+          now={now}
+          onClose={() => setSelectedTeam(null)}
+        />
+      )}
     </main>
   );
 }
@@ -1773,6 +1808,204 @@ function MemberPicksModal({
               ))}
               </div>
             </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -----------------------------
+   TEAM MATCHES MODAL COMPONENT
+----------------------------- */
+
+function TeamMatchesModal({
+  teamName,
+  allRooms,
+  now,
+  onClose
+}: {
+  teamName: string;
+  allRooms: RoomData[];
+  now: number;
+  onClose: () => void;
+}) {
+  // Sameina allar leikir úr öllum deildum (unique by match id)
+  const allMatchesMap = new Map<string, typeof allRooms[0]["matches"][0]>();
+  for (const roomData of allRooms) {
+    for (const match of roomData.matches) {
+      if (!allMatchesMap.has(match.id)) {
+        allMatchesMap.set(match.id, match);
+      }
+    }
+  }
+  const allMatches = Array.from(allMatchesMap.values());
+
+  // Finna alla leiki þar sem liðið spilar (sem heimalið eða útilið)
+  const teamMatches = allMatches.filter((match) => 
+    match.home_team === teamName || match.away_team === teamName
+  );
+
+  // Flokka leiki í búna og framundan
+  const finishedMatches = teamMatches.filter((m) => m.result != null);
+  const upcomingMatches = teamMatches.filter((m) => m.result == null);
+
+  // Raða leikjum eftir dagsetningu
+  const sortByDate = (a: typeof teamMatches[0], b: typeof teamMatches[0]) => {
+    return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+  };
+  finishedMatches.sort((a, b) => sortByDate(a, b));
+  upcomingMatches.sort((a, b) => sortByDate(a, b));
+
+  // Click outside to close
+  React.useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    }
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900 max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-neutral-800">
+          <div className="flex items-center gap-2">
+            {getTeamFlag(teamName) && <span className="text-2xl">{getTeamFlag(teamName)}</span>}
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+              Leikir {teamName}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            aria-label="Loka"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {teamMatches.length === 0 ? (
+            <p className="text-center text-slate-600 dark:text-neutral-400">
+              Engir leikir fundust fyrir {teamName}
+            </p>
+          ) : (
+            <div className="space-y-6">
+              {upcomingMatches.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-slate-700 dark:text-neutral-300">
+                    Leikir framundan ({upcomingMatches.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {upcomingMatches.map((match) => {
+                      const started = new Date(match.starts_at).getTime() <= now;
+                      const isHome = match.home_team === teamName;
+                      const opponent = isHome ? match.away_team : match.home_team;
+                      
+                      return (
+                        <div
+                          key={match.id}
+                          className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/40"
+                        >
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
+                              {isHome ? (
+                                <>
+                                  {teamName} {getTeamFlag(teamName)} vs {getTeamFlag(opponent)} {opponent}
+                                </>
+                              ) : (
+                                <>
+                                  {opponent} {getTeamFlag(opponent)} vs {getTeamFlag(teamName)} {teamName}
+                                </>
+                              )}
+                            </div>
+                            <span className={`text-xs font-medium px-2 py-1 rounded ${
+                              started
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            }`}>
+                              {started ? "Í gangi" : "Framundan"}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-neutral-400">
+                            {match.stage ? `${match.stage} · ` : ""}
+                            {new Date(match.starts_at).toLocaleString('is-IS')}
+                            {match.match_no != null ? ` · #${match.match_no}` : ""}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {finishedMatches.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-slate-700 dark:text-neutral-300">
+                    Búnir leikir ({finishedMatches.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {finishedMatches.map((match) => {
+                      const isHome = match.home_team === teamName;
+                      const opponent = isHome ? match.away_team : match.home_team;
+                      const teamResult = isHome ? (match.result === "1" ? "S" : match.result === "2" ? "T" : "J") : (match.result === "2" ? "S" : match.result === "1" ? "T" : "J");
+                      
+                      return (
+                        <div
+                          key={match.id}
+                          className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/40"
+                        >
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
+                              {isHome ? (
+                                <>
+                                  {teamName} {getTeamFlag(teamName)} vs {getTeamFlag(opponent)} {opponent}
+                                </>
+                              ) : (
+                                <>
+                                  {opponent} {getTeamFlag(opponent)} vs {getTeamFlag(teamName)} {teamName}
+                                </>
+                              )}
+                            </div>
+                            <span className={`text-xs font-medium px-2 py-1 rounded ${
+                              teamResult === "S"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                : teamResult === "T"
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400"
+                            }`}>
+                              {teamResult === "S" ? "Sigur" : teamResult === "T" ? "Tap" : "Jafntefli"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-neutral-400">
+                            <span>
+                              Úrslit: <span className="font-mono font-semibold">{match.result ?? "-"}</span>
+                            </span>
+                            <span>·</span>
+                            <span>{new Date(match.starts_at).toLocaleString('is-IS')}</span>
+                            {match.match_no != null && <span>· #{match.match_no}</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

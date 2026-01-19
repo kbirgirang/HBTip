@@ -1003,9 +1003,12 @@ export default function RoomPage() {
                       </div>
 
                       {m.home_score != null && m.away_score != null && (
-                        <div className="mt-2 text-center text-sm text-slate-600 dark:text-neutral-300">
-                          <span className="font-semibold">
-                            {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                        <div className="mt-2 text-center">
+                          <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
+                            Lokastaða:{" "}
+                            <span className="text-base font-bold text-blue-600 dark:text-blue-400">
+                              {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                            </span>
                           </span>
                         </div>
                       )}
@@ -1239,9 +1242,12 @@ export default function RoomPage() {
                                   </div>
 
                                   {m.home_score != null && m.away_score != null && (
-                                    <div className="mt-2 text-center text-sm text-slate-600 dark:text-neutral-300">
-                                      <span className="font-semibold">
-                                        {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                                    <div className="mt-2 text-center">
+                                      <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
+                                        Lokastaða:{" "}
+                                        <span className="text-base font-bold text-blue-600 dark:text-blue-400">
+                                          {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                                        </span>
                                       </span>
                                     </div>
                                   )}
@@ -1963,15 +1969,20 @@ function TeamMatchesModal({
                             {match.stage ? `${match.stage} · ` : ""}
                             {new Date(match.starts_at).toLocaleString('is-IS')}
                             {match.match_no != null ? ` · #${match.match_no}` : ""}
-                            {match.home_score != null && match.away_score != null && (
-                              <span className="ml-2 font-semibold text-slate-700 dark:text-neutral-300">
-                                · Lokataða: {isHome 
-                                  ? `${match.home_score} - ${match.away_score}`
-                                  : `${match.away_score} - ${match.home_score}`
-                                }
-                              </span>
-                            )}
                           </div>
+                          {match.home_score != null && match.away_score != null && (
+                            <div className="mt-2 text-center">
+                              <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
+                                Lokastaða:{" "}
+                                <span className="text-base font-bold text-blue-600 dark:text-blue-400">
+                                  {isHome 
+                                    ? `${match.home_score} - ${match.away_score}`
+                                    : `${match.away_score} - ${match.home_score}`
+                                  }
+                                </span>
+                              </span>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -2021,23 +2032,23 @@ function TeamMatchesModal({
                             <span>
                               Úrslit: <span className="font-mono font-semibold">{match.result ?? "-"}</span>
                             </span>
-                            {match.home_score != null && match.away_score != null && (
-                              <>
-                                <span>·</span>
-                                <span>
-                                  Lokataða: <span className="font-semibold">
-                                    {isHome 
-                                      ? `${match.home_score} - ${match.away_score}`
-                                      : `${match.away_score} - ${match.home_score}`
-                                    }
-                                  </span>
-                                </span>
-                              </>
-                            )}
                             <span>·</span>
                             <span>{new Date(match.starts_at).toLocaleString('is-IS')}</span>
                             {match.match_no != null && <span>· #{match.match_no}</span>}
                           </div>
+                          {match.home_score != null && match.away_score != null && (
+                            <div className="mt-2 text-center">
+                              <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
+                                Lokastaða:{" "}
+                                <span className="text-base font-bold text-blue-600 dark:text-blue-400">
+                                  {isHome 
+                                    ? `${match.home_score} - ${match.away_score}`
+                                    : `${match.away_score} - ${match.home_score}`
+                                  }
+                                </span>
+                              </span>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

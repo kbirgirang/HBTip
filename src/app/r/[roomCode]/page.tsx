@@ -1965,7 +1965,7 @@ function TeamMatchesModal({
                             {match.match_no != null ? ` · #${match.match_no}` : ""}
                             {match.home_score != null && match.away_score != null && (
                               <span className="ml-2 font-semibold text-slate-700 dark:text-neutral-300">
-                                · Stöða: {isHome 
+                                · Lokataða: {isHome 
                                   ? `${match.home_score} - ${match.away_score}`
                                   : `${match.away_score} - ${match.home_score}`
                                 }
@@ -2025,7 +2025,7 @@ function TeamMatchesModal({
                               <>
                                 <span>·</span>
                                 <span>
-                                  Stöða: <span className="font-semibold">
+                                  Lokataða: <span className="font-semibold">
                                     {isHome 
                                       ? `${match.home_score} - ${match.away_score}`
                                       : `${match.away_score} - ${match.home_score}`

@@ -1965,6 +1965,14 @@ function TeamMatchesModal({
                             {match.stage ? `${match.stage} · ` : ""}
                             {new Date(match.starts_at).toLocaleString('is-IS')}
                             {match.match_no != null ? ` · #${match.match_no}` : ""}
+                            {match.home_score != null && match.away_score != null && (
+                              <span className="ml-2 font-semibold text-slate-700 dark:text-neutral-300">
+                                · Stöða: {isHome 
+                                  ? `${match.home_score} - ${match.away_score}`
+                                  : `${match.away_score} - ${match.home_score}`
+                                }
+                              </span>
+                            )}
                           </div>
                         </div>
                       );
@@ -2011,10 +2019,23 @@ function TeamMatchesModal({
                               {teamResult === "S" ? "Sigur" : teamResult === "T" ? "Tap" : "Jafntefli"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-neutral-400">
+                          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-neutral-400 flex-wrap">
                             <span>
                               Úrslit: <span className="font-mono font-semibold">{match.result ?? "-"}</span>
                             </span>
+                            {match.home_score != null && match.away_score != null && (
+                              <>
+                                <span>·</span>
+                                <span>
+                                  Stöða: <span className="font-semibold">
+                                    {isHome 
+                                      ? `${match.home_score} - ${match.away_score}`
+                                      : `${match.away_score} - ${match.home_score}`
+                                    }
+                                  </span>
+                                </span>
+                              </>
+                            )}
                             <span>·</span>
                             <span>{new Date(match.starts_at).toLocaleString('is-IS')}</span>
                             {match.match_no != null && <span>· #{match.match_no}</span>}

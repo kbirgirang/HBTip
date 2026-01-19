@@ -2127,7 +2127,7 @@ export default function AdminPage() {
                           onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
                           className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
                             m.underdog_team === "1"
-                              ? "border-blue-500 bg-blue-100 text-blue-700 dark:bg-blue-600 dark:text-white"
+                              ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
                               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           }`}
                         >
@@ -2139,7 +2139,7 @@ export default function AdminPage() {
                           onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
                           className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
                             m.underdog_team === "2"
-                              ? "border-blue-500 bg-blue-100 text-blue-700 dark:bg-blue-600 dark:text-white"
+                              ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
                               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           }`}
                         >
@@ -2721,7 +2721,7 @@ function TabButton({
         "rounded-xl px-4 py-2 text-sm font-semibold border transition",
         active
           ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-blue-500 dark:bg-blue-500 dark:text-white"
-          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
+          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
       ].join(" ")}
     >
       {children}
@@ -2770,8 +2770,8 @@ function ResultButton({
       className={[
         "h-10 w-10 rounded-xl border text-sm font-bold transition",
         selected
-          ? "border-emerald-300 bg-emerald-300 text-emerald-950"
-          : "border-neutral-700 bg-neutral-100 text-neutral-900 hover:bg-white",
+          ? "border-emerald-300 bg-emerald-300 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-500 dark:text-white"
+          : "border-neutral-700 bg-neutral-100 text-neutral-900 hover:bg-white dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
       ].join(" ")}
     >
       {children}

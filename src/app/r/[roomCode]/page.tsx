@@ -881,8 +881,9 @@ export default function RoomPage() {
                               // Sort dates (newest first for finished matches)
                               const sortedDates = Array.from(matchesByDate.keys()).sort((a, b) => b.localeCompare(a));
                               
-                              return sortedDates.flatMap((dateKey) => {
+                              return sortedDates.flatMap((dateKey, dateIndex) => {
                                 const matchesForDate = matchesByDate.get(dateKey)!;
+                                const isLastDate = dateIndex === sortedDates.length - 1;
                                 return [
                                   // Date header
                                   <div key={`date-${dateKey}`} className="mt-4 mb-2 first:mt-0">
@@ -1102,8 +1103,9 @@ export default function RoomPage() {
                               // Sort dates (oldest first for upcoming matches)
                               const sortedDates = Array.from(matchesByDate.keys()).sort((a, b) => a.localeCompare(b));
                               
-                              return sortedDates.flatMap((dateKey) => {
+                              return sortedDates.flatMap((dateKey, dateIndex) => {
                                 const matchesForDate = matchesByDate.get(dateKey)!;
+                                const isLastDate = dateIndex === sortedDates.length - 1;
                                 return [
                                   // Date header
                                   <div key={`date-${dateKey}`} className="mt-4 mb-2 first:mt-0">
@@ -1298,8 +1300,18 @@ export default function RoomPage() {
                                   )}
                                 </div>
                               );
-                                  })
-                                ];
+                                  }),
+                                  // Advertisement slot between days (except after last day)
+                                  !isLastDate && (
+                                    <div 
+                                      key={`ad-${dateKey}`} 
+                                      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950/40"
+                                      style={{ minHeight: '140px' }}
+                                    >
+                                      {/* Auglýsingagluggi - placeholder fyrir auglýsingar */}
+                                    </div>
+                                  )
+                                ].filter(Boolean);
                               });
                             })()}
                           </div>

@@ -145,6 +145,33 @@ export default function AdminPage() {
   // Selected tournament for settings
   const [selectedTournamentForSettings, setSelectedTournamentForSettings] = useState<string>("");
 
+  // Statistics
+  const [statistics, setStatistics] = useState<{
+    totalUsers: number;
+    totalRooms: number;
+  } | null>(null);
+  const [loadingStatistics, setLoadingStatistics] = useState(false);
+
+  async function loadStatistics() {
+    setLoadingStatistics(true);
+    try {
+      const res = await fetch("/api/admin/statistics");
+      const json = await res.json();
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að sækja tölfræði");
+        return;
+      }
+      setStatistics({
+        totalUsers: json.totalUsers || 0,
+        totalRooms: json.totalRooms || 0,
+      });
+    } catch {
+      setErr("Tenging klikkaði við tölfræði.");
+    } finally {
+      setLoadingStatistics(false);
+    }
+  }
+
   async function loadTournaments() {
     setLoadingTournaments(true);
     try {
@@ -162,10 +189,11 @@ export default function AdminPage() {
     }
   }
 
-  // Load tournaments when authenticated (fyrir tournament operations og selector)
+  // Load tournaments and statistics when authenticated
   useEffect(() => {
     if (authenticated) {
       loadTournaments();
+      loadStatistics();
     }
   }, [authenticated]);
 
@@ -1360,6 +1388,66 @@ export default function AdminPage() {
                 {msg}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Statistics */}
+        {statistics !== null && (
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-slate-600 dark:text-neutral-400">Heildarfjöldi notenda</h3>
+                  <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-neutral-100">
+                    {loadingStatistics ? "..." : statistics.totalUsers.toLocaleString("is-IS")}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-blue-100 p-3 dark:bg-blue-900/30">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-slate-600 dark:text-neutral-400">Heildarfjöldi deilda</h3>
+                  <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-neutral-100">
+                    {loadingStatistics ? "..." : statistics.totalRooms.toLocaleString("is-IS")}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-emerald-100 p-3 dark:bg-emerald-900/30">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-6 w-6 text-emerald-600 dark:text-emerald-400"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                    <path d="M20 8v6" />
+                    <path d="M23 11h-6" />
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

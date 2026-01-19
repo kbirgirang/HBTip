@@ -1272,7 +1272,7 @@ export default function AdminPage() {
           )}
           <button
             onClick={handleLogout}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
           >
             Útskrá
           </button>
@@ -1339,7 +1339,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={loggingIn}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
               >
                 {loggingIn ? "Innskráning..." : "Innskrá"}
               </button>
@@ -1543,7 +1543,7 @@ export default function AdminPage() {
 
                 <button
                   disabled={creatingMatch}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                 >
                   {creatingMatch ? "Bý til..." : "Búa til leik"}
                 </button>
@@ -1570,7 +1570,7 @@ export default function AdminPage() {
                   <button
                     disabled={bulkLoading}
                     onClick={bulkCreate}
-                    className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                    className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                   >
                     {bulkLoading ? "Set inn..." : "Setja inn alla"}
                   </button>
@@ -1842,7 +1842,7 @@ export default function AdminPage() {
                     <div className="flex flex-col gap-2">
                       <button
                         disabled={savingBonus}
-                        className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                        className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                       >
                         {savingBonus ? "Vista..." : editingBonusId ? "Uppfæra bónus" : "Vista bónus"}
                       </button>
@@ -2376,7 +2376,7 @@ export default function AdminPage() {
 
                 <button
                   disabled={creatingTournament}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                 >
                   {creatingTournament ? "Bý til..." : "Búa til keppni"}
                 </button>
@@ -2413,7 +2413,7 @@ export default function AdminPage() {
                             <button
                               onClick={() => updateTournament(t.id)}
                               disabled={updatingTournament}
-                              className="flex-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                              className="flex-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                             >
                               {updatingTournament ? "Vista..." : "Vista"}
                             </button>
@@ -2538,7 +2538,7 @@ export default function AdminPage() {
 
                 <button
                   disabled={savingSettings}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                 >
                   {savingSettings ? "Vista..." : "Vista stillingar"}
                 </button>
@@ -2551,7 +2551,7 @@ export default function AdminPage() {
                   <button
                     onClick={syncPredictions}
                     disabled={syncingPredictions}
-                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                   >
                     {syncingPredictions ? "Samstilla..." : "Samstilla spár"}
                   </button>
@@ -2564,7 +2564,7 @@ export default function AdminPage() {
                   <button
                     onClick={syncBonusAnswers}
                     disabled={syncingBonusAnswers}
-                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                   >
                     {syncingBonusAnswers ? "Samstilla..." : "Samstilla bónus svör"}
                   </button>
@@ -2721,7 +2721,7 @@ function TabButton({
         "rounded-xl px-4 py-2 text-sm font-semibold border transition",
         active
           ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-blue-500 dark:bg-blue-500 dark:text-white"
-          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
+          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white",
       ].join(" ")}
     >
       {children}

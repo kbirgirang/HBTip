@@ -548,7 +548,7 @@ export default function HomePage() {
 
               <button
                 disabled={createLoading}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
               >
                 {createLoading ? "Bý til..." : "Búa til deild"}
               </button>
@@ -689,7 +689,7 @@ export default function HomePage() {
 
                 <button
                   disabled={simpleLoginLoading}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                 >
                   {simpleLoginLoading ? "Skrái inn..." : "Skrá inn"}
                 </button>
@@ -843,7 +843,7 @@ export default function HomePage() {
 
                 <button
                   disabled={joinLoading}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
                 >
                   {joinLoading ? "Skrá sig í deild..." : "Skrá sig í deild"}
                 </button>
@@ -997,7 +997,7 @@ export default function HomePage() {
 
               <button
                   disabled={registerLoading}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
               >
                   {registerLoading ? "Skrái..." : "Búa til aðgang"}
               </button>

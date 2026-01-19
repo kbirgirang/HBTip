@@ -745,7 +745,7 @@ export default function RoomPage() {
           })()}
           <button
             onClick={() => setShowInfoPopup(true)}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
             title="Upplýsingar"
           >
             ℹ️
@@ -2363,7 +2363,7 @@ function BonusAnswerCard({
         <button
           onClick={save}
           disabled={saving || locked}
-          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
         >
           {locked ? "Lokað" : saving ? "Vistast..." : "Vista bónus svar"}
         </button>
@@ -2392,7 +2392,7 @@ function TabButton({
         "rounded-xl px-4 py-2 text-sm font-semibold border transition",
         active
           ? "border-blue-300 bg-blue-50 text-blue-900 dark:border-blue-500 dark:bg-blue-500 dark:text-white"
-          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
+          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white",
       ].join(" ")}
     >
       {children}

@@ -1065,7 +1065,8 @@ export default function RoomPage() {
                                   !isLastDate && (
                                     <div 
                                       key={`ad-${dateKey}`} 
-                                      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950/40 overflow-hidden"
+                                      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950/40 flex items-center justify-center overflow-hidden"
+                                      style={{ minHeight: '140px' }}
                                     >
                                       <a 
                                         href="https://rafganistan.is" 
@@ -1076,7 +1077,7 @@ export default function RoomPage() {
                                         <img 
                                           src="/Rafgan_Augl.png" 
                                           alt="Rafganistan auglýsing" 
-                                          className="w-full h-full object-cover object-bottom"
+                                          className="w-full h-full object-cover rounded-lg"
                                         />
                                       </a>
                                     </div>
@@ -1325,7 +1326,8 @@ export default function RoomPage() {
                                   !isLastDate && (
                                     <div 
                                       key={`ad-${dateKey}`} 
-                                      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950/40 overflow-hidden"
+                                      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950/40 flex items-center justify-center overflow-hidden"
+                                      style={{ minHeight: '140px' }}
                                     >
                                       <a 
                                         href="https://rafganistan.is" 
@@ -1336,7 +1338,7 @@ export default function RoomPage() {
                                         <img 
                                           src="/Rafgan_Augl.png" 
                                           alt="Rafganistan auglýsing" 
-                                          className="w-full h-full object-cover object-bottom"
+                                          className="w-full h-full object-cover rounded-lg"
                                         />
                                       </a>
                                     </div>

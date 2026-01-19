@@ -1002,6 +1002,14 @@ export default function RoomPage() {
                         </div>
                       </div>
 
+                      {m.home_score != null && m.away_score != null && (
+                        <div className="mt-2 text-center text-sm text-slate-600 dark:text-neutral-300">
+                          <span className="font-semibold">
+                            {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                          </span>
+                        </div>
+                      )}
+
                                   <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
                         <span>
                           Úrslit:{" "}
@@ -1009,15 +1017,6 @@ export default function RoomPage() {
                             {m.result ?? "-"}
                           </span>
                         </span>
-
-                        {m.home_score != null && m.away_score != null && (
-                          <span className="text-xs">
-                            Stöða:{" "}
-                            <span className="font-semibold">
-                              {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
-                            </span>
-                          </span>
-                        )}
 
                         {m.myPick && (
                                       <span className="text-xs">
@@ -1239,6 +1238,14 @@ export default function RoomPage() {
                                     </div>
                                   </div>
 
+                                  {m.home_score != null && m.away_score != null && (
+                                    <div className="mt-2 text-center text-sm text-slate-600 dark:text-neutral-300">
+                                      <span className="font-semibold">
+                                        {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                                      </span>
+                                    </div>
+                                  )}
+
                                   <div className="mt-2 text-sm text-slate-600 dark:text-neutral-300 flex items-center gap-2 flex-wrap">
                                     <span>
                                       Úrslit:{" "}
@@ -1246,15 +1253,6 @@ export default function RoomPage() {
                                         {m.result ?? "-"}
                                       </span>
                                     </span>
-
-                                    {m.home_score != null && m.away_score != null && (
-                                      <span className="text-xs">
-                                        Stöða:{" "}
-                                        <span className="font-semibold">
-                                          {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
-                                        </span>
-                                      </span>
-                                    )}
 
                                     {m.myPick && (
                                       <span className="text-xs">

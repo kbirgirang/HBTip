@@ -1741,22 +1741,28 @@ function MemberPicksModal({
   now: number;
   onClose: () => void;
 }) {
-  // Finna síðustu 5 lokaðu leikina - aðeins leiki sem eru með result EÐA hafa byrjað
+  // Finna síðustu 8 lokaðu leikina - aðeins leiki sem eru með result EÐA hafa byrjað
   const finishedMatches = roomData.matches
     .filter((match) => {
       const matchStarted = new Date(match.starts_at).getTime() <= now;
       return match.result != null || matchStarted; // Aðeins leiki sem eru með úrslit eða hafa byrjað
     })
     .sort((a, b) => {
-      // Raða eftir því hvenær þeir lokuðu (nýjast fyrst)
+      const aStarted = new Date(a.starts_at).getTime() <= now;
+      const bStarted = new Date(b.starts_at).getTime() <= now;
+      
+      // Raða eftir því hvenær þeir lokuðu/byrjuðu (nýjast fyrst)
+      // Fyrst leikir með úrslit (loknir), síðan leikir sem eru í gangi
       if (a.result && b.result) {
         return new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime();
       }
-      if (a.result) return -1;
-      if (b.result) return 1;
+      if (a.result) return -1; // a er lokinn, setja efst
+      if (b.result) return 1;  // b er lokinn, setja efst
+      
+      // Báðir eru án úrslita en hafa byrjað - raða eftir starts_at (nýjast fyrst)
       return new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime();
     })
-    .slice(0, 5); // Síðustu 5
+    .slice(0, 8); // Síðustu 8
 
   // Finna spár valins meðlims í þessum leikjum - sýna ALLA lokaða leiki
   const matchesWithPicks = finishedMatches.map((match) => {
@@ -1823,7 +1829,7 @@ function MemberPicksModal({
           ) : (
             <>
               <p className="mb-3 text-sm text-slate-600 dark:text-neutral-400">
-                Hér eru síðustu 5 leikir
+                Hér eru síðustu 8 leikir
               </p>
               <div className="space-y-3">
               {matchesWithPicks.map((match) => (

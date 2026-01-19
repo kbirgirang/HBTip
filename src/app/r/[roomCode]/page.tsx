@@ -780,8 +780,6 @@ export default function RoomPage() {
                     <li>Opna síðuna í Chrome á Android</li>
                     <li>Samþykkja notification permission þegar beðið er um það</li>
                     <li>Ekki þarf að bæta við Home Screen (ólíkt iOS)</li>
-                    <li>Opna Betlihem appið → skrá sig inn</li>
-                    <li>Þá ætti að koma upp gluggi til að samþykkja tilkynningar (notifications) 🔔</li>
                   </ul>
                 </div>
               </div>

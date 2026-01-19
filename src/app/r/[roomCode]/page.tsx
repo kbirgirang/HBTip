@@ -30,6 +30,8 @@ type RoomData = {
     myPick?: Pick | null;
     underdog_team?: "1" | "2" | null;
     underdog_multiplier?: number | null;
+    home_score?: number | null;
+    away_score?: number | null;
     // ✅ Spár allra meðlima fyrir þennan leik
     memberPicks?: Array<{ memberId: string; displayName: string; pick: Pick }>;
 
@@ -1008,6 +1010,15 @@ export default function RoomPage() {
                           </span>
                         </span>
 
+                        {m.home_score != null && m.away_score != null && (
+                          <span className="text-xs">
+                            Stöða:{" "}
+                            <span className="font-semibold">
+                              {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                            </span>
+                          </span>
+                        )}
+
                         {m.myPick && (
                                       <span className="text-xs">
                                         Þín spá:{" "}
@@ -1235,6 +1246,15 @@ export default function RoomPage() {
                                         {m.result ?? "-"}
                                       </span>
                                     </span>
+
+                                    {m.home_score != null && m.away_score != null && (
+                                      <span className="text-xs">
+                                        Stöða:{" "}
+                                        <span className="font-semibold">
+                                          {m.home_team} {m.home_score} - {m.away_score} {m.away_team}
+                                        </span>
+                                      </span>
+                                    )}
 
                                     {m.myPick && (
                                       <span className="text-xs">

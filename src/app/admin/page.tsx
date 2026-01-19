@@ -18,6 +18,8 @@ type MatchRow = {
   result: "1" | "X" | "2" | null;
   underdog_team: "1" | "2" | null;
   underdog_multiplier: number | null;
+  home_score: number | null;
+  away_score: number | null;
 };
 
 type AdminMatchesResponse = {
@@ -733,20 +735,22 @@ export default function AdminPage() {
     }
   }
 
-  async function setResult(matchId: string, result: "1" | "X" | "2" | null) {
+  async function setResult(matchId: string, result: "1" | "X" | "2" | null, homeScore?: number | null, awayScore?: number | null) {
     clearAlerts();
 
     try {
       const res = await fetch("/api/admin/match/set-result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId, result }),
+        body: JSON.stringify({ matchId, result, homeScore, awayScore }),
       });
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að vista úrslit.");
 
-      setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, result } : m)));
+      setMatches((prev) => prev.map((m) => 
+        (m.id === matchId ? { ...m, result, home_score: homeScore ?? null, away_score: awayScore ?? null } : m)
+      ));
       flash("Úrslit vistuð ✅");
     } catch {
       setErr("Tenging klikkaði.");
@@ -2084,6 +2088,69 @@ export default function AdminPage() {
                             Hreinsa
                           </button>
                         )}
+                      </div>
+
+                      {/* Score UI */}
+                      <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                        <span className="text-sm text-slate-700 dark:text-neutral-300">📊 Stöða:</span>
+                        
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={m.home_score ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                            if (val !== null && (isNaN(val) || val < 0)) return;
+                            setMatches((prev) => prev.map((match) => 
+                              match.id === m.id ? { ...match, home_score: val } : match
+                            ));
+                          }}
+                          onBlur={() => {
+                            const match = matches.find((match) => match.id === m.id);
+                            if (match) {
+                              setResult(match.id, match.result, match.home_score, match.away_score);
+                            }
+                          }}
+                          className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                          placeholder="0"
+                        />
+                        
+                        <span className="text-sm text-slate-700 dark:text-neutral-300">-</span>
+                        
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={m.away_score ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                            if (val !== null && (isNaN(val) || val < 0)) return;
+                            setMatches((prev) => prev.map((match) => 
+                              match.id === m.id ? { ...match, away_score: val } : match
+                            ));
+                          }}
+                          onBlur={() => {
+                            const match = matches.find((match) => match.id === m.id);
+                            if (match) {
+                              setResult(match.id, match.result, match.home_score, match.away_score);
+                            }
+                          }}
+                          className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                          placeholder="0"
+                        />
+                        
+                        <button
+                          onClick={() => {
+                            const match = matches.find((match) => match.id === m.id);
+                            if (match) {
+                              setResult(match.id, match.result, null, null);
+                            }
+                          }}
+                          className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                        >
+                          Hreinsa stöðu
+                        </button>
                       </div>
                     </div>
                   </div>

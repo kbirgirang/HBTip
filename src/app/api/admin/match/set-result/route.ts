@@ -6,6 +6,8 @@ import { requireAdminSession } from "@/lib/adminAuth";
 type Body = {
   matchId?: string;
   result?: "1" | "X" | "2" | null; // null = clear result
+  homeScore?: number | null;
+  awayScore?: number | null;
 };
 
 function isValidResult(v: any): v is "1" | "X" | "2" | null {
@@ -32,16 +34,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid result" }, { status: 400 });
     }
 
+    // Validate scores: bæði verða að vera sett eða bæði null
+    if ((body.homeScore != null && body.awayScore == null) || 
+        (body.homeScore == null && body.awayScore != null)) {
+      return NextResponse.json({ error: "Bæði homeScore og awayScore verða að vera sett eða bæði null" }, { status: 400 });
+    }
+
+    // Validate score values
+    if (body.homeScore != null && (body.homeScore < 0 || !Number.isInteger(body.homeScore))) {
+      return NextResponse.json({ error: "homeScore verður að vera jákvæð heiltala" }, { status: 400 });
+    }
+    if (body.awayScore != null && (body.awayScore < 0 || !Number.isInteger(body.awayScore))) {
+      return NextResponse.json({ error: "awayScore verður að vera jákvæð heiltala" }, { status: 400 });
+    }
+
     // finished_at: set when result is set, cleared when result is cleared
     const nowIso = new Date().toISOString();
     const finishedAt = body.result ? nowIso : null;
 
-    // 1) Update match result
+    // 1) Update match result and scores
     const { error } = await supabaseServer
       .from("matches")
       .update({
         result: body.result,
         finished_at: finishedAt,
+        home_score: body.homeScore ?? null,
+        away_score: body.awayScore ?? null,
       })
       .eq("id", body.matchId);
 

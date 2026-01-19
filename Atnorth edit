@@ -1,0 +1,19 @@
+
+"MB_register".Register_40 := "idbPump1".Sts.xRunning;
+"MB_register".Register_41 := "idbPump1".Sts.xLocal;
+"MB_register".Register_42 := "idbPump1".Sts.xReady;
+"MB_register".Register_43 := "idbPump1".Sts.xReverse;
+"MB_register".Register_44 := "idbPump1".Sts.xFault;
+"MB_register".Register_45 := "idbPump1".Sts.xWarning;
+"MB_register".Register_46 := "idbPump1".Sts.rFeedback;
+"MB_register".Register_47 := "idbPump1".Sts.rFlow;
+"MB_register".Register_48 := "idbPump1".Sts.rActualSP;
+"MB_register".Register_49 := "idbPump1".Sts.rAutoSP;
+"MB_register".Register_50 := "idbPump1".Sts.rFrequency;
+"MB_register".Register_51 := "idbPump1".Sts.usiMimic;
+"MB_register".Register_52 := "idbPump1".Sts.usiControlMode;
+"MB_register".Register_53 := "idbPump1".Sts.usiOperatingMode;
+"MB_register".Register_54 := "idbPump1".Sts.udiRuntime;
+"MB_register".Register_55 := "idbPump1".Sts.sControlMode;
+"MB_register".Register_56 := "idbPump1".Sts.sFaultCode;
+"MB_register".Register_57 := "idbPump1".Sts.sWarningCode;

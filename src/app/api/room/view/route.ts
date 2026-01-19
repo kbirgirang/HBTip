@@ -44,7 +44,7 @@ export async function GET() {
   // ✅ Sækja allar leikir úr öllum keppnunum
   const { data: allMatches, error: mErr } = await supabaseServer
     .from("matches")
-    .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier, tournament_id")
+    .select("id, match_no, stage, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier, tournament_id, home_score, away_score")
     .in("tournament_id", tournamentIds)
     .order("match_no", { ascending: true, nullsFirst: false });
 

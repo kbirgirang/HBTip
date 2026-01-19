@@ -38,7 +38,7 @@ export async function GET(req: Request) {
   // 2) Sækja leiki
   const { data: matches, error: mErr } = await supabaseServer
     .from("matches")
-    .select("id, stage, match_no, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier")
+    .select("id, stage, match_no, home_team, away_team, starts_at, allow_draw, result, underdog_team, underdog_multiplier, home_score, away_score")
     .eq("tournament_id", t.id)
     .order("match_no", { ascending: true, nullsFirst: false });
 

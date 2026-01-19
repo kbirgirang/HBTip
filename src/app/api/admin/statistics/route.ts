@@ -7,14 +7,20 @@ export async function GET() {
   if (authError) return authError;
 
   try {
-    // Count total users
-    const { count: userCount, error: userErr } = await supabaseServer
-      .from("users")
-      .select("*", { count: "exact", head: true });
+    // Sækja allar username úr room_members og telja einstaka
+    const { data: allMembers, error: memberErr } = await supabaseServer
+      .from("room_members")
+      .select("username");
 
-    if (userErr) {
-      return NextResponse.json({ error: userErr.message }, { status: 500 });
+    if (memberErr) {
+      return NextResponse.json({ error: memberErr.message }, { status: 500 });
     }
+
+    // Telja einstaka username (case-insensitive)
+    const uniqueUsernames = new Set(
+      (allMembers || []).map((m: any) => (m.username || "").toLowerCase().trim()).filter((u: string) => u.length > 0)
+    );
+    const userCount = uniqueUsernames.size;
 
     // Count total rooms (divisions)
     const { count: roomCount, error: roomErr } = await supabaseServer
@@ -26,7 +32,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      totalUsers: userCount || 0,
+      totalUsers: userCount,
       totalRooms: roomCount || 0,
     });
   } catch (error: any) {

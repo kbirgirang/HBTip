@@ -2020,10 +2020,7 @@ function TeamMatchesModal({
                               <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
                                 Lokastaða:{" "}
                                 <span className="text-base font-bold text-blue-600 dark:text-blue-400">
-                                  {isHome 
-                                    ? `${match.home_score} - ${match.away_score}`
-                                    : `${match.away_score} - ${match.home_score}`
-                                  }
+                                  {match.home_team} {match.home_score} - {match.away_score} {match.away_team}
                                 </span>
                               </span>
                             </div>
@@ -2086,10 +2083,7 @@ function TeamMatchesModal({
                               <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
                                 Lokastaða:{" "}
                                 <span className="text-base font-bold text-blue-600 dark:text-blue-400">
-                                  {isHome 
-                                    ? `${match.home_score} - ${match.away_score}`
-                                    : `${match.away_score} - ${match.home_score}`
-                                  }
+                                  {match.home_team} {match.home_score} - {match.away_score} {match.away_team}
                                 </span>
                               </span>
                             </div>

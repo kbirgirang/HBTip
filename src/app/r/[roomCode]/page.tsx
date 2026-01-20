@@ -1061,10 +1061,11 @@ export default function RoomPage() {
                                 </div>
                               );
                                   }),
-                                  // Advertisement slot between days (except after last day)
-                                  !isLastDate && (
+                                  // Advertisement slot in every other match day (even indices: 0, 2, 4...)
+                                  dateIndex % 2 === 0 && (
                                     <div 
                                       key={`ad-${dateKey}`}
+                                      className="my-4"
                                     >
                                       <a 
                                         href="https://rafganistan.is" 
@@ -1320,10 +1321,11 @@ export default function RoomPage() {
                                 </div>
                               );
                                   }),
-                                  // Advertisement slot between days (except after last day)
-                                  !isLastDate && (
+                                  // Advertisement slot in every other match day (even indices: 0, 2, 4...)
+                                  dateIndex % 2 === 0 && (
                                     <div 
                                       key={`ad-${dateKey}`}
+                                      className="my-4"
                                     >
                                       <a 
                                         href="https://rafganistan.is" 

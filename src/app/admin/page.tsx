@@ -869,6 +869,7 @@ export default function AdminPage() {
   // -----------------------------
   const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
   const [loadingBonusList, setLoadingBonusList] = useState(false);
+  const [showClosedBonuses, setShowClosedBonuses] = useState(false);
 
   async function loadBonusList(silent?: boolean) {
     if (!silent) clearAlerts();
@@ -1282,8 +1283,15 @@ export default function AdminPage() {
   }, [authenticated, theme, mounted]);
 
   const bonusCount = useMemo(() => {
-    return (matchesWithBonus || []).reduce((acc, m) => acc + (m.bonus ? 1 : 0), 0);
-  }, [matchesWithBonus]);
+    const now = Date.now();
+    return (matchesWithBonus || []).reduce((acc, m) => {
+      if (!m.bonus) return acc;
+      const closed = new Date(m.bonus.closes_at).getTime() <= now;
+      // Telja aðeins opnar ef lokaðar eru faldar
+      if (!showClosedBonuses && closed) return acc;
+      return acc + 1;
+    }, 0);
+  }, [matchesWithBonus, showClosedBonuses]);
 
   // Show login form if not authenticated
   if (authenticated === null) {
@@ -1872,32 +1880,53 @@ export default function AdminPage() {
                 title={`Bónus spurningar (í gangi) · ${bonusCount}`}
                 subtitle="Sjáðu hvaða leikir eru með bónus. Breyta setur í formið."
                 right={
-                  <button
-                    onClick={() => loadBonusList()}
-                    disabled={loadingBonusList}
-                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                  >
-                    {loadingBonusList ? "Hleð..." : "Endurlesa"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowClosedBonuses(!showClosedBonuses)}
+                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
+                    >
+                      {showClosedBonuses ? "Fela lokaðar" : "Sýna lokaðar"}
+                    </button>
+                    <button
+                      onClick={() => loadBonusList()}
+                      disabled={loadingBonusList}
+                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                    >
+                      {loadingBonusList ? "Hleð..." : "Endurlesa"}
+                    </button>
+                  </div>
                 }
               >
                 {matchesWithBonus.filter((x) => x.bonus).length === 0 ? (
                   <p className="text-sm text-slate-600 dark:text-neutral-300">Engar bónus spurningar komnar inn ennþá.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {matchesWithBonus
-                      .filter((x) => x.bonus)
-                      .sort((a, b) => {
-                        // Raða eftir stöðu: opið fyrst, síðan lokað
-                        const aClosed = new Date(a.bonus!.closes_at).getTime() <= Date.now();
-                        const bClosed = new Date(b.bonus!.closes_at).getTime() <= Date.now();
-                        if (aClosed !== bClosed) {
-                          return aClosed ? 1 : -1; // Opnar fyrst (false comes before true)
-                        }
-                        // Ef sama stöðu, raða eftir closes_at (fyrri lokun fyrst)
-                        return new Date(a.bonus!.closes_at).getTime() - new Date(b.bonus!.closes_at).getTime();
-                      })
-                      .map((m) => {
+                ) : (() => {
+                  const now = Date.now();
+                  const filtered = matchesWithBonus
+                    .filter((x) => x.bonus)
+                    .filter((x) => {
+                      if (showClosedBonuses) return true;
+                      const closed = new Date(x.bonus!.closes_at).getTime() <= now;
+                      return !closed; // Sýna aðeins opnar ef lokaðar eru faldar
+                    });
+                  
+                  if (filtered.length === 0) {
+                    return <p className="text-sm text-slate-600 dark:text-neutral-300">Engar opnar bónus spurningar.</p>;
+                  }
+                  
+                  return (
+                    <div className="space-y-3">
+                      {filtered
+                        .sort((a, b) => {
+                          // Raða eftir stöðu: opið fyrst, síðan lokað
+                          const aClosed = new Date(a.bonus!.closes_at).getTime() <= now;
+                          const bClosed = new Date(b.bonus!.closes_at).getTime() <= now;
+                          if (aClosed !== bClosed) {
+                            return aClosed ? 1 : -1; // Opnar fyrst (false comes before true)
+                          }
+                          // Ef sama stöðu, raða eftir closes_at (fyrri lokun fyrst)
+                          return new Date(a.bonus!.closes_at).getTime() - new Date(b.bonus!.closes_at).getTime();
+                        })
+                        .map((m) => {
                         const q = m.bonus!;
                         const closed = new Date(q.closes_at).getTime() <= Date.now();
 
@@ -1995,8 +2024,9 @@ export default function AdminPage() {
                           </div>
                         );
                       })}
-                  </div>
-                )}
+                    </div>
+                  );
+                })()}
               </Card>
               </div>
 

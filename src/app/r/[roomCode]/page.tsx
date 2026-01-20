@@ -1061,8 +1061,8 @@ export default function RoomPage() {
                                 </div>
                               );
                                   }),
-                                  // Advertisement slot in every other match day (even indices: 0, 2, 4...)
-                                  dateIndex % 2 === 0 && (
+                                  // Advertisement slot every 4th match day (indices: 0, 4, 8...)
+                                  dateIndex % 4 === 0 && (
                                     <div 
                                       key={`ad-${dateKey}`}
                                       className="my-4"
@@ -1321,8 +1321,8 @@ export default function RoomPage() {
                                 </div>
                               );
                                   }),
-                                  // Advertisement slot in every other match day (even indices: 0, 2, 4...)
-                                  dateIndex % 2 === 0 && (
+                                  // Advertisement slot every 4th match day (indices: 0, 4, 8...)
+                                  dateIndex % 4 === 0 && (
                                     <div 
                                       key={`ad-${dateKey}`}
                                       className="my-4"

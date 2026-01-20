@@ -18,6 +18,47 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Betlihem – Tippsíða",
   description: "Tippsíða fyrir ýmsar keppnir og mót",
+  keywords: ["tipp", "betlihem", "keppnir", "mót", "íslensk tippsíða", "fótbolti", "handbolti"],
+  authors: [{ name: "Betlihem" }],
+  creator: "Betlihem",
+  publisher: "Betlihem",
+  metadataBase: new URL("https://betlihemc.om"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Betlihem – Tippsíða",
+    description: "Tippsíða fyrir ýmsar keppnir og mót",
+    url: "https://betlihemc.om",
+    siteName: "Betlihem",
+    locale: "is_IS",
+    type: "website",
+    images: [
+      {
+        url: "/Bet-logo-0126.png",
+        width: 1200,
+        height: 630,
+        alt: "Betlihem logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Betlihem – Tippsíða",
+    description: "Tippsíða fyrir ýmsar keppnir og mót",
+    images: ["/Bet-logo-0126.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -40,9 +81,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Betlihem",
+    description: "Tippsíða fyrir ýmsar keppnir og mót",
+    url: "https://betlihemc.om",
+    inLanguage: "is",
+  };
+
   return (
     <html lang="is" className="dark" suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -1042,12 +1042,29 @@ export default function RoomPage() {
 
                       {m.bonus && (
                         <>
-                          <button
-                            onClick={() => toggleBonus(m.id)}
-                            className="relative mt-3 rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                          >
-                            {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Sýna bónus"}
-                          </button>
+                          <div className="mt-3 flex items-center gap-3">
+                            <button
+                              onClick={() => toggleBonus(m.id)}
+                              className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                            >
+                              {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Sýna bónus"}
+                            </button>
+                            {(() => {
+                              const myAnswer = 
+                                m.bonus.type === "number" ? m.bonus.my_answer_number : 
+                                m.bonus.type === "choice" ? m.bonus.my_answer_choice : 
+                                m.bonus.type === "player" ? m.bonus.my_answer_player_name : null;
+                              
+                              if (myAnswer != null && myAnswer !== "") {
+                                return (
+                                  <span className="text-sm text-slate-600 dark:text-neutral-300">
+                                    Þitt svar: <span className="font-semibold text-slate-900 dark:text-neutral-100">{String(myAnswer)}</span>
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
                           {showBonusForMatch.has(m.id) && (
                             <BonusAnswerCard
                               bonus={m.bonus}
@@ -1302,12 +1319,29 @@ export default function RoomPage() {
 
                                   {m.bonus && (
                                     <>
-                                      <button
-                                        onClick={() => toggleBonus(m.id)}
-                                        className="relative mt-3 rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                                      >
-                                        {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Bónus Spurning"}
-                                      </button>
+                                      <div className="mt-3 flex items-center gap-3">
+                                        <button
+                                          onClick={() => toggleBonus(m.id)}
+                                          className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                        >
+                                          {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Bónus Spurning"}
+                                        </button>
+                                        {(() => {
+                                          const myAnswer = 
+                                            m.bonus.type === "number" ? m.bonus.my_answer_number : 
+                                            m.bonus.type === "choice" ? m.bonus.my_answer_choice : 
+                                            m.bonus.type === "player" ? m.bonus.my_answer_player_name : null;
+                                          
+                                          if (myAnswer != null && myAnswer !== "") {
+                                            return (
+                                              <span className="text-sm text-slate-600 dark:text-neutral-300">
+                                                Þitt svar: <span className="font-semibold text-slate-900 dark:text-neutral-100">{String(myAnswer)}</span>
+                                              </span>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
+                                      </div>
                                       {showBonusForMatch.has(m.id) && (
                                         <BonusAnswerCard
                                           bonus={m.bonus}

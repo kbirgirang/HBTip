@@ -1046,7 +1046,21 @@ export default function RoomPage() {
                               onClick={() => toggleBonus(m.id)}
                               className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 min-w-[140px]"
                             >
-                              {showBonusForMatch.has(m.id) ? "Fela bónus" : "Bónus Spurning"}
+                              <span className="flex items-center justify-center gap-1.5">
+                                {(() => {
+                                  const myAnswer = 
+                                    m.bonus.type === "number" ? m.bonus.my_answer_number : 
+                                    m.bonus.type === "choice" ? m.bonus.my_answer_choice : 
+                                    m.bonus.type === "player" ? m.bonus.my_answer_player_name : null;
+                                  const hasAnswer = myAnswer != null && myAnswer !== "";
+                                  return (
+                                    <>
+                                      {hasAnswer && <span className="text-base">✓</span>}
+                                      {showBonusForMatch.has(m.id) ? "Fela bónus" : "Bónus Spurning"}
+                                    </>
+                                  );
+                                })()}
+                              </span>
                             </button>
                             {(() => {
                               const myAnswer = 
@@ -1323,7 +1337,21 @@ export default function RoomPage() {
                                           onClick={() => toggleBonus(m.id)}
                                           className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 min-w-[140px]"
                                         >
-                                          {showBonusForMatch.has(m.id) ? "Fela bónus" : "Bónus Spurning"}
+                                          <span className="flex items-center justify-center gap-1.5">
+                                            {(() => {
+                                              const myAnswer = 
+                                                m.bonus.type === "number" ? m.bonus.my_answer_number : 
+                                                m.bonus.type === "choice" ? m.bonus.my_answer_choice : 
+                                                m.bonus.type === "player" ? m.bonus.my_answer_player_name : null;
+                                              const hasAnswer = myAnswer != null && myAnswer !== "";
+                                              return (
+                                                <>
+                                                  {hasAnswer && <span className="text-base">✓</span>}
+                                                  {showBonusForMatch.has(m.id) ? "Fela bónus" : "Bónus Spurning"}
+                                                </>
+                                              );
+                                            })()}
+                                          </span>
                                         </button>
                                         {(() => {
                                           const myAnswer = 

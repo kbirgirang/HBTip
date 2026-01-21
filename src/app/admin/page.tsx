@@ -1600,7 +1600,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* RESULTS + BONUS */}
+        {/* RESULTS + BONUS 
+          TODO: Endurskipuleggja með:
+          - Dropdown fyrir bónus innsetning
+          - Dropdown fyrir bónus skoðun
+          - Tvö dálka layout: Framundan leikir (vinstri) og Búnir leikir (hægri)
+        */}
         {tab === "results" && (
           <div className="mt-6 space-y-6">
             {/* Keppnisval */}

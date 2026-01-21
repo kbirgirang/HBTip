@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { getSession } from "@/lib/session";
-import { hashPassword, verifyPassword } from "@/lib/passwords";
+import { hashPassword } from "@/lib/passwords";
 
 type Body = {
-  ownerPassword: string;
   memberId: string;
   newPassword: string;
 };
@@ -18,13 +17,9 @@ export async function POST(req: Request) {
 
     const body = (await req.json()) as Body;
 
-    const ownerPassword = (body.ownerPassword || "").trim();
     const memberId = (body.memberId || "").trim();
     const newPassword = (body.newPassword || "").trim();
 
-    if (!ownerPassword) {
-      return NextResponse.json({ error: "Lykilorð stjórnanda vantar" }, { status: 400 });
-    }
     if (!memberId) {
       return NextResponse.json({ error: "memberId vantar" }, { status: 400 });
     }
@@ -43,10 +38,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Deild fannst ekki" }, { status: 404 });
     }
 
-    // Sækja owner member og athuga password
+    // Sækja owner member og athuga að hann sé owner
     const { data: owner, error: oErr } = await supabaseServer
       .from("room_members")
-      .select("id, password_hash, is_owner")
+      .select("id, is_owner")
       .eq("id", session.memberId)
       .eq("room_id", room.id)
       .single();
@@ -57,12 +52,6 @@ export async function POST(req: Request) {
 
     if (!owner.is_owner) {
       return NextResponse.json({ error: "Ekki stjórnandi" }, { status: 403 });
-    }
-
-    // Athuga owner password
-    const passwordOk = await verifyPassword(owner.password_hash, ownerPassword);
-    if (!passwordOk) {
-      return NextResponse.json({ error: "Rangt lykilorð stjórnanda" }, { status: 401 });
     }
 
     // Sækja member sem á að breyta

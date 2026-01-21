@@ -542,7 +542,6 @@ export default function RoomPage() {
   }
 
   async function handleChangeMemberPassword(memberId: string) {
-    if (!ownerPassword) return setOwnerError("Lykilorð stjórnanda vantar");
     if (newMemberPassword.length < 6) return setOwnerError("Nýtt lykilorð þarf að vera amk 6 stafir");
 
     setOwnerError(null);
@@ -553,7 +552,7 @@ export default function RoomPage() {
       const res = await fetch("/api/room/owner/change-member-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ownerPassword, memberId, newPassword: newMemberPassword }),
+        body: JSON.stringify({ memberId, newPassword: newMemberPassword }),
       });
 
       const json = await res.json();

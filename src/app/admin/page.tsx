@@ -870,10 +870,6 @@ export default function AdminPage() {
   const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
   const [loadingBonusList, setLoadingBonusList] = useState(false);
   const [showClosedBonuses, setShowClosedBonuses] = useState(false);
-  
-  // Dropdown selections for bonus section
-  const [selectedMatchForBonusInsert, setSelectedMatchForBonusInsert] = useState<string>("");
-  const [selectedMatchForBonusView, setSelectedMatchForBonusView] = useState<string>("");
 
   async function loadBonusList(silent?: boolean) {
     if (!silent) clearAlerts();
@@ -1600,15 +1596,9 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* RESULTS + BONUS 
-          TODO: Endurskipuleggja með:
-          - Dropdown fyrir bónus innsetning
-          - Dropdown fyrir bónus skoðun
-          - Tvö dálka layout: Framundan leikir (vinstri) og Búnir leikir (hægri)
-        */}
+        {/* RESULTS + BONUS */}
         {tab === "results" && (
           <div className="mt-6 space-y-6">
-            {/* Keppnisval */}
             <div className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-4">
               <label className="text-sm font-semibold text-slate-700 dark:text-neutral-300">Veldu keppni</label>
               <select
@@ -1639,61 +1629,24 @@ export default function AdminPage() {
               </p>
             </div>
 
-            {/* Bónus dropdown valmyndir */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900/40 p-4 space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-neutral-300">Bónus innsetning</label>
-                <select
-                  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                  value={selectedMatchForBonusInsert}
-                  onChange={(e) => setSelectedMatchForBonusInsert(e.target.value)}
-                  disabled={matches.length === 0}
-                >
-                  <option value="">Veldu leik</option>
-                  {matches.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {(m.match_no != null ? `#${m.match_no} · ` : "") +
-                        `${getTeamFlag(m.home_team) ? getTeamFlag(m.home_team) + " " : ""}${m.home_team} vs ${getTeamFlag(m.away_team) ? getTeamFlag(m.away_team) + " " : ""}${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-neutral-300">Skoða bónus</label>
-                <select
-                  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                  value={selectedMatchForBonusView}
-                  onChange={(e) => setSelectedMatchForBonusView(e.target.value)}
-                  disabled={matchesWithBonus.filter(x => x.bonus).length === 0}
-                >
-                  <option value="">Veldu leik</option>
-                  {matchesWithBonus.filter(x => x.bonus).map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {(m.match_no != null ? `#${m.match_no} · ` : "") +
-                        `${getTeamFlag(m.home_team) ? getTeamFlag(m.home_team) + " " : ""}${m.home_team} vs ${getTeamFlag(m.away_team) ? getTeamFlag(m.away_team) + " " : ""}${m.away_team}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Tvö dálka layout: Framundan vs Búnir */}
             <div className="grid gap-6 lg:grid-cols-2">
-              {/* VINSTRI: Framundan leikir */}
-              <Card
-                title="📅 Framundan leikir"
-                subtitle="Leikir sem eiga eftir að fara af stað"
-                right={
-                  <button
-                    onClick={() => void loadMatches()}
-                    disabled={loadingMatches}
-                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                  >
-                    {loadingMatches ? "Hleð..." : "Endurlesa"}
-                  </button>
-                }
-              >
+              <div className="space-y-6">
+                <Card
+                  title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
+                  subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
+                  right={
+                    <button
+                      onClick={() => {
+                        void loadMatches();
+                        void loadBonusList(true);
+                      }}
+                      disabled={loadingMatches || loadingBonusList}
+                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                    >
+                      {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
+                    </button>
+                  }
+                >
                 {matches.length === 0 ? (
                   <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
                 ) : (

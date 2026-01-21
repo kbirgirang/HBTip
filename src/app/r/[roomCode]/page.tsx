@@ -1044,9 +1044,9 @@ export default function RoomPage() {
                           <div className="mt-3 flex items-center gap-3">
                             <button
                               onClick={() => toggleBonus(m.id)}
-                              className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                              className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 min-w-[140px]"
                             >
-                              {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Sýna bónus"}
+                              {showBonusForMatch.has(m.id) ? "Fela bónus" : "Bónus Spurning"}
                             </button>
                             {(() => {
                               const myAnswer = 
@@ -1321,9 +1321,9 @@ export default function RoomPage() {
                                       <div className="mt-3 flex items-center gap-3">
                                         <button
                                           onClick={() => toggleBonus(m.id)}
-                                          className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                          className="relative rounded-lg border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 min-w-[140px]"
                                         >
-                                          {showBonusForMatch.has(m.id) ? "✕ Fela bónus" : "📋 Bónus Spurning"}
+                                          {showBonusForMatch.has(m.id) ? "Fela bónus" : "Bónus Spurning"}
                                         </button>
                                         {(() => {
                                           const myAnswer = 

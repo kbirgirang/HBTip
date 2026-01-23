@@ -1977,124 +1977,74 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="mt-3 space-y-3">
-                        {/* Úrslit - Modern Segmented Control */}
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/50">
-                          <div className="mb-3 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">Úrslit</span>
-                              {m.result && (
-                                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                                  Sett
-                                </span>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/50 dark:border-neutral-700 dark:bg-neutral-900/30 p-3">
+                        <div className="grid gap-3 md:grid-cols-3">
+                          {/* Úrslit */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">Úrslit:</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
+                                1
+                              </ResultButton>
+
+                              {m.allow_draw && (
+                                <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
+                                  X
+                                </ResultButton>
                               )}
-                            </div>
-                            <div className="flex items-center gap-1">
+
+                              <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
+                                2
+                              </ResultButton>
+
                               <button
                                 onClick={() => setResult(m.id, null)}
-                                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                                 title="Hreinsa úrslit"
                               >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
+                                ↺
                               </button>
+
                               <button
                                 onClick={() => deleteMatch(m.id)}
-                                className="rounded-lg p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
                                 title="Eyða leik"
                               >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
+                                ×
                               </button>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setResult(m.id, "1")}
-                              className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                                m.result === "1"
-                                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 dark:bg-blue-500"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                              }`}
-                            >
-                              <div className="flex items-center justify-center gap-2">
-                                {getTeamFlag(m.home_team) && <span className="text-lg">{getTeamFlag(m.home_team)}</span>}
-                                <span>1</span>
-                              </div>
-                            </button>
-                            {m.allow_draw && (
+
+                          {/* Underdog */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">🎯 Underdog:</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
                               <button
-                                onClick={() => setResult(m.id, "X")}
-                                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                                  m.result === "X"
-                                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 dark:bg-blue-500"
-                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                                onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
+                                className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                  m.underdog_team === "1"
+                                    ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                                 }`}
                               >
-                                X
+                                {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
+                                1
                               </button>
-                            )}
-                            <button
-                              onClick={() => setResult(m.id, "2")}
-                              className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                                m.result === "2"
-                                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 dark:bg-blue-500"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                              }`}
-                            >
-                              <div className="flex items-center justify-center gap-2">
-                                {getTeamFlag(m.away_team) && <span className="text-lg">{getTeamFlag(m.away_team)}</span>}
-                                <span>2</span>
-                              </div>
-                            </button>
-                          </div>
-                        </div>
 
-                        {/* Underdog & Stöða - Side by Side */}
-                        <div className="grid gap-3 md:grid-cols-2">
-                          {/* Underdog Card */}
-                          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/50">
-                            <div className="mb-3 flex items-center justify-between">
-                              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">🎯 Underdog</span>
+                              <button
+                                onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
+                                className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                  m.underdog_team === "2"
+                                    ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                }`}
+                              >
+                                {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
+                                2
+                              </button>
+
                               {m.underdog_team && (
-                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                                  {m.underdog_multiplier ?? 3.0}x
-                                </span>
-                              )}
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
-                                  className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-all ${
-                                    m.underdog_team === "1"
-                                      ? "border-amber-500 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-900/20 dark:text-amber-300"
-                                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600"
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-center gap-1.5">
-                                    {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                                    <span>1</span>
-                                  </div>
-                                </button>
-                                <button
-                                  onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
-                                  className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-all ${
-                                    m.underdog_team === "2"
-                                      ? "border-amber-500 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-900/20 dark:text-amber-300"
-                                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600"
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-center gap-1.5">
-                                    {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                    <span>2</span>
-                                  </div>
-                                </button>
-                              </div>
-                              {m.underdog_team && (
-                                <div className="flex items-center gap-2">
+                                <>
                                   <input
                                     type="number"
                                     min="1.0"
@@ -2107,89 +2057,75 @@ export default function AdminPage() {
                                         setUnderdog(m.id, m.underdog_team, val);
                                       }
                                     }}
-                                    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-amber-400"
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                    placeholder="3.0"
                                   />
-                                  <span className="text-xs text-slate-500 dark:text-neutral-400">x stig</span>
-                                  <button
-                                    onClick={() => setUnderdog(m.id, null, null)}
-                                    className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
-                                    title="Hreinsa"
-                                  >
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
-                                </div>
+                                  <span className="text-xs text-slate-600 dark:text-neutral-400">x</span>
+                                </>
+                              )}
+
+                              {m.underdog_team && (
+                                <button
+                                  onClick={() => setUnderdog(m.id, null, null)}
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                  title="Hreinsa underdog"
+                                >
+                                  ↺
+                                </button>
                               )}
                             </div>
                           </div>
 
-                          {/* Stöða Card */}
-                          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/50">
-                            <div className="mb-3 flex items-center justify-between">
-                              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">📊 Stöða</span>
-                              {(m.home_score != null || m.away_score != null) && (
-                                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                                  Sett
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="flex-1">
-                                <label className="mb-1 block text-xs text-slate-500 dark:text-neutral-400">
-                                  {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
-                                  {m.home_team}
-                                </label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="1"
-                                  value={m.home_score ?? ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
-                                    if (val !== null && (isNaN(val) || val < 0)) return;
-                                    setMatches((prev) => prev.map((match) => 
-                                      match.id === m.id ? { ...match, home_score: val } : match
-                                    ));
-                                  }}
-                                  onBlur={() => {
-                                    const match = matches.find((match) => match.id === m.id);
-                                    if (match) {
-                                      setResult(match.id, match.result, match.home_score, match.away_score);
-                                    }
-                                  }}
-                                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-center text-lg font-bold text-slate-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-purple-400"
-                                  placeholder="0"
-                                />
-                              </div>
-                              <div className="text-xl font-bold text-slate-400 dark:text-neutral-500">-</div>
-                              <div className="flex-1">
-                                <label className="mb-1 block text-xs text-slate-500 dark:text-neutral-400">
-                                  {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
-                                  {m.away_team}
-                                </label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="1"
-                                  value={m.away_score ?? ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
-                                    if (val !== null && (isNaN(val) || val < 0)) return;
-                                    setMatches((prev) => prev.map((match) => 
-                                      match.id === m.id ? { ...match, away_score: val } : match
-                                    ));
-                                  }}
-                                  onBlur={() => {
-                                    const match = matches.find((match) => match.id === m.id);
-                                    if (match) {
-                                      setResult(match.id, match.result, match.home_score, match.away_score);
-                                    }
-                                  }}
-                                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-center text-lg font-bold text-slate-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-purple-400"
-                                  placeholder="0"
-                                />
-                              </div>
+                          {/* Stöða */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">📊 Stöða:</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={m.home_score ?? ""}
+                                onChange={(e) => {
+                                  const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                                  if (val !== null && (isNaN(val) || val < 0)) return;
+                                  setMatches((prev) => prev.map((match) => 
+                                    match.id === m.id ? { ...match, home_score: val } : match
+                                  ));
+                                }}
+                                onBlur={() => {
+                                  const match = matches.find((match) => match.id === m.id);
+                                  if (match) {
+                                    setResult(match.id, match.result, match.home_score, match.away_score);
+                                  }
+                                }}
+                                className="w-14 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="0"
+                              />
+                              
+                              <span className="text-xs text-slate-600 dark:text-neutral-400">-</span>
+                              
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={m.away_score ?? ""}
+                                onChange={(e) => {
+                                  const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                                  if (val !== null && (isNaN(val) || val < 0)) return;
+                                  setMatches((prev) => prev.map((match) => 
+                                    match.id === m.id ? { ...match, away_score: val } : match
+                                  ));
+                                }}
+                                onBlur={() => {
+                                  const match = matches.find((match) => match.id === m.id);
+                                  if (match) {
+                                    setResult(match.id, match.result, match.home_score, match.away_score);
+                                  }
+                                }}
+                                className="w-14 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="0"
+                              />
+                              
                               <button
                                 onClick={() => {
                                   const match = matches.find((match) => match.id === m.id);
@@ -2197,12 +2133,10 @@ export default function AdminPage() {
                                     setResult(match.id, match.result, null, null);
                                   }
                                 }}
-                                className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                                 title="Hreinsa stöðu"
                               >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                ↺
                               </button>
                             </div>
                           </div>

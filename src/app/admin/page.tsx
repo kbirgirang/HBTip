@@ -2146,77 +2146,69 @@ export default function AdminPage() {
 
                     {/* Bónus spurning kafli */}
                     {bonus ? (
-                      <div className="mt-2 rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
-                        <div className="flex items-start justify-between gap-3 mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-slate-900 dark:text-neutral-100">🎁 Bónus: {bonus.title}</span>
-                              <span
-                                className={[
-                                  "rounded-lg border px-2 py-0.5 text-xs",
-                                  bonusClosed
-                                    ? "border-neutral-700 bg-neutral-900 text-neutral-300"
-                                    : "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
-                                ].join(" ")}
-                              >
-                                {bonusClosed ? "Lokað" : "Opið"}
+                      <div className="mt-2 rounded-lg border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+                            <span className="text-xs font-semibold text-slate-900 dark:text-neutral-100">🎁 {bonus.title}</span>
+                            <span
+                              className={[
+                                "rounded border px-1.5 py-0.5 text-xs whitespace-nowrap",
+                                bonusClosed
+                                  ? "border-neutral-700 bg-neutral-900 text-neutral-300"
+                                  : "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+                              ].join(" ")}
+                            >
+                              {bonusClosed ? "Lokað" : "Opið"}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-neutral-400">
+                              +{bonus.points} · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
+                            </span>
+                            {bonus.type === "number" && bonus.correct_number != null && (
+                              <span className="text-xs text-slate-600 dark:text-neutral-300">
+                                Rétt: <span className="font-mono">{bonus.correct_number}</span>
                               </span>
-                            </div>
-                            <div className="text-xs text-slate-600 dark:text-neutral-300">
-                              +{bonus.points} stig · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
-                              Lokar: {new Date(bonus.closes_at).toLocaleString()}
-                            </div>
+                            )}
+                            {bonus.type === "choice" && bonus.correct_choice && (
+                              <span className="text-xs text-slate-600 dark:text-neutral-300">
+                                Rétt: <span className="font-semibold">{bonus.correct_choice}</span>
+                              </span>
+                            )}
+                            {bonus.type === "player" && ((bonus as any).correct_player_name || bonus.correct_choice) && (
+                              <span className="text-xs text-slate-600 dark:text-neutral-300">
+                                Rétt: <span className="font-semibold">
+                                  {(bonus as any).correct_player_name || bonus.correct_choice || bonus.correct_player_id}
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => {
+                                if (matchWithBonus) {
+                                  prefillBonusFromRow(matchWithBonus);
+                                  setShowBonusForm(true);
+                                  setTimeout(() => {
+                                    document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                  }, 100);
+                                }
+                              }}
+                              className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            >
+                              Breyta
+                            </button>
+                            <button
+                              onClick={() => deleteBonus(bonus.id)}
+                              className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                            >
+                              Eyða
+                            </button>
                           </div>
                         </div>
-
                         {bonus.type === "choice" && bonus.choice_options && (
-                          <div className="mt-2 text-xs text-slate-500 dark:text-neutral-400">
+                          <div className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">
                             Valmöguleikar: {(bonus.choice_options || []).join(" · ")}
                           </div>
                         )}
-
-                        {bonus.type === "number" && bonus.correct_number != null && (
-                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
-                            Rétt tala: <span className="font-mono">{bonus.correct_number}</span>
-                          </div>
-                        )}
-                        {bonus.type === "choice" && bonus.correct_choice && (
-                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
-                            Rétt val: <span className="font-semibold">{bonus.correct_choice}</span>
-                          </div>
-                        )}
-                        {bonus.type === "player" && ((bonus as any).correct_player_name || bonus.correct_choice) && (
-                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
-                            Rétt leikmaður: <span className="font-semibold">
-                              {(bonus as any).correct_player_name || bonus.correct_choice || bonus.correct_player_id}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex gap-2 mt-3 pt-2 border-t border-slate-200 dark:border-neutral-700">
-                          <button
-                            onClick={() => {
-                              if (matchWithBonus) {
-                                prefillBonusFromRow(matchWithBonus);
-                                setShowBonusForm(true);
-                                setTimeout(() => {
-                                  document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                                }, 100);
-                              }
-                            }}
-                            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          >
-                            Breyta
-                          </button>
-                          <button
-                            onClick={() => deleteBonus(bonus.id)}
-                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                          >
-                            Eyða
-                          </button>
-                        </div>
                       </div>
                     ) : (
                       <div className="mt-2 rounded-xl border border-dashed border-slate-300 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-900/30 p-3">

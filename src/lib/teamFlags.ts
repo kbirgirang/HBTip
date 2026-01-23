@@ -145,6 +145,18 @@ export function getTeamFlag(teamName: string): string {
     }
   }
   
+  // Try splitting by space and checking each part
+  const parts = normalized.split(/\s+/);
+  for (const part of parts) {
+    const trimmedPart = part.trim();
+    if (trimmedPart.length > 2) { // Skip 2-letter codes
+      const code = teamToCountryCode[trimmedPart];
+      if (code) {
+        return countryCodeToFlag(code);
+      }
+    }
+  }
+  
   // Fallback: try to find partial match
   // Sort by length (longest first) to match more specific names first
   const sortedEntries = Object.entries(teamToCountryCode).sort((a, b) => b[0].length - a[0].length);

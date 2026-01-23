@@ -1967,7 +1967,7 @@ export default function AdminPage() {
                           <span className="inline-flex items-center gap-1">
                             {(() => {
                               const flag = getTeamFlag(m.home_team);
-                              return flag && <span className="inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                              return flag && <span className="flag-emoji">{flag}</span>;
                             })()}
                             {m.home_team}
                           </span>{" "}
@@ -1975,7 +1975,7 @@ export default function AdminPage() {
                           <span className="inline-flex items-center gap-1">
                             {(() => {
                               const flag = getTeamFlag(m.away_team);
-                              return flag && <span className="inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                              return flag && <span className="flag-emoji">{flag}</span>;
                             })()}
                             {m.away_team}
                           </span>
@@ -2039,7 +2039,7 @@ export default function AdminPage() {
                               >
                                 {(() => {
                                   const flag = getTeamFlag(m.home_team);
-                                  return flag && <span className="mr-1 inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                                  return flag && <span className="flag-emoji mr-1">{flag}</span>;
                                 })()}
                                 1
                               </button>
@@ -2054,7 +2054,7 @@ export default function AdminPage() {
                               >
                                 {(() => {
                                   const flag = getTeamFlag(m.away_team);
-                                  return flag && <span className="mr-1 inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                                  return flag && <span className="flag-emoji mr-1">{flag}</span>;
                                 })()}
                                 2
                               </button>

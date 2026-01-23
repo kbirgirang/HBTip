@@ -118,14 +118,35 @@ function countryCodeToFlag(code: string): string {
 // Get flag emoji for a team name
 export function getTeamFlag(teamName: string): string {
   const normalized = teamName.trim();
-  const countryCode = teamToCountryCode[normalized];
   
+  // Try exact match first
+  const countryCode = teamToCountryCode[normalized];
   if (countryCode) {
     return countryCodeToFlag(countryCode);
   }
   
+  // Try removing trailing 2-letter country codes (e.g., "Iceland IS" -> "Iceland")
+  const withoutTrailingCode = normalized.replace(/\s+[A-Z]{2}$/, "").trim();
+  if (withoutTrailingCode !== normalized) {
+    const code = teamToCountryCode[withoutTrailingCode];
+    if (code) {
+      return countryCodeToFlag(code);
+    }
+  }
+  
+  // Try removing leading 2-letter country codes (e.g., "HR Croatia" -> "Croatia")
+  const withoutLeadingCode = normalized.replace(/^[A-Z]{2}\s+/, "").trim();
+  if (withoutLeadingCode !== normalized) {
+    const code = teamToCountryCode[withoutLeadingCode];
+    if (code) {
+      return countryCodeToFlag(code);
+    }
+  }
+  
   // Fallback: try to find partial match (e.g., "Ísland A" -> "IS")
-  for (const [team, code] of Object.entries(teamToCountryCode)) {
+  // Sort by length (longest first) to match more specific names first
+  const sortedEntries = Object.entries(teamToCountryCode).sort((a, b) => b[0].length - a[0].length);
+  for (const [team, code] of sortedEntries) {
     if (normalized.includes(team) || team.includes(normalized)) {
       return countryCodeToFlag(code);
     }

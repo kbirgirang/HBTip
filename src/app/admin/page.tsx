@@ -2295,6 +2295,7 @@ export default function AdminPage() {
               })()}
             </Card>
             </div>
+          </div>
         )}
 
         {/* TOURNAMENTS */}

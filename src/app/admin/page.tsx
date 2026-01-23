@@ -1632,6 +1632,7 @@ export default function AdminPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="space-y-6">
                 <Card
+                  id="bonus-form-section"
                   title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
                   subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
                   right={
@@ -2092,187 +2093,281 @@ export default function AdminPage() {
                   upcomingByDate.get(dateKey)!.push(m);
                 });
 
-                const renderMatch = (m: MatchRow) => (
+                const renderMatch = (m: MatchRow) => {
+                  // Finna bónus spurningu fyrir þennan leik
+                  const matchWithBonus = matchesWithBonus.find((mb) => mb.id === m.id);
+                  const bonus = matchWithBonus?.bonus;
+                  const bonusClosed = bonus ? new Date(bonus.closes_at).getTime() <= Date.now() : false;
+
+                  return (
                   <div
                     key={m.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-4 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-4"
                   >
-                    <div>
-                      <div className="font-semibold text-slate-900 dark:text-neutral-100">
-                        <span className="inline-flex items-center gap-1">
-                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                          {m.home_team}
-                        </span>{" "}
-                        vs{" "}
-                        <span className="inline-flex items-center gap-1">
-                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                          {m.away_team}
-                        </span>
-                        {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <div className="font-semibold text-slate-900 dark:text-neutral-100">
+                          <span className="inline-flex items-center gap-1">
+                            {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                            {m.home_team}
+                          </span>{" "}
+                          vs{" "}
+                          <span className="inline-flex items-center gap-1">
+                            {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
+                            {m.away_team}
+                          </span>
+                          {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-neutral-400">
+                          {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
+                          {m.match_no != null ? ` · #${m.match_no}` : ""}
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-600 dark:text-neutral-400">
-                        {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
-                        {m.match_no != null ? ` · #${m.match_no}` : ""}
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
 
-                        <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
-                          1
-                        </ResultButton>
-
-                        {m.allow_draw && (
-                          <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
-                            X
+                          <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
+                            1
                           </ResultButton>
-                        )}
 
-                        <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
-                          2
-                        </ResultButton>
+                          {m.allow_draw && (
+                            <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
+                              X
+                            </ResultButton>
+                          )}
 
-                        <button
-                          onClick={() => setResult(m.id, null)}
-                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                        >
-                          Hreinsa
-                        </button>
+                          <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
+                            2
+                          </ResultButton>
 
-                        <button
-                          onClick={() => deleteMatch(m.id)}
-                          className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                        >
-                          Eyða
-                        </button>
-                      </div>
-
-                      {/* Underdog UI */}
-                      <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">🎯 Underdog:</span>
-                        
-                        <button
-                          onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
-                          className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                            m.underdog_team === "1"
-                              ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          }`}
-                        >
-                          {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
-                          1
-                        </button>
-
-                        <button
-                          onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
-                          className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                            m.underdog_team === "2"
-                              ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          }`}
-                        >
-                          {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
-                          2
-                        </button>
-
-                        {m.underdog_team && (
-                          <>
-                            <input
-                              type="number"
-                              min="1.0"
-                              max="10.0"
-                              step="0.1"
-                              value={m.underdog_multiplier ?? 3.0}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                if (val >= 1.0 && val <= 10.0) {
-                                  setUnderdog(m.id, m.underdog_team, val);
-                                }
-                              }}
-                              className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                              placeholder="3.0"
-                            />
-                            <span className="text-xs text-slate-600 dark:text-neutral-400">x stig</span>
-                          </>
-                        )}
-
-                        {m.underdog_team && (
                           <button
-                            onClick={() => setUnderdog(m.id, null, null)}
-                            className="rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            onClick={() => setResult(m.id, null)}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           >
                             Hreinsa
                           </button>
-                        )}
-                      </div>
 
-                      {/* Score UI */}
-                      <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">📊 Stöða:</span>
-                        
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={m.home_score ?? ""}
-                          onChange={(e) => {
-                            const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
-                            if (val !== null && (isNaN(val) || val < 0)) return;
-                            setMatches((prev) => prev.map((match) => 
-                              match.id === m.id ? { ...match, home_score: val } : match
-                            ));
-                          }}
-                          onBlur={() => {
-                            const match = matches.find((match) => match.id === m.id);
-                            if (match) {
-                              setResult(match.id, match.result, match.home_score, match.away_score);
-                            }
-                          }}
-                          className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
-                          placeholder="0"
-                        />
-                        
-                        <span className="text-sm text-slate-700 dark:text-neutral-300">-</span>
-                        
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={m.away_score ?? ""}
-                          onChange={(e) => {
-                            const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
-                            if (val !== null && (isNaN(val) || val < 0)) return;
-                            setMatches((prev) => prev.map((match) => 
-                              match.id === m.id ? { ...match, away_score: val } : match
-                            ));
-                          }}
-                          onBlur={() => {
-                            const match = matches.find((match) => match.id === m.id);
-                            if (match) {
-                              setResult(match.id, match.result, match.home_score, match.away_score);
-                            }
-                          }}
-                          className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
-                          placeholder="0"
-                        />
-                        
-                        <button
-                          onClick={() => {
-                            const match = matches.find((match) => match.id === m.id);
-                            if (match) {
-                              setResult(match.id, match.result, null, null);
-                            }
-                          }}
-                          className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                        >
-                          Hreinsa stöðu
-                        </button>
+                          <button
+                            onClick={() => deleteMatch(m.id)}
+                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                          >
+                            Eyða
+                          </button>
+                        </div>
+
+                        {/* Underdog UI */}
+                        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">🎯 Underdog:</span>
+                          
+                          <button
+                            onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                              m.underdog_team === "1"
+                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            }`}
+                          >
+                            {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
+                            1
+                          </button>
+
+                          <button
+                            onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                              m.underdog_team === "2"
+                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            }`}
+                          >
+                            {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
+                            2
+                          </button>
+
+                          {m.underdog_team && (
+                            <>
+                              <input
+                                type="number"
+                                min="1.0"
+                                max="10.0"
+                                step="0.1"
+                                value={m.underdog_multiplier ?? 3.0}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  if (val >= 1.0 && val <= 10.0) {
+                                    setUnderdog(m.id, m.underdog_team, val);
+                                  }
+                                }}
+                                className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="3.0"
+                              />
+                              <span className="text-xs text-slate-600 dark:text-neutral-400">x stig</span>
+                            </>
+                          )}
+
+                          {m.underdog_team && (
+                            <button
+                              onClick={() => setUnderdog(m.id, null, null)}
+                              className="rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                            >
+                              Hreinsa
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Score UI */}
+                        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">📊 Stöða:</span>
+                          
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={m.home_score ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                              if (val !== null && (isNaN(val) || val < 0)) return;
+                              setMatches((prev) => prev.map((match) => 
+                                match.id === m.id ? { ...match, home_score: val } : match
+                              ));
+                            }}
+                            onBlur={() => {
+                              const match = matches.find((match) => match.id === m.id);
+                              if (match) {
+                                setResult(match.id, match.result, match.home_score, match.away_score);
+                              }
+                            }}
+                            className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            placeholder="0"
+                          />
+                          
+                          <span className="text-sm text-slate-700 dark:text-neutral-300">-</span>
+                          
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={m.away_score ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                              if (val !== null && (isNaN(val) || val < 0)) return;
+                              setMatches((prev) => prev.map((match) => 
+                                match.id === m.id ? { ...match, away_score: val } : match
+                              ));
+                            }}
+                            onBlur={() => {
+                              const match = matches.find((match) => match.id === m.id);
+                              if (match) {
+                                setResult(match.id, match.result, match.home_score, match.away_score);
+                              }
+                            }}
+                            className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                            placeholder="0"
+                          />
+                          
+                          <button
+                            onClick={() => {
+                              const match = matches.find((match) => match.id === m.id);
+                              if (match) {
+                                setResult(match.id, match.result, null, null);
+                              }
+                            }}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                          >
+                            Hreinsa stöðu
+                          </button>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Bónus spurning kafli */}
+                    {bonus ? (
+                      <div className="mt-2 rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-slate-900 dark:text-neutral-100">🎁 Bónus: {bonus.title}</span>
+                              <span
+                                className={[
+                                  "rounded-lg border px-2 py-0.5 text-xs",
+                                  bonusClosed
+                                    ? "border-neutral-700 bg-neutral-900 text-neutral-300"
+                                    : "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+                                ].join(" ")}
+                              >
+                                {bonusClosed ? "Lokað" : "Opið"}
+                              </span>
+                            </div>
+                            <div className="text-xs text-slate-600 dark:text-neutral-300">
+                              +{bonus.points} stig · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+                              Lokar: {new Date(bonus.closes_at).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        {bonus.type === "choice" && bonus.choice_options && (
+                          <div className="mt-2 text-xs text-slate-500 dark:text-neutral-400">
+                            Valmöguleikar: {(bonus.choice_options || []).join(" · ")}
+                          </div>
+                        )}
+
+                        {bonus.type === "number" && bonus.correct_number != null && (
+                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                            Rétt tala: <span className="font-mono">{bonus.correct_number}</span>
+                          </div>
+                        )}
+                        {bonus.type === "choice" && bonus.correct_choice && (
+                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                            Rétt val: <span className="font-semibold">{bonus.correct_choice}</span>
+                          </div>
+                        )}
+                        {bonus.type === "player" && ((bonus as any).correct_player_name || bonus.correct_choice) && (
+                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                            Rétt leikmaður: <span className="font-semibold">
+                              {(bonus as any).correct_player_name || bonus.correct_choice || bonus.correct_player_id}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 mt-3 pt-2 border-t border-slate-200 dark:border-neutral-700">
+                          <button
+                            onClick={() => matchWithBonus && prefillBonusFromRow(matchWithBonus)}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                          >
+                            Breyta
+                          </button>
+                          <button
+                            onClick={() => deleteBonus(bonus.id)}
+                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                          >
+                            Eyða
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2 rounded-xl border border-dashed border-slate-300 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-900/30 p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500 dark:text-neutral-400">Engin bónus spurning</span>
+                          <button
+                            onClick={() => {
+                              setBonusMatchId(m.id);
+                              setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
+                              // Scroll to bonus form
+                              document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                            }}
+                            className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                          >
+                            Bæta við bónus
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
+                };
 
                 return (
                   <div className="space-y-6">
@@ -2760,18 +2855,20 @@ function TabButton({
 }
 
 function Card({
+  id,
   title,
   subtitle,
   right,
   children,
 }: {
+  id?: string;
   title: string;
   subtitle?: string;
   right?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/30 p-6">
+    <section id={id} className="rounded-3xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/30 p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-neutral-100">{title}</h2>

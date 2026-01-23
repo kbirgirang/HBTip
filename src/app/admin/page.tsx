@@ -1618,25 +1618,24 @@ export default function AdminPage() {
               </p>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-6">
-                <Card
-                  id="bonus-form-section"
-                  title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
-                  subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
-                  right={
-                    <button
-                      onClick={() => {
-                        void loadMatches();
-                        void loadBonusList(true);
-                      }}
-                      disabled={loadingMatches || loadingBonusList}
-                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                    >
-                      {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
-                    </button>
-                  }
-                >
+            <div className="space-y-6">
+              <Card
+                id="bonus-form-section"
+                title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
+                subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
+                right={
+                  <button
+                    onClick={() => {
+                      void loadMatches();
+                      void loadBonusList(true);
+                    }}
+                    disabled={loadingMatches || loadingBonusList}
+                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                  >
+                    {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
+                  </button>
+                }
+              >
                 {matches.length === 0 ? (
                   <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
                 ) : (
@@ -1865,7 +1864,6 @@ export default function AdminPage() {
                   </form>
                 )}
               </Card>
-              </div>
 
               <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Eyða.">
               {matches.length === 0 ? (
@@ -2296,7 +2294,6 @@ export default function AdminPage() {
                 );
               })()}
             </Card>
-            </div>
             </div>
         )}
 

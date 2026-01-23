@@ -1977,262 +1977,268 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm text-slate-700 dark:text-neutral-300">Úrslit:</span>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/50 dark:border-neutral-700 dark:bg-neutral-900/30 p-3">
+                        <div className="grid gap-3 md:grid-cols-3">
+                          {/* Úrslit */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">Úrslit:</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
+                                1
+                              </ResultButton>
 
-                          <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
-                            1
-                          </ResultButton>
+                              {m.allow_draw && (
+                                <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
+                                  X
+                                </ResultButton>
+                              )}
 
-                          {m.allow_draw && (
-                            <ResultButton selected={m.result === "X"} onClick={() => setResult(m.id, "X")}>
-                              X
-                            </ResultButton>
-                          )}
+                              <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
+                                2
+                              </ResultButton>
 
-                          <ResultButton selected={m.result === "2"} onClick={() => setResult(m.id, "2")}>
-                            2
-                          </ResultButton>
+                              <button
+                                onClick={() => setResult(m.id, null)}
+                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                title="Hreinsa úrslit"
+                              >
+                                ↺
+                              </button>
 
-                          <button
-                            onClick={() => setResult(m.id, null)}
-                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          >
-                            Hreinsa
-                          </button>
+                              <button
+                                onClick={() => deleteMatch(m.id)}
+                                className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                                title="Eyða leik"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
 
-                          <button
-                            onClick={() => deleteMatch(m.id)}
-                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                          >
-                            Eyða
-                          </button>
-                        </div>
+                          {/* Underdog */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">🎯 Underdog:</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <button
+                                onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
+                                className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                  m.underdog_team === "1"
+                                    ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                }`}
+                              >
+                                {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
+                                1
+                              </button>
 
-                        {/* Underdog UI */}
-                        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
-                          <span className="text-sm text-slate-700 dark:text-neutral-300">🎯 Underdog:</span>
-                          
-                          <button
-                            onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
-                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                              m.underdog_team === "1"
-                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
-                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                            }`}
-                          >
-                            {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
-                            1
-                          </button>
+                              <button
+                                onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
+                                className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                  m.underdog_team === "2"
+                                    ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
+                                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                }`}
+                              >
+                                {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
+                                2
+                              </button>
 
-                          <button
-                            onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
-                            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
-                              m.underdog_team === "2"
-                                ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
-                                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                            }`}
-                          >
-                            {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
-                            2
-                          </button>
+                              {m.underdog_team && (
+                                <>
+                                  <input
+                                    type="number"
+                                    min="1.0"
+                                    max="10.0"
+                                    step="0.1"
+                                    value={m.underdog_multiplier ?? 3.0}
+                                    onChange={(e) => {
+                                      const val = Number(e.target.value);
+                                      if (val >= 1.0 && val <= 10.0) {
+                                        setUnderdog(m.id, m.underdog_team, val);
+                                      }
+                                    }}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                    placeholder="3.0"
+                                  />
+                                  <span className="text-xs text-slate-600 dark:text-neutral-400">x</span>
+                                </>
+                              )}
 
-                          {m.underdog_team && (
-                            <>
+                              {m.underdog_team && (
+                                <button
+                                  onClick={() => setUnderdog(m.id, null, null)}
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                  title="Hreinsa underdog"
+                                >
+                                  ↺
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Stöða */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">📊 Stöða:</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
                               <input
                                 type="number"
-                                min="1.0"
-                                max="10.0"
-                                step="0.1"
-                                value={m.underdog_multiplier ?? 3.0}
+                                min="0"
+                                step="1"
+                                value={m.home_score ?? ""}
                                 onChange={(e) => {
-                                  const val = Number(e.target.value);
-                                  if (val >= 1.0 && val <= 10.0) {
-                                    setUnderdog(m.id, m.underdog_team, val);
+                                  const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                                  if (val !== null && (isNaN(val) || val < 0)) return;
+                                  setMatches((prev) => prev.map((match) => 
+                                    match.id === m.id ? { ...match, home_score: val } : match
+                                  ));
+                                }}
+                                onBlur={() => {
+                                  const match = matches.find((match) => match.id === m.id);
+                                  if (match) {
+                                    setResult(match.id, match.result, match.home_score, match.away_score);
                                   }
                                 }}
-                                className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                                placeholder="3.0"
+                                className="w-14 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="0"
                               />
-                              <span className="text-xs text-slate-600 dark:text-neutral-400">x stig</span>
-                            </>
-                          )}
-
-                          {m.underdog_team && (
-                            <button
-                              onClick={() => setUnderdog(m.id, null, null)}
-                              className="rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                            >
-                              Hreinsa
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Score UI */}
-                        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-neutral-700">
-                          <span className="text-sm text-slate-700 dark:text-neutral-300">📊 Stöða:</span>
-                          
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={m.home_score ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
-                              if (val !== null && (isNaN(val) || val < 0)) return;
-                              setMatches((prev) => prev.map((match) => 
-                                match.id === m.id ? { ...match, home_score: val } : match
-                              ));
-                            }}
-                            onBlur={() => {
-                              const match = matches.find((match) => match.id === m.id);
-                              if (match) {
-                                setResult(match.id, match.result, match.home_score, match.away_score);
-                              }
-                            }}
-                            className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            placeholder="0"
-                          />
-                          
-                          <span className="text-sm text-slate-700 dark:text-neutral-300">-</span>
-                          
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={m.away_score ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
-                              if (val !== null && (isNaN(val) || val < 0)) return;
-                              setMatches((prev) => prev.map((match) => 
-                                match.id === m.id ? { ...match, away_score: val } : match
-                              ));
-                            }}
-                            onBlur={() => {
-                              const match = matches.find((match) => match.id === m.id);
-                              if (match) {
-                                setResult(match.id, match.result, match.home_score, match.away_score);
-                              }
-                            }}
-                            className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
-                            placeholder="0"
-                          />
-                          
-                          <button
-                            onClick={() => {
-                              const match = matches.find((match) => match.id === m.id);
-                              if (match) {
-                                setResult(match.id, match.result, null, null);
-                              }
-                            }}
-                            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                          >
-                            Hreinsa stöðu
-                          </button>
+                              
+                              <span className="text-xs text-slate-600 dark:text-neutral-400">-</span>
+                              
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={m.away_score ?? ""}
+                                onChange={(e) => {
+                                  const val = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                                  if (val !== null && (isNaN(val) || val < 0)) return;
+                                  setMatches((prev) => prev.map((match) => 
+                                    match.id === m.id ? { ...match, away_score: val } : match
+                                  ));
+                                }}
+                                onBlur={() => {
+                                  const match = matches.find((match) => match.id === m.id);
+                                  if (match) {
+                                    setResult(match.id, match.result, match.home_score, match.away_score);
+                                  }
+                                }}
+                                className="w-14 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                placeholder="0"
+                              />
+                              
+                              <button
+                                onClick={() => {
+                                  const match = matches.find((match) => match.id === m.id);
+                                  if (match) {
+                                    setResult(match.id, match.result, null, null);
+                                  }
+                                }}
+                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                title="Hreinsa stöðu"
+                              >
+                                ↺
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Bónus spurning kafli - compact layout */}
-                    <div className="mt-3 border-t border-slate-200 pt-3 dark:border-neutral-700">
-                      {bonus ? (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="text-xs">🎁</span>
-                              <span className="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">
-                                {bonus.title}
-                              </span>
+                    {/* Bónus spurning kafli */}
+                    {bonus ? (
+                      <div className="mt-2 rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-slate-900 dark:text-neutral-100">🎁 Bónus: {bonus.title}</span>
                               <span
                                 className={[
-                                  "rounded px-1.5 py-0.5 text-xs whitespace-nowrap flex-shrink-0",
+                                  "rounded-lg border px-2 py-0.5 text-xs",
                                   bonusClosed
-                                    ? "border border-neutral-700 bg-neutral-900 text-neutral-300"
-                                    : "border border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+                                    ? "border-neutral-700 bg-neutral-900 text-neutral-300"
+                                    : "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
                                 ].join(" ")}
                               >
                                 {bonusClosed ? "Lokað" : "Opið"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <span className="text-xs text-slate-600 dark:text-neutral-400">
-                                +{bonus.points} stig
-                              </span>
-                              <button
-                                onClick={() => {
-                                  if (matchWithBonus) {
-                                    prefillBonusFromRow(matchWithBonus);
-                                    setShowBonusForm(true);
-                                    setTimeout(() => {
-                                      document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                                    }, 100);
-                                  }
-                                }}
-                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                                title="Breyta bónus"
-                              >
-                                ✏️
-                              </button>
-                              <button
-                                onClick={() => deleteBonus(bonus.id)}
-                                className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                                title="Eyða bónus"
-                              >
-                                🗑️
-                              </button>
+                            <div className="text-xs text-slate-600 dark:text-neutral-300">
+                              +{bonus.points} stig · {bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+                              Lokar: {new Date(bonus.closes_at).toLocaleString()}
                             </div>
                           </div>
-                          
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-neutral-400">
-                            <span>{bonus.type === "number" ? "tala" : bonus.type === "choice" ? "krossa" : "leikmaður"}</span>
-                            <span>·</span>
-                            <span>Lokar: {new Date(bonus.closes_at).toLocaleString('is-IS', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                            {bonus.type === "number" && bonus.correct_number != null && (
-                              <>
-                                <span>·</span>
-                                <span className="font-mono">Rétt: {bonus.correct_number}</span>
-                              </>
-                            )}
-                            {bonus.type === "choice" && bonus.correct_choice && (
-                              <>
-                                <span>·</span>
-                                <span>Rétt: <span className="font-semibold">{bonus.correct_choice}</span></span>
-                              </>
-                            )}
-                            {bonus.type === "player" && ((bonus as any).correct_player_name || bonus.correct_choice) && (
-                              <>
-                                <span>·</span>
-                                <span>Rétt: <span className="font-semibold">{(bonus as any).correct_player_name || bonus.correct_choice}</span></span>
-                              </>
-                            )}
-                          </div>
-
-                          {bonus.type === "choice" && bonus.choice_options && (
-                            <div className="text-xs text-slate-500 dark:text-neutral-400">
-                              Valmöguleikar: {(bonus.choice_options || []).join(" · ")}
-                            </div>
-                          )}
                         </div>
-                      ) : (
-                        <div className="flex items-center justify-between gap-2">
+
+                        {bonus.type === "choice" && bonus.choice_options && (
+                          <div className="mt-2 text-xs text-slate-500 dark:text-neutral-400">
+                            Valmöguleikar: {(bonus.choice_options || []).join(" · ")}
+                          </div>
+                        )}
+
+                        {bonus.type === "number" && bonus.correct_number != null && (
+                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                            Rétt tala: <span className="font-mono">{bonus.correct_number}</span>
+                          </div>
+                        )}
+                        {bonus.type === "choice" && bonus.correct_choice && (
+                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                            Rétt val: <span className="font-semibold">{bonus.correct_choice}</span>
+                          </div>
+                        )}
+                        {bonus.type === "player" && ((bonus as any).correct_player_name || bonus.correct_choice) && (
+                          <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
+                            Rétt leikmaður: <span className="font-semibold">
+                              {(bonus as any).correct_player_name || bonus.correct_choice || bonus.correct_player_id}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 mt-3 pt-2 border-t border-slate-200 dark:border-neutral-700">
+                          <button
+                            onClick={() => {
+                              if (matchWithBonus) {
+                                prefillBonusFromRow(matchWithBonus);
+                                setShowBonusForm(true);
+                                setTimeout(() => {
+                                  document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                }, 100);
+                              }
+                            }}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                          >
+                            Breyta
+                          </button>
+                          <button
+                            onClick={() => deleteBonus(bonus.id)}
+                            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                          >
+                            Eyða
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2 rounded-xl border border-dashed border-slate-300 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-900/30 p-3">
+                        <div className="flex items-center justify-between">
                           <span className="text-xs text-slate-500 dark:text-neutral-400">Engin bónus spurning</span>
                           <button
                             onClick={() => {
                               setBonusMatchId(m.id);
                               setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
                               setShowBonusForm(true);
+                              // Scroll to bonus form
                               setTimeout(() => {
                                 document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
                               }, 100);
                             }}
                             className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           >
-                            + Bæta við bónus
+                            Bæta við bónus
                           </button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 );
                 };

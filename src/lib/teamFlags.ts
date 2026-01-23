@@ -117,6 +117,8 @@ function countryCodeToFlag(code: string): string {
 
 // Get flag emoji for a team name
 export function getTeamFlag(teamName: string): string {
+  if (!teamName) return "";
+  
   const normalized = teamName.trim();
   
   // Try exact match first
@@ -127,7 +129,7 @@ export function getTeamFlag(teamName: string): string {
   
   // Try removing trailing 2-letter country codes (e.g., "Iceland IS" -> "Iceland")
   const withoutTrailingCode = normalized.replace(/\s+[A-Z]{2}$/, "").trim();
-  if (withoutTrailingCode !== normalized) {
+  if (withoutTrailingCode !== normalized && withoutTrailingCode.length > 0) {
     const code = teamToCountryCode[withoutTrailingCode];
     if (code) {
       return countryCodeToFlag(code);
@@ -136,18 +138,20 @@ export function getTeamFlag(teamName: string): string {
   
   // Try removing leading 2-letter country codes (e.g., "HR Croatia" -> "Croatia")
   const withoutLeadingCode = normalized.replace(/^[A-Z]{2}\s+/, "").trim();
-  if (withoutLeadingCode !== normalized) {
+  if (withoutLeadingCode !== normalized && withoutLeadingCode.length > 0) {
     const code = teamToCountryCode[withoutLeadingCode];
     if (code) {
       return countryCodeToFlag(code);
     }
   }
   
-  // Fallback: try to find partial match (e.g., "Ísland A" -> "IS")
+  // Fallback: try to find partial match
   // Sort by length (longest first) to match more specific names first
   const sortedEntries = Object.entries(teamToCountryCode).sort((a, b) => b[0].length - a[0].length);
   for (const [team, code] of sortedEntries) {
-    if (normalized.includes(team) || team.includes(normalized)) {
+    // Check if the team name contains the country name (case-insensitive)
+    if (normalized.toLowerCase().includes(team.toLowerCase()) || 
+        team.toLowerCase().includes(normalized.toLowerCase())) {
       return countryCodeToFlag(code);
     }
   }

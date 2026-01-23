@@ -955,7 +955,10 @@ export default function RoomPage() {
                                           className="hover:underline cursor-pointer"
                                         >
                                           <span>{m.home_team}</span>{" "}
-                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                          {(() => {
+                                            const flag = getTeamFlag(m.home_team);
+                                            return flag && <span className="inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                                          })()}
                                         </button>
                                         <span className="inline-flex items-center gap-1 mx-2">
                                           vs
@@ -964,7 +967,10 @@ export default function RoomPage() {
                                           onClick={() => setSelectedTeam(m.away_team)}
                                           className="hover:underline cursor-pointer"
                                         >
-                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}{" "}
+                                          {(() => {
+                                            const flag = getTeamFlag(m.away_team);
+                                            return flag && <span className="inline-block mr-1" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                                          })()}
                                           <span>{m.away_team}</span>
                                         </button>
                                         {" "}
@@ -1238,7 +1244,10 @@ export default function RoomPage() {
                                           className="hover:underline cursor-pointer"
                                         >
                                           <span>{m.home_team}</span>{" "}
-                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
+                                          {(() => {
+                                            const flag = getTeamFlag(m.home_team);
+                                            return flag && <span className="inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                                          })()}
                                         </button>
                                         <span className="inline-flex items-center gap-1 mx-2">
                                           vs
@@ -1247,7 +1256,10 @@ export default function RoomPage() {
                                           onClick={() => setSelectedTeam(m.away_team)}
                                           className="hover:underline cursor-pointer"
                                         >
-                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}{" "}
+                                          {(() => {
+                                            const flag = getTeamFlag(m.away_team);
+                                            return flag && <span className="inline-block mr-1" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
+                                          })()}
                                           <span>{m.away_team}</span>
                                         </button>
                                         {" "}
@@ -2047,6 +2059,9 @@ function TeamMatchesModal({
                       const started = new Date(match.starts_at).getTime() <= now;
                       const isHome = match.home_team === teamName;
                       const opponent = isHome ? match.away_team : match.home_team;
+                      const teamFlag = getTeamFlag(teamName);
+                      const oppFlag = getTeamFlag(opponent);
+                      const flagStyle = { fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"', display: 'inline-block' };
                       
                       return (
                         <div
@@ -2057,11 +2072,11 @@ function TeamMatchesModal({
                             <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                               {isHome ? (
                                 <>
-                                  {teamName} {getTeamFlag(teamName)} vs {getTeamFlag(opponent)} {opponent}
+                                  {teamName} {teamFlag && <span style={flagStyle}>{teamFlag}</span>} vs {oppFlag && <span style={flagStyle}>{oppFlag}</span>} {opponent}
                                 </>
                               ) : (
                                 <>
-                                  {opponent} {getTeamFlag(opponent)} vs {getTeamFlag(teamName)} {teamName}
+                                  {opponent} {oppFlag && <span style={flagStyle}>{oppFlag}</span>} vs {teamFlag && <span style={flagStyle}>{teamFlag}</span>} {teamName}
                                 </>
                               )}
                             </div>
@@ -2105,6 +2120,9 @@ function TeamMatchesModal({
                       const isHome = match.home_team === teamName;
                       const opponent = isHome ? match.away_team : match.home_team;
                       const teamResult = isHome ? (match.result === "1" ? "S" : match.result === "2" ? "T" : "J") : (match.result === "2" ? "S" : match.result === "1" ? "T" : "J");
+                      const teamFlag = getTeamFlag(teamName);
+                      const oppFlag = getTeamFlag(opponent);
+                      const flagStyle = { fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"', display: 'inline-block' };
                       
                       return (
                         <div
@@ -2115,11 +2133,11 @@ function TeamMatchesModal({
                             <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                               {isHome ? (
                                 <>
-                                  {teamName} {getTeamFlag(teamName)} vs {getTeamFlag(opponent)} {opponent}
+                                  {teamName} {teamFlag && <span style={flagStyle}>{teamFlag}</span>} vs {oppFlag && <span style={flagStyle}>{oppFlag}</span>} {opponent}
                                 </>
                               ) : (
                                 <>
-                                  {opponent} {getTeamFlag(opponent)} vs {getTeamFlag(teamName)} {teamName}
+                                  {opponent} {oppFlag && <span style={flagStyle}>{oppFlag}</span>} vs {teamFlag && <span style={flagStyle}>{teamFlag}</span>} {teamName}
                                 </>
                               )}
                             </div>

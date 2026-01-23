@@ -1978,10 +1978,10 @@ export default function AdminPage() {
                       </div>
 
                       <div className="rounded-xl border border-slate-200 bg-slate-50/50 dark:border-neutral-700 dark:bg-neutral-900/30 p-3">
-                        <div className="grid gap-3 md:grid-cols-3">
+                        <div className="grid gap-4 md:grid-cols-3">
                           {/* Úrslit */}
                           <div className="flex flex-col gap-2">
-                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">Úrslit:</span>
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 h-5 flex items-center">Úrslit:</span>
                             <div className="flex flex-wrap items-center gap-1.5">
                               <ResultButton selected={m.result === "1"} onClick={() => setResult(m.id, "1")}>
                                 1
@@ -1999,7 +1999,7 @@ export default function AdminPage() {
 
                               <button
                                 onClick={() => setResult(m.id, null)}
-                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60 h-7 w-7 flex items-center justify-center"
                                 title="Hreinsa úrslit"
                               >
                                 ↺
@@ -2007,7 +2007,7 @@ export default function AdminPage() {
 
                               <button
                                 onClick={() => deleteMatch(m.id)}
-                                className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
+                                className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15 h-7 w-7 flex items-center justify-center"
                                 title="Eyða leik"
                               >
                                 ×
@@ -2017,11 +2017,11 @@ export default function AdminPage() {
 
                           {/* Underdog */}
                           <div className="flex flex-col gap-2">
-                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">🎯 Underdog:</span>
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 h-5 flex items-center">🎯 Underdog:</span>
                             <div className="flex flex-wrap items-center gap-1.5">
                               <button
                                 onClick={() => setUnderdog(m.id, "1", m.underdog_multiplier ?? 3.0)}
-                                className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition h-7 flex items-center ${
                                   m.underdog_team === "1"
                                     ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
                                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
@@ -2033,7 +2033,7 @@ export default function AdminPage() {
 
                               <button
                                 onClick={() => setUnderdog(m.id, "2", m.underdog_multiplier ?? 3.0)}
-                                className={`rounded-lg border px-2 py-1 text-xs font-medium transition ${
+                                className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition h-7 flex items-center ${
                                   m.underdog_team === "2"
                                     ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600"
                                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
@@ -2057,7 +2057,7 @@ export default function AdminPage() {
                                         setUnderdog(m.id, m.underdog_team, val);
                                       }
                                     }}
-                                    className="w-16 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                    className="w-16 h-7 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                                     placeholder="3.0"
                                   />
                                   <span className="text-xs text-slate-600 dark:text-neutral-400">x</span>
@@ -2067,7 +2067,7 @@ export default function AdminPage() {
                               {m.underdog_team && (
                                 <button
                                   onClick={() => setUnderdog(m.id, null, null)}
-                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60 h-7 w-7 flex items-center justify-center"
                                   title="Hreinsa underdog"
                                 >
                                   ↺
@@ -2078,7 +2078,7 @@ export default function AdminPage() {
 
                           {/* Stöða */}
                           <div className="flex flex-col gap-2">
-                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400">📊 Stöða:</span>
+                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 h-5 flex items-center">📊 Stöða:</span>
                             <div className="flex flex-wrap items-center gap-1.5">
                               <input
                                 type="number"
@@ -2098,7 +2098,7 @@ export default function AdminPage() {
                                     setResult(match.id, match.result, match.home_score, match.away_score);
                                   }
                                 }}
-                                className="w-14 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                className="w-14 h-7 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                                 placeholder="0"
                               />
                               
@@ -2122,7 +2122,7 @@ export default function AdminPage() {
                                     setResult(match.id, match.result, match.home_score, match.away_score);
                                   }
                                 }}
-                                className="w-14 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                className="w-14 h-7 rounded-lg border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
                                 placeholder="0"
                               />
                               
@@ -2133,7 +2133,7 @@ export default function AdminPage() {
                                     setResult(match.id, match.result, null, null);
                                   }
                                 }}
-                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
+                                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60 h-7 w-7 flex items-center justify-center"
                                 title="Hreinsa stöðu"
                               >
                                 ↺
@@ -2761,7 +2761,7 @@ function ResultButton({
     <button
       onClick={onClick}
       className={[
-        "h-10 w-10 rounded-xl border text-sm font-bold transition",
+        "h-7 w-7 rounded-lg border text-xs font-bold transition flex items-center justify-center",
         selected
           ? "border-emerald-300 bg-emerald-300 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-500 dark:text-white"
           : "border-neutral-700 bg-neutral-100 text-neutral-900 hover:bg-white dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",

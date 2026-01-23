@@ -869,7 +869,6 @@ export default function AdminPage() {
   // -----------------------------
   const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
   const [loadingBonusList, setLoadingBonusList] = useState(false);
-  const [showClosedBonuses, setShowClosedBonuses] = useState(false);
 
   async function loadBonusList(silent?: boolean) {
     if (!silent) clearAlerts();
@@ -1282,16 +1281,6 @@ export default function AdminPage() {
     );
   }, [authenticated, theme, mounted]);
 
-  const bonusCount = useMemo(() => {
-    const now = Date.now();
-    return (matchesWithBonus || []).reduce((acc, m) => {
-      if (!m.bonus) return acc;
-      const closed = new Date(m.bonus.closes_at).getTime() <= now;
-      // Telja aðeins opnar ef lokaðar eru faldar
-      if (!showClosedBonuses && closed) return acc;
-      return acc + 1;
-    }, 0);
-  }, [matchesWithBonus, showClosedBonuses]);
 
   // Show login form if not authenticated
   if (authenticated === null) {
@@ -1875,159 +1864,6 @@ export default function AdminPage() {
                     </p>
                   </form>
                 )}
-              </Card>
-
-              <Card
-                title={`Bónus spurningar (í gangi) · ${bonusCount}`}
-                subtitle="Sjáðu hvaða leikir eru með bónus. Breyta setur í formið."
-                right={
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowClosedBonuses(!showClosedBonuses)}
-                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60"
-                    >
-                      {showClosedBonuses ? "Fela lokaðar" : "Sýna lokaðar"}
-                    </button>
-                    <button
-                      onClick={() => loadBonusList()}
-                      disabled={loadingBonusList}
-                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                    >
-                      {loadingBonusList ? "Hleð..." : "Endurlesa"}
-                    </button>
-                  </div>
-                }
-              >
-                {matchesWithBonus.filter((x) => x.bonus).length === 0 ? (
-                  <p className="text-sm text-slate-600 dark:text-neutral-300">Engar bónus spurningar komnar inn ennþá.</p>
-                ) : (() => {
-                  const now = Date.now();
-                  const filtered = matchesWithBonus
-                    .filter((x) => x.bonus)
-                    .filter((x) => {
-                      if (showClosedBonuses) return true;
-                      const closed = new Date(x.bonus!.closes_at).getTime() <= now;
-                      return !closed; // Sýna aðeins opnar ef lokaðar eru faldar
-                    });
-                  
-                  if (filtered.length === 0) {
-                    return <p className="text-sm text-slate-600 dark:text-neutral-300">Engar opnar bónus spurningar.</p>;
-                  }
-                  
-                  return (
-                    <div className="space-y-3">
-                      {filtered
-                        .sort((a, b) => {
-                          // Raða eftir stöðu: opið fyrst, síðan lokað
-                          const aClosed = new Date(a.bonus!.closes_at).getTime() <= now;
-                          const bClosed = new Date(b.bonus!.closes_at).getTime() <= now;
-                          if (aClosed !== bClosed) {
-                            return aClosed ? 1 : -1; // Opnar fyrst (false comes before true)
-                          }
-                          // Ef sama stöðu, raða eftir closes_at (fyrri lokun fyrst)
-                          return new Date(a.bonus!.closes_at).getTime() - new Date(b.bonus!.closes_at).getTime();
-                        })
-                        .map((m) => {
-                        const q = m.bonus!;
-                        const closed = new Date(q.closes_at).getTime() <= Date.now();
-
-                        return (
-                          <div
-                            key={q.id}
-                            className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/40 p-4"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <div className="font-semibold">
-                                  <span className="inline-flex items-center gap-1">
-                                    {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
-                                    {m.home_team}
-                                  </span>{" "}
-                                  vs{" "}
-                                  <span className="inline-flex items-center gap-1">
-                                    {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
-                                    {m.away_team}
-                                  </span>{" "}
-                                  {m.match_no != null ? (
-                                    <span className="text-xs text-slate-500 dark:text-neutral-400">· #{m.match_no}</span>
-                                  ) : null}
-                                </div>
-                                <div className="text-xs text-slate-600 dark:text-neutral-400">
-                                  {(m.stage ? `${m.stage} · ` : "") + new Date(m.starts_at).toLocaleString()}
-                                </div>
-                              </div>
-
-                              <div className="text-xs">
-                                <span
-                                  className={[
-                                    "rounded-lg border px-2 py-1",
-                                    closed
-                                      ? "border-neutral-700 bg-neutral-900 text-neutral-300"
-                                      : "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
-                                  ].join(" ")}
-                                >
-                                  {closed ? "Lokað" : "Opið"}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="rounded-xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/60 p-3">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="font-semibold text-slate-900 dark:text-neutral-100">Bónus: {q.title}</div>
-                                <div className="text-xs text-slate-600 dark:text-neutral-300">
-                                  +{q.points} stig · {q.type === "number" ? "tala" : q.type === "choice" ? "krossa" : "leikmaður"}
-                                </div>
-                              </div>
-
-                              <div className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
-                                Lokar: {new Date(q.closes_at).toLocaleString()}
-                              </div>
-
-                              {q.type === "choice" && (
-                                <div className="mt-2 text-xs text-slate-500 dark:text-neutral-400">
-                                  Valmöguleikar: {(q.choice_options || []).join(" · ")}
-                                </div>
-                              )}
-
-                              {q.type === "number" && q.correct_number != null && (
-                                <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
-                                  Rétt tala: <span className="font-mono">{q.correct_number}</span>
-                                </div>
-                              )}
-                              {q.type === "choice" && q.correct_choice && (
-                                <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
-                                  Rétt val: <span className="font-semibold">{q.correct_choice}</span>
-                                </div>
-                              )}
-                              {q.type === "player" && ((q as any).correct_player_name || q.correct_choice) && (
-                                <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300">
-                                  Rétt leikmaður: <span className="font-semibold">
-                                    {(q as any).correct_player_name || q.correct_choice || q.correct_player_id}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => prefillBonusFromRow(m)}
-                                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
-                              >
-                                Breyta
-                              </button>
-                              <button
-                                onClick={() => deleteBonus(q.id)}
-                                className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 hover:bg-red-500/20 dark:text-red-100 dark:hover:bg-red-500/15"
-                              >
-                                Eyða
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
               </Card>
               </div>
 

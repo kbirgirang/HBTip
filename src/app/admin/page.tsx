@@ -974,6 +974,7 @@ export default function AdminPage() {
   // -----------------------------
   // BONUS FORM
   // -----------------------------
+  const [showBonusForm, setShowBonusForm] = useState<boolean>(false);
   const [bonusMatchId, setBonusMatchId] = useState<string>("");
   const [bonusTitle, setBonusTitle] = useState<string>("");
   const [bonusType, setBonusType] = useState<BonusType>("number");
@@ -1619,23 +1620,39 @@ export default function AdminPage() {
             </div>
 
             <div className="space-y-6">
-              <Card
-                id="bonus-form-section"
-                title={editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
-                subtitle="Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar."
-                right={
-                  <button
-                    onClick={() => {
-                      void loadMatches();
-                      void loadBonusList(true);
-                    }}
-                    disabled={loadingMatches || loadingBonusList}
-                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
-                  >
-                    {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
-                  </button>
-                }
-              >
+              <div className="rounded-3xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/30">
+                <button
+                  onClick={() => setShowBonusForm(!showBonusForm)}
+                  className="flex w-full items-center justify-between p-6 text-left"
+                >
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
+                      {editingBonusId ? "Breyta bónus" : "Setja bónus (eitt field)"}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">
+                      Veldu leik, skrifaðu bónus og vistaðu. Lokar sjálfkrafa þegar leikur byrjar.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void loadMatches();
+                        void loadBonusList(true);
+                      }}
+                      disabled={loadingMatches || loadingBonusList}
+                      className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                    >
+                      {loadingMatches || loadingBonusList ? "Hleð..." : "Endurlesa"}
+                    </button>
+                    <span className={`transform transition-transform ${showBonusForm ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </div>
+                </button>
+                
+                {showBonusForm && (
+                  <div id="bonus-form-section" className="border-t border-slate-200 dark:border-neutral-800 p-6">
                 {matches.length === 0 ? (
                   <p className="text-sm text-slate-600 dark:text-neutral-300">Engir leikir ennþá. Settu inn leiki fyrst.</p>
                 ) : (
@@ -1703,23 +1720,13 @@ export default function AdminPage() {
                     {bonusType === "number" && (
                       <div>
                         <label className="text-sm text-slate-700 dark:text-neutral-300">Rétt tala (valfrjálst)</label>
-                        <select
+                        <input
                           value={correctNumber}
                           onChange={(e) => setCorrectNumber(e.target.value)}
+                          inputMode="decimal"
+                          placeholder="t.d. 7"
                           className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
-                        >
-                          <option value="">— ekki sett —</option>
-                          {Array.from({ length: 21 }, (_, i) => i).map((num) => (
-                            <option key={num} value={num}>
-                              {num}
-                            </option>
-                          ))}
-                          {Array.from({ length: 20 }, (_, i) => i + 21).map((num) => (
-                            <option key={num} value={num}>
-                              {num}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
                     )}
 
@@ -1873,7 +1880,9 @@ export default function AdminPage() {
                     </p>
                   </form>
                 )}
-              </Card>
+                  </div>
+                )}
+              </div>
 
               <Card title="Setja úrslit + eyða leikjum" subtitle="Veldu úrslit og hreinsaðu tvítekningar með Eyða.">
               {matches.length === 0 ? (
@@ -2178,7 +2187,15 @@ export default function AdminPage() {
 
                         <div className="flex gap-2 mt-3 pt-2 border-t border-slate-200 dark:border-neutral-700">
                           <button
-                            onClick={() => matchWithBonus && prefillBonusFromRow(matchWithBonus)}
+                            onClick={() => {
+                              if (matchWithBonus) {
+                                prefillBonusFromRow(matchWithBonus);
+                                setShowBonusForm(true);
+                                setTimeout(() => {
+                                  document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                }, 100);
+                              }
+                            }}
                             className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           >
                             Breyta
@@ -2199,8 +2216,11 @@ export default function AdminPage() {
                             onClick={() => {
                               setBonusMatchId(m.id);
                               setBonusTitle(`Bónus: ${m.home_team} vs ${m.away_team}`);
+                              setShowBonusForm(true);
                               // Scroll to bonus form
-                              document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                              setTimeout(() => {
+                                document.getElementById("bonus-form-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                              }, 100);
                             }}
                             className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                           >

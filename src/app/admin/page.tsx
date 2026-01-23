@@ -2205,6 +2205,28 @@ export default function AdminPage() {
 
                 return (
                   <div className="space-y-6">
+                    {/* Búnir leikir (dropdown) */}
+                    {completed.length > 0 && (
+                      <div>
+                        <button
+                          onClick={() => setShowCompletedMatches(!showCompletedMatches)}
+                          className="mb-3 flex w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-base font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900/60"
+                        >
+                          <span>
+                            ✅ Búnir ({completed.length})
+                          </span>
+                          <span className={`transform transition-transform ${showCompletedMatches ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {showCompletedMatches && (
+                          <div className="space-y-3">
+                            {completed.map(renderMatch)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Í gangi */}
                     {inProgress.length > 0 && (
                       <div>
@@ -2266,28 +2288,6 @@ export default function AdminPage() {
                               </div>
                             ))}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Búnir leikir (dropdown) */}
-                    {completed.length > 0 && (
-                      <div>
-                        <button
-                          onClick={() => setShowCompletedMatches(!showCompletedMatches)}
-                          className="mb-3 flex w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-base font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900/60"
-                        >
-                          <span>
-                            ✅ Búnir ({completed.length})
-                          </span>
-                          <span className={`transform transition-transform ${showCompletedMatches ? 'rotate-180' : ''}`}>
-                            ▼
-                          </span>
-                        </button>
-                        {showCompletedMatches && (
-                          <div className="space-y-3">
-                            {completed.map(renderMatch)}
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>

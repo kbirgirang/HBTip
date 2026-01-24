@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { getTeamFlag } from "@/lib/teamFlags";
+import FlagIcon from "@/components/FlagIcon";
 
 // Athuga hvort Ísland sé í leiknum
 function isIcelandPlaying(homeTeam: string, awayTeam: string): boolean {
@@ -955,10 +956,7 @@ export default function RoomPage() {
                                           className="hover:underline cursor-pointer"
                                         >
                                           <span>{m.home_team}</span>{" "}
-                                          {(() => {
-                                            const flag = getTeamFlag(m.home_team);
-                                            return flag && <span className="inline-block" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
-                                          })()}
+                                          <FlagIcon teamName={m.home_team} className="ml-1" size={20} />
                                         </button>
                                         <span className="inline-flex items-center gap-1 mx-2">
                                           vs
@@ -967,10 +965,7 @@ export default function RoomPage() {
                                           onClick={() => setSelectedTeam(m.away_team)}
                                           className="hover:underline cursor-pointer"
                                         >
-                                          {(() => {
-                                            const flag = getTeamFlag(m.away_team);
-                                            return flag && <span className="inline-block mr-1" style={{ fontFamily: 'system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"' }}>{flag}</span>;
-                                          })()}
+                                          <FlagIcon teamName={m.away_team} className="mr-1" size={20} />
                                           <span>{m.away_team}</span>
                                         </button>
                                         {" "}
@@ -1244,10 +1239,7 @@ export default function RoomPage() {
                                           className="hover:underline cursor-pointer"
                                         >
                                           <span>{m.home_team}</span>{" "}
-                                          {(() => {
-                                            const flag = getTeamFlag(m.home_team);
-                                            return flag && <span className="flag-emoji">{flag}</span>;
-                                          })()}
+                                          <FlagIcon teamName={m.home_team} className="ml-1" size={20} />
                                         </button>
                                         <span className="inline-flex items-center gap-1 mx-2">
                                           vs
@@ -1256,10 +1248,7 @@ export default function RoomPage() {
                                           onClick={() => setSelectedTeam(m.away_team)}
                                           className="hover:underline cursor-pointer"
                                         >
-                                          {(() => {
-                                            const flag = getTeamFlag(m.away_team);
-                                            return flag && <span className="flag-emoji mr-1">{flag}</span>;
-                                          })()}
+                                          <FlagIcon teamName={m.away_team} className="mr-1" size={20} />
                                           <span>{m.away_team}</span>
                                         </button>
                                         {" "}
@@ -2025,7 +2014,7 @@ function TeamMatchesModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            {getTeamFlag(teamName) && <span className="text-2xl">{getTeamFlag(teamName)}</span>}
+            <FlagIcon teamName={teamName} size={32} />
             <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
               Leikir {teamName}
             </h2>
@@ -2059,8 +2048,6 @@ function TeamMatchesModal({
                       const started = new Date(match.starts_at).getTime() <= now;
                       const isHome = match.home_team === teamName;
                       const opponent = isHome ? match.away_team : match.home_team;
-                      const teamFlag = getTeamFlag(teamName);
-                      const oppFlag = getTeamFlag(opponent);
                       
                       return (
                         <div
@@ -2071,11 +2058,11 @@ function TeamMatchesModal({
                             <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                               {isHome ? (
                                 <>
-                                  {teamName} {teamFlag && <span className="flag-emoji">{teamFlag}</span>} vs {oppFlag && <span className="flag-emoji">{oppFlag}</span>} {opponent}
+                                  {teamName} <FlagIcon teamName={teamName} className="mx-1" size={16} /> vs <FlagIcon teamName={opponent} className="mx-1" size={16} /> {opponent}
                                 </>
                               ) : (
                                 <>
-                                  {opponent} {oppFlag && <span className="flag-emoji">{oppFlag}</span>} vs {teamFlag && <span className="flag-emoji">{teamFlag}</span>} {teamName}
+                                  {opponent} <FlagIcon teamName={opponent} className="mx-1" size={16} /> vs <FlagIcon teamName={teamName} className="mx-1" size={16} /> {teamName}
                                 </>
                               )}
                             </div>

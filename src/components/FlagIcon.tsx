@@ -32,8 +32,20 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
       `https://purecatamphetamine.github.io/country-flag-icons/3x2/${countryCode.toUpperCase()}.svg`
     ];
     
+    // Add extra margin-right in Chrome to prevent cropping
+    const isChrome = typeof window !== 'undefined' && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    
     return (
-      <span className={`inline-block align-middle ${className}`} style={{ overflow: "visible", lineHeight: 0 }}>
+      <span 
+        className={`inline-block align-middle ${className}`} 
+        style={{ 
+          overflow: "visible", 
+          lineHeight: 0,
+          marginRight: isChrome ? "5px" : undefined,
+          paddingRight: isChrome ? "3px" : undefined,
+          display: "inline-block"
+        }}
+      >
         <img
           src={flagUrls[currentUrlIndex]}
           alt={`${countryCode} flag`}

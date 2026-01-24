@@ -41,9 +41,10 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
         style={{ 
           overflow: "visible", 
           lineHeight: 0,
-          marginRight: isChrome ? "5px" : undefined,
-          paddingRight: isChrome ? "3px" : undefined,
-          display: "inline-block"
+          marginRight: isChrome ? "8px" : undefined,
+          paddingRight: isChrome ? "4px" : undefined,
+          display: "inline-block",
+          minWidth: isChrome ? `${size + 8}px` : undefined
         }}
       >
         <img
@@ -58,7 +59,9 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
             flexShrink: 0,
             verticalAlign: "middle",
             maxWidth: `${size}px`,
-            maxHeight: `${size * 0.75}px`
+            maxHeight: `${size * 0.75}px`,
+            marginRight: isChrome ? "2px" : undefined,
+            transform: isChrome ? "translateX(2px)" : undefined
           }}
           loading="eager"
           onError={(e) => {

@@ -33,37 +33,41 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     ];
     
     return (
-      <img
-        src={flagUrls[currentUrlIndex]}
-        alt={`${countryCode} flag`}
-        className={`inline-block align-middle ${className}`}
-        style={{ 
-          width: `${size}px`, 
-          height: `${size * 0.75}px`, 
-          objectFit: "cover", 
-          display: "inline-block",
-          flexShrink: 0,
-          verticalAlign: "middle"
-        }}
-        loading="eager"
-        onError={(e) => {
-          const target = e.currentTarget;
-          const nextIndex = currentUrlIndex + 1;
-          if (nextIndex < flagUrls.length) {
-            // Try next URL
-            setCurrentUrlIndex(nextIndex);
-            target.src = flagUrls[nextIndex];
-          } else {
-            // All URLs failed
-            setImageError(true);
-            target.style.display = "none";
-          }
-        }}
-        onLoad={() => {
-          // Image loaded successfully
-          setImageError(false);
-        }}
-      />
+      <span className={`inline-block align-middle ${className}`} style={{ overflow: "visible", lineHeight: 0 }}>
+        <img
+          src={flagUrls[currentUrlIndex]}
+          alt={`${countryCode} flag`}
+          className="inline-block align-middle"
+          style={{ 
+            width: `${size}px`, 
+            height: `${size * 0.75}px`, 
+            objectFit: "contain", 
+            display: "inline-block",
+            flexShrink: 0,
+            verticalAlign: "middle",
+            maxWidth: `${size}px`,
+            maxHeight: `${size * 0.75}px`
+          }}
+          loading="eager"
+          onError={(e) => {
+            const target = e.currentTarget;
+            const nextIndex = currentUrlIndex + 1;
+            if (nextIndex < flagUrls.length) {
+              // Try next URL
+              setCurrentUrlIndex(nextIndex);
+              target.src = flagUrls[nextIndex];
+            } else {
+              // All URLs failed
+              setImageError(true);
+              target.style.display = "none";
+            }
+          }}
+          onLoad={() => {
+            // Image loaded successfully
+            setImageError(false);
+          }}
+        />
+      </span>
     );
   }
   

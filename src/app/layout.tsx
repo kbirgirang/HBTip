@@ -116,6 +116,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Betlihem" />
         <link rel="apple-touch-icon" href="/BET-appicon-dark-0126.svg?v=3" />
+        {/* Twemoji font for flag emoji support in Chrome on Windows */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@twemoji/css@latest/twemoji.min.css" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

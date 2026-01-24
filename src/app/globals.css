@@ -33,13 +33,16 @@ html.dark {
 /* Tailwind v4 dark mode support - class strategy */
 @variant dark (&:where(.dark, .dark *));
 
-/* Flag emoji support for Chrome */
+/* Flag emoji support for Chrome on Windows */
+/* Twemoji CSS is loaded from CDN in layout.tsx */
 .flag-emoji {
-  font-family: system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Twemoji Mozilla", sans-serif;
+  font-family: "Twemoji Mozilla", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", system-ui, sans-serif;
   font-size: 1.2em;
   line-height: 1;
   vertical-align: middle;
   display: inline-block;
   -webkit-font-feature-settings: "liga" off;
   font-feature-settings: "liga" off;
+  font-variant-emoji: emoji;
+  text-rendering: optimizeLegibility;
 }

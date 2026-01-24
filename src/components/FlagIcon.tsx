@@ -1,4 +1,7 @@
-import { getTeamCountryCode } from "@/lib/teamFlags";
+"use client";
+
+import { getTeamCountryCode, getTeamFlag } from "@/lib/teamFlags";
+import { useState } from "react";
 
 interface FlagIconProps {
   teamName: string;
@@ -8,22 +11,37 @@ interface FlagIconProps {
 
 export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIconProps) {
   const countryCode = getTeamCountryCode(teamName);
+  const [imageError, setImageError] = useState(false);
+  const flagEmoji = getTeamFlag(teamName);
   
-  if (!countryCode) {
-    return null;
+  // Always show emoji as primary option for now (works in Firefox)
+  // SVG images can be added later if needed
+  if (flagEmoji) {
+    return (
+      <span 
+        className={`inline-block align-middle flag-emoji ${className}`} 
+        style={{ fontSize: `${size}px`, lineHeight: 1 }}
+      >
+        {flagEmoji}
+      </span>
+    );
   }
   
-  // Use flagcdn.com for flag SVG images (works in all browsers including Chrome on Windows)
-  // Format: https://flagcdn.com/w20/is.svg (w20 = width 20px)
-  const flagUrl = `https://flagcdn.com/w${size}/${countryCode.toLowerCase()}.svg`;
+  // If no emoji and we have country code, try SVG
+  if (countryCode && !imageError) {
+    const flagUrl = `https://flagcdn.com/w${size}/${countryCode.toLowerCase()}.svg`;
+    
+    return (
+      <img
+        src={flagUrl}
+        alt={`${countryCode} flag`}
+        className={`inline-block align-middle ${className}`}
+        style={{ width: `${size}px`, height: `${size * 0.75}px`, objectFit: "cover" }}
+        loading="lazy"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
   
-  return (
-    <img
-      src={flagUrl}
-      alt={`${countryCode} flag`}
-      className={`inline-block align-middle ${className}`}
-      style={{ width: `${size}px`, height: `${size * 0.75}px`, objectFit: "cover" }}
-      loading="lazy"
-    />
-  );
+  return null;
 }

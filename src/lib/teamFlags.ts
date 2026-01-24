@@ -199,7 +199,8 @@ export function getTeamCountryCode(teamName: string): string | null {
   }
   
   // Try removing leading 2-letter country codes (e.g., "HR Croatia" -> "Croatia")
-  const withoutLeadingCode = normalized.replace(/^[A-Z]{2}\s+/, "").trim();
+  // Match both "HR Croatia" (with space) and "HRCroatia" (without space)
+  const withoutLeadingCode = normalized.replace(/^[A-Z]{2}(\s+|)/, "").trim();
   if (withoutLeadingCode !== normalized && withoutLeadingCode.length > 0) {
     const code = teamToCountryCode[withoutLeadingCode];
     if (code) {

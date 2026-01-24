@@ -34,7 +34,7 @@ function LargeBackgroundFlag({ countryCode, flagEmoji }: { countryCode: string |
             marginTop: "-100%",
             marginLeft: "-100%",
             zIndex: 0,
-            opacity: 0.3,
+            opacity: 0.5,
             display: "block"
           }}
           onError={(e) => {
@@ -64,7 +64,7 @@ function LargeBackgroundFlag({ countryCode, flagEmoji }: { countryCode: string |
           style={{ 
             display: "block",
             zIndex: 0,
-            opacity: 0.3
+            opacity: 0.5
           }}
         >
           {flagEmoji}

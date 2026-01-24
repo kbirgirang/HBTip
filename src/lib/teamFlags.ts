@@ -117,53 +117,16 @@ function countryCodeToFlag(code: string): string {
 
 // Get flag emoji for a team name
 export function getTeamFlag(teamName: string): string {
-  if (!teamName) return "";
-  
   const normalized = teamName.trim();
-  
-  // Try exact match first
   const countryCode = teamToCountryCode[normalized];
+  
   if (countryCode) {
     return countryCodeToFlag(countryCode);
   }
   
-  // Try removing trailing 2-letter country codes (e.g., "Iceland IS" -> "Iceland")
-  const withoutTrailingCode = normalized.replace(/\s+[A-Z]{2}$/, "").trim();
-  if (withoutTrailingCode !== normalized && withoutTrailingCode.length > 0) {
-    const code = teamToCountryCode[withoutTrailingCode];
-    if (code) {
-      return countryCodeToFlag(code);
-    }
-  }
-  
-  // Try removing leading 2-letter country codes (e.g., "HR Croatia" -> "Croatia")
-  const withoutLeadingCode = normalized.replace(/^[A-Z]{2}\s+/, "").trim();
-  if (withoutLeadingCode !== normalized && withoutLeadingCode.length > 0) {
-    const code = teamToCountryCode[withoutLeadingCode];
-    if (code) {
-      return countryCodeToFlag(code);
-    }
-  }
-  
-  // Try splitting by space and checking each part
-  const parts = normalized.split(/\s+/);
-  for (const part of parts) {
-    const trimmedPart = part.trim();
-    if (trimmedPart.length > 2) { // Skip 2-letter codes
-      const code = teamToCountryCode[trimmedPart];
-      if (code) {
-        return countryCodeToFlag(code);
-      }
-    }
-  }
-  
-  // Fallback: try to find partial match
-  // Sort by length (longest first) to match more specific names first
-  const sortedEntries = Object.entries(teamToCountryCode).sort((a, b) => b[0].length - a[0].length);
-  for (const [team, code] of sortedEntries) {
-    // Check if the team name contains the country name (case-insensitive)
-    if (normalized.toLowerCase().includes(team.toLowerCase()) || 
-        team.toLowerCase().includes(normalized.toLowerCase())) {
+  // Fallback: try to find partial match (e.g., "Ísland A" -> "IS")
+  for (const [team, code] of Object.entries(teamToCountryCode)) {
+    if (normalized.includes(team) || team.includes(normalized)) {
       return countryCodeToFlag(code);
     }
   }
@@ -175,62 +138,4 @@ export function getTeamFlag(teamName: string): string {
 // Check if team has a flag
 export function hasTeamFlag(teamName: string): boolean {
   return getTeamFlag(teamName) !== "";
-}
-
-// Get country code for a team name (for use with flag SVG images)
-export function getTeamCountryCode(teamName: string): string | null {
-  if (!teamName) return null;
-  
-  const normalized = teamName.trim();
-  
-  // Try exact match first
-  const countryCode = teamToCountryCode[normalized];
-  if (countryCode) {
-    return countryCode;
-  }
-  
-  // Try removing trailing 2-letter country codes (e.g., "Iceland IS" -> "Iceland")
-  const withoutTrailingCode = normalized.replace(/\s+[A-Z]{2}$/, "").trim();
-  if (withoutTrailingCode !== normalized && withoutTrailingCode.length > 0) {
-    const code = teamToCountryCode[withoutTrailingCode];
-    if (code) {
-      return code;
-    }
-  }
-  
-  // Try removing leading 2-letter country codes (e.g., "HR Croatia" -> "Croatia")
-  // Match both "HR Croatia" (with space) and "HRCroatia" (without space)
-  const withoutLeadingCode = normalized.replace(/^[A-Z]{2}(\s+|)/, "").trim();
-  if (withoutLeadingCode !== normalized && withoutLeadingCode.length > 0) {
-    const code = teamToCountryCode[withoutLeadingCode];
-    if (code) {
-      return code;
-    }
-  }
-  
-  // Try splitting by space and checking each part
-  const parts = normalized.split(/\s+/);
-  for (const part of parts) {
-    const trimmedPart = part.trim();
-    if (trimmedPart.length > 2) { // Skip 2-letter codes
-      const code = teamToCountryCode[trimmedPart];
-      if (code) {
-        return code;
-      }
-    }
-  }
-  
-  // Fallback: try to find partial match
-  // Sort by length (longest first) to match more specific names first
-  const sortedEntries = Object.entries(teamToCountryCode).sort((a, b) => b[0].length - a[0].length);
-  for (const [team, code] of sortedEntries) {
-    // Check if the team name contains the country name (case-insensitive)
-    if (normalized.toLowerCase().includes(team.toLowerCase()) || 
-        team.toLowerCase().includes(normalized.toLowerCase())) {
-      return code;
-    }
-  }
-  
-  // No flag found
-  return null;
 }

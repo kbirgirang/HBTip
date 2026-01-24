@@ -2,81 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { getTeamFlag, getTeamCountryCode } from "@/lib/teamFlags";
-import FlagIcon from "@/components/FlagIcon";
-
-// Component for large background flag
-function LargeBackgroundFlag({ countryCode, flagEmoji }: { countryCode: string | null; flagEmoji: string | null }) {
-  const [flagError, setFlagError] = useState(false);
-  const [flagUrlIndex, setFlagUrlIndex] = useState(0);
-  
-  const flagUrls = countryCode ? [
-    `https://flagcdn.com/w1280/${countryCode.toLowerCase()}.png`,
-    `https://flagcdn.com/w1280/${countryCode.toLowerCase()}.svg`,
-    `https://flagicons.lipis.dev/flags/4x3/${countryCode.toLowerCase()}.svg`
-  ] : [];
-  
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden rounded-xl" style={{ zIndex: 0 }}>
-      {countryCode && !flagError && flagUrls.length > 0 ? (
-        <img
-          key={`large-flag-${countryCode}-${flagUrlIndex}`}
-          src={flagUrls[flagUrlIndex]}
-          alt="Flag"
-          className="absolute"
-          style={{ 
-            width: "200%",
-            height: "200%",
-            minWidth: "200%",
-            minHeight: "200%",
-            objectFit: "cover",
-            transform: "scale(2) rotate(-30deg)",
-            top: "50%",
-            left: "50%",
-            marginTop: "-100%",
-            marginLeft: "-100%",
-            zIndex: 0,
-            opacity: 0.5,
-            display: "block",
-            position: "absolute",
-            visibility: "visible"
-          }}
-          onError={(e) => {
-            // Try next fallback CDN
-            const target = e.currentTarget;
-            const nextIndex = flagUrlIndex + 1;
-            if (nextIndex < flagUrls.length) {
-              setFlagUrlIndex(nextIndex);
-              target.src = flagUrls[nextIndex];
-            } else {
-              // All CDNs failed, show emoji
-              setFlagError(true);
-              target.style.display = "none";
-            }
-          }}
-          onLoad={(e) => {
-            // Hide emoji fallback if image loads successfully
-            const target = e.currentTarget;
-            const fallback = target.parentElement?.querySelector("span.flag-emoji") as HTMLElement;
-            if (fallback) fallback.style.display = "none";
-          }}
-        />
-      ) : null}
-      {flagEmoji && (flagError || !countryCode) && (
-        <span 
-          className="text-[30rem] leading-none scale-[2] -rotate-[30deg] flag-emoji absolute"
-          style={{ 
-            display: "block",
-            zIndex: 0,
-            opacity: 0.5
-          }}
-        >
-          {flagEmoji}
-        </span>
-      )}
-    </div>
-  );
-}
+import { getTeamFlag } from "@/lib/teamFlags";
 
 // Athuga hvort Ísland sé í leiknum
 function isIcelandPlaying(homeTeam: string, awayTeam: string): boolean {
@@ -1010,19 +936,18 @@ export default function RoomPage() {
                                   isIceland 
                                     ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
-                                }`} style={{ position: "relative" }}>
+                                }`}>
                       {isIceland && (
-                        <LargeBackgroundFlag 
-                          countryCode={getTeamCountryCode("Ísland")} 
-                          flagEmoji={getTeamFlag("Ísland")} 
-                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
+                          <span className="text-[30rem] leading-none scale-[2] -rotate-[30deg]">{getTeamFlag("Ísland")}</span>
+                        </div>
                       )}
-                      <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400" style={{ zIndex: 1 }}>
+                      <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                       </div>
-                      <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4" style={{ zIndex: 1 }}>
+                      <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                         <div className="text-center md:text-left">
                           <div className="font-semibold">
                                         <button
@@ -1030,7 +955,7 @@ export default function RoomPage() {
                                           className="hover:underline cursor-pointer"
                                         >
                                           <span>{m.home_team}</span>{" "}
-                                          <FlagIcon teamName={m.home_team} className="ml-1" size={20} />
+                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                         </button>
                                         <span className="inline-flex items-center gap-1 mx-2">
                                           vs
@@ -1039,7 +964,7 @@ export default function RoomPage() {
                                           onClick={() => setSelectedTeam(m.away_team)}
                                           className="hover:underline cursor-pointer"
                                         >
-                                          <FlagIcon teamName={m.away_team} className="mr-1" size={20} />
+                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}{" "}
                                           <span>{m.away_team}</span>
                                         </button>
                                         {" "}
@@ -1296,17 +1221,16 @@ export default function RoomPage() {
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
                                   {isIceland && (
-                                    <LargeBackgroundFlag 
-                                      countryCode={getTeamCountryCode("Ísland")} 
-                                      flagEmoji={getTeamFlag("Ísland")} 
-                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
+                                      <span className="text-[30rem] leading-none scale-[2] -rotate-[30deg]">{getTeamFlag("Ísland")}</span>
+                                    </div>
                                   )}
-                                  <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400" style={{ zIndex: 1 }}>
+                                  <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                                     {m.stage ? `${m.stage} · ` : ""}
                                     {new Date(m.starts_at).toLocaleString()}
                                     {m.match_no != null ? ` · #${m.match_no}` : ""}
                                   </div>
-                                  <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4" style={{ zIndex: 1 }}>
+                                  <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                                     <div className="text-center md:text-left">
                                       <div className="font-semibold">
                                         <button
@@ -1314,7 +1238,7 @@ export default function RoomPage() {
                                           className="hover:underline cursor-pointer"
                                         >
                                           <span>{m.home_team}</span>{" "}
-                                          <FlagIcon teamName={m.home_team} className="ml-1" size={20} />
+                                          {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                                         </button>
                                         <span className="inline-flex items-center gap-1 mx-2">
                                           vs
@@ -1323,7 +1247,7 @@ export default function RoomPage() {
                                           onClick={() => setSelectedTeam(m.away_team)}
                                           className="hover:underline cursor-pointer"
                                         >
-                                          <FlagIcon teamName={m.away_team} className="mr-1" size={20} />
+                                          {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}{" "}
                                           <span>{m.away_team}</span>
                                         </button>
                                         {" "}
@@ -2089,7 +2013,7 @@ function TeamMatchesModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <FlagIcon teamName={teamName} size={32} />
+            {getTeamFlag(teamName) && <span className="text-2xl">{getTeamFlag(teamName)}</span>}
             <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
               Leikir {teamName}
             </h2>
@@ -2133,11 +2057,11 @@ function TeamMatchesModal({
                             <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                               {isHome ? (
                                 <>
-                                  {teamName} <FlagIcon teamName={teamName} className="mx-1" size={16} /> vs <FlagIcon teamName={opponent} className="mx-1" size={16} /> {opponent}
+                                  {teamName} {getTeamFlag(teamName)} vs {getTeamFlag(opponent)} {opponent}
                                 </>
                               ) : (
                                 <>
-                                  {opponent} <FlagIcon teamName={opponent} className="mx-1" size={16} /> vs <FlagIcon teamName={teamName} className="mx-1" size={16} /> {teamName}
+                                  {opponent} {getTeamFlag(opponent)} vs {getTeamFlag(teamName)} {teamName}
                                 </>
                               )}
                             </div>
@@ -2181,8 +2105,6 @@ function TeamMatchesModal({
                       const isHome = match.home_team === teamName;
                       const opponent = isHome ? match.away_team : match.home_team;
                       const teamResult = isHome ? (match.result === "1" ? "S" : match.result === "2" ? "T" : "J") : (match.result === "2" ? "S" : match.result === "1" ? "T" : "J");
-                      const teamFlag = getTeamFlag(teamName);
-                      const oppFlag = getTeamFlag(opponent);
                       
                       return (
                         <div
@@ -2193,11 +2115,11 @@ function TeamMatchesModal({
                             <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                               {isHome ? (
                                 <>
-                                  {teamName} {teamFlag && <span className="flag-emoji">{teamFlag}</span>} vs {oppFlag && <span className="flag-emoji">{oppFlag}</span>} {opponent}
+                                  {teamName} {getTeamFlag(teamName)} vs {getTeamFlag(opponent)} {opponent}
                                 </>
                               ) : (
                                 <>
-                                  {opponent} {oppFlag && <span className="flag-emoji">{oppFlag}</span>} vs {teamFlag && <span className="flag-emoji">{teamFlag}</span>} {teamName}
+                                  {opponent} {getTeamFlag(opponent)} vs {getTeamFlag(teamName)} {teamName}
                                 </>
                               )}
                             </div>

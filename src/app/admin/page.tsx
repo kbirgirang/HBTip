@@ -4,7 +4,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getTeamFlag } from "@/lib/teamFlags";
 import ThemeToggle from "@/components/ThemeToggle";
-import FlagIcon from "@/components/FlagIcon";
 
 type BonusType = "number" | "choice" | "player";
 
@@ -1665,16 +1664,12 @@ export default function AdminPage() {
                         onChange={(e) => onSelectBonusMatch(e.target.value)}
                         className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
                       >
-                        {matches.map((m) => {
-                          const homeFlag = getTeamFlag(m.home_team);
-                          const awayFlag = getTeamFlag(m.away_team);
-                          return (
-                            <option key={m.id} value={m.id}>
-                              {(m.match_no != null ? `#${m.match_no} · ` : "") +
-                                `${homeFlag ? homeFlag + " " : ""}${m.home_team} vs ${awayFlag ? awayFlag + " " : ""}${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
-                            </option>
-                          );
-                        })}
+                        {matches.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {(m.match_no != null ? `#${m.match_no} · ` : "") +
+                              `${getTeamFlag(m.home_team) ? getTeamFlag(m.home_team) + " " : ""}${m.home_team} vs ${getTeamFlag(m.away_team) ? getTeamFlag(m.away_team) + " " : ""}${m.away_team} · ${new Date(m.starts_at).toLocaleString()}`}
+                          </option>
+                        ))}
                       </select>
                       {selectedBonusMatch && (
                         <p className="mt-1 text-xs text-slate-500 dark:text-neutral-500">
@@ -1966,12 +1961,12 @@ export default function AdminPage() {
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-neutral-100">
                           <span className="inline-flex items-center gap-1">
-                            <FlagIcon teamName={m.home_team} size={20} />
+                            {getTeamFlag(m.home_team) && <span>{getTeamFlag(m.home_team)}</span>}
                             {m.home_team}
                           </span>{" "}
                           vs{" "}
                           <span className="inline-flex items-center gap-1">
-                            <FlagIcon teamName={m.away_team} size={20} />
+                            {getTeamFlag(m.away_team) && <span>{getTeamFlag(m.away_team)}</span>}
                             {m.away_team}
                           </span>
                           {!m.allow_draw && <span className="ml-2 text-xs text-amber-600 dark:text-amber-200">X óvirkt</span>}
@@ -2032,7 +2027,7 @@ export default function AdminPage() {
                                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                                 }`}
                               >
-                                <FlagIcon teamName={m.home_team} className="mr-1" size={16} />
+                                {getTeamFlag(m.home_team) && <span className="mr-1">{getTeamFlag(m.home_team)}</span>}
                                 1
                               </button>
 
@@ -2044,7 +2039,7 @@ export default function AdminPage() {
                                     : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900/60"
                                 }`}
                               >
-                                <FlagIcon teamName={m.away_team} className="mr-1" size={16} />
+                                {getTeamFlag(m.away_team) && <span className="mr-1">{getTeamFlag(m.away_team)}</span>}
                                 2
                               </button>
 

@@ -32,18 +32,3 @@ html.dark {
 
 /* Tailwind v4 dark mode support - class strategy */
 @variant dark (&:where(.dark, .dark *));
-
-/* Flag emoji support */
-/* Note: Flag emojis work in Firefox but may not display in Chrome on Windows
-   due to Chrome's lack of flag emoji support on Windows. This is a known Chrome limitation. */
-.flag-emoji {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", system-ui, sans-serif;
-  font-size: 1.2em;
-  line-height: 1;
-  vertical-align: middle;
-  display: inline-block;
-  -webkit-font-feature-settings: "liga" off;
-  font-feature-settings: "liga" off;
-  font-variant-emoji: emoji;
-  text-rendering: optimizeLegibility;
-}

@@ -27,6 +27,8 @@ function LargeBackgroundFlag({ countryCode, flagEmoji }: { countryCode: string |
           style={{ 
             width: "200%",
             height: "200%",
+            minWidth: "200%",
+            minHeight: "200%",
             objectFit: "cover",
             transform: "scale(2) rotate(-30deg)",
             top: "50%",
@@ -35,7 +37,9 @@ function LargeBackgroundFlag({ countryCode, flagEmoji }: { countryCode: string |
             marginLeft: "-100%",
             zIndex: 0,
             opacity: 0.5,
-            display: "block"
+            display: "block",
+            position: "absolute",
+            visibility: "visible"
           }}
           onError={(e) => {
             // Try next fallback CDN
@@ -1006,19 +1010,19 @@ export default function RoomPage() {
                                   isIceland 
                                     ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
-                                }`}>
+                                }`} style={{ position: "relative" }}>
                       {isIceland && (
                         <LargeBackgroundFlag 
                           countryCode={getTeamCountryCode("Ísland")} 
                           flagEmoji={getTeamFlag("Ísland")} 
                         />
                       )}
-                      <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
+                      <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400" style={{ zIndex: 1 }}>
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
                         {m.match_no != null ? ` · #${m.match_no}` : ""}
                       </div>
-                      <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                      <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4" style={{ zIndex: 1 }}>
                         <div className="text-center md:text-left">
                           <div className="font-semibold">
                                         <button
@@ -1297,12 +1301,12 @@ export default function RoomPage() {
                                       flagEmoji={getTeamFlag("Ísland")} 
                                     />
                                   )}
-                                  <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
+                                  <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400" style={{ zIndex: 1 }}>
                                     {m.stage ? `${m.stage} · ` : ""}
                                     {new Date(m.starts_at).toLocaleString()}
                                     {m.match_no != null ? ` · #${m.match_no}` : ""}
                                   </div>
-                                  <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                                  <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-4" style={{ zIndex: 1 }}>
                                     <div className="text-center md:text-left">
                                       <div className="font-semibold">
                                         <button

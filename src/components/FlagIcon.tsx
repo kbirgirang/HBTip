@@ -22,10 +22,12 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     /Google Inc/.test(navigator.vendor) &&
     /Windows/.test(navigator.platform);
   
-  // Always use SVG if we have country code (works in all browsers)
+  // Always use SVG/PNG if we have country code (works in all browsers)
   if (countryCode) {
+    // Try multiple CDN options
     const flagUrls = [
       `https://flagcdn.com/w${size}/${countryCode.toLowerCase()}.svg`,
+      `https://flagcdn.com/w${size}/${countryCode.toLowerCase()}.png`,
       `https://flagicons.lipis.dev/flags/4x3/${countryCode.toLowerCase()}.svg`,
       `https://purecatamphetamine.github.io/country-flag-icons/3x2/${countryCode.toUpperCase()}.svg`
     ];
@@ -35,15 +37,31 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
         src={flagUrls[currentUrlIndex]}
         alt={`${countryCode} flag`}
         className={`inline-block align-middle ${className}`}
-        style={{ width: `${size}px`, height: `${size * 0.75}px`, objectFit: "cover", display: "inline-block" }}
-        loading="lazy"
-        onError={() => {
-          if (currentUrlIndex < flagUrls.length - 1) {
-            setCurrentUrlIndex(currentUrlIndex + 1);
+        style={{ 
+          width: `${size}px`, 
+          height: `${size * 0.75}px`, 
+          objectFit: "cover", 
+          display: "inline-block",
+          flexShrink: 0,
+          verticalAlign: "middle"
+        }}
+        loading="eager"
+        onError={(e) => {
+          const target = e.currentTarget;
+          const nextIndex = currentUrlIndex + 1;
+          if (nextIndex < flagUrls.length) {
+            // Try next URL
+            setCurrentUrlIndex(nextIndex);
+            target.src = flagUrls[nextIndex];
           } else {
-            // All SVG URLs failed
+            // All URLs failed
             setImageError(true);
+            target.style.display = "none";
           }
+        }}
+        onLoad={() => {
+          // Image loaded successfully
+          setImageError(false);
         }}
       />
     );

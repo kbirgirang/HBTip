@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { getTeamFlag } from "@/lib/teamFlags";
+import { getTeamFlag, getTeamCountryCode } from "@/lib/teamFlags";
 import FlagIcon from "@/components/FlagIcon";
 
 // Athuga hvort Ísland sé í leiknum
@@ -938,11 +938,23 @@ export default function RoomPage() {
                                     ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
-                      {isIceland && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
-                          <span className="text-[30rem] leading-none scale-[2] -rotate-[30deg]">{getTeamFlag("Ísland")}</span>
-                        </div>
-                      )}
+                      {isIceland && (() => {
+                        const icelandCode = getTeamCountryCode("Ísland");
+                        return (
+                          <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
+                            {icelandCode ? (
+                              <img
+                                src={`https://flagcdn.com/w640/${icelandCode.toLowerCase()}.svg`}
+                                alt="Ísland flag"
+                                className="w-full h-full object-cover scale-[2] -rotate-[30deg]"
+                                style={{ minWidth: "800px", minHeight: "600px" }}
+                              />
+                            ) : (
+                              <span className="text-[30rem] leading-none scale-[2] -rotate-[30deg]">{getTeamFlag("Ísland")}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
                       <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
@@ -1221,11 +1233,23 @@ export default function RoomPage() {
                                     ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
-                                  {isIceland && (
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
-                                      <span className="text-[30rem] leading-none scale-[2] -rotate-[30deg]">{getTeamFlag("Ísland")}</span>
-                                    </div>
-                                  )}
+                                  {isIceland && (() => {
+                                    const icelandCode = getTeamCountryCode("Ísland");
+                                    return (
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl">
+                                        {icelandCode ? (
+                                          <img
+                                            src={`https://flagcdn.com/w640/${icelandCode.toLowerCase()}.svg`}
+                                            alt="Ísland flag"
+                                            className="w-full h-full object-cover scale-[2] -rotate-[30deg]"
+                                            style={{ minWidth: "800px", minHeight: "600px" }}
+                                          />
+                                        ) : (
+                                          <span className="text-[30rem] leading-none scale-[2] -rotate-[30deg]">{getTeamFlag("Ísland")}</span>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
                                   <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                                     {m.stage ? `${m.stage} · ` : ""}
                                     {new Date(m.starts_at).toLocaleString()}

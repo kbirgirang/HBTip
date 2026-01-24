@@ -1,73 +1,184 @@
-// src/app/admin/page.tsx
+/**
+ * Admin Page Component
+ * 
+ * Stjórnborð fyrir stjórnendur til að stjórna leikjum, úrslitum, bónus spurningum,
+ * keppnum og stillingum fyrir veðmálakerfið.
+ * 
+ * Aðalhlutar:
+ * - Innskráning með admin lykilorði
+ * - Stofnun og stjórnun leikja (stakir eða bulk)
+ * - Setja úrslit leikja (1, X, 2)
+ * - Stjórnun bónus spurninga (tala, krossa, leikmaður)
+ * - Stjórnun keppna (tournaments)
+ * - Stillingar fyrir stigagjöf
+ * - Push notifications
+ * - Samstilling spára og bónus svara
+ * 
+ * @module AdminPage
+ */
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { getTeamFlag } from "@/lib/teamFlags";
 import ThemeToggle from "@/components/ThemeToggle";
 
+/**
+ * Tegundir bónus spurninga sem hægt er að búa til
+ * - "number": Töluleg spurning (t.d. "Hversu mörg mörk?")
+ * - "choice": Krossaspurning með valmöguleikum (t.d. "Hver vinnur?")
+ * - "player": Spurning um leikmann (t.d. "Hver skorar flest mörk?")
+ */
 type BonusType = "number" | "choice" | "player";
 
+/**
+ * Gögn um leik úr gagnagrunni
+ * Notað til að sýna leiki og setja úrslit
+ */
 type MatchRow = {
-  id: string;
-  stage: string | null;
-  match_no: number | null;
-  home_team: string;
-  away_team: string;
-  starts_at: string;
-  allow_draw: boolean;
-  result: "1" | "X" | "2" | null;
-  underdog_team: "1" | "2" | null;
-  underdog_multiplier: number | null;
-  home_score: number | null;
-  away_score: number | null;
+  id: string;                    // Einstakt auðkenni leiks
+  stage: string | null;          // Riðill eða stig (t.d. "Riðill A", "Útsláttur")
+  match_no: number | null;       // Númer leiks (valfrjálst)
+  home_team: string;             // Nafn heimaliðs
+  away_team: string;             // Nafn útiliðs
+  starts_at: string;             // ISO dagsetning/tími þegar leikur byrjar
+  allow_draw: boolean;           // Er jafntefli (X) leyft í þessum leik?
+  result: "1" | "X" | "2" | null; // Úrslit leiks: 1=heimalið, X=jafntefli, 2=útilið, null=ekki sett
+  underdog_team: "1" | "2" | null; // Hvort lið er underdog (fyrir aukastig)
+  underdog_multiplier: number | null; // Margfaldari fyrir underdog (t.d. 3.0x stig)
+  home_score: number | null;     // Mörk heimaliðs (valfrjálst)
+  away_score: number | null;     // Mörk útiliðs (valfrjálst)
 };
 
+/**
+ * Svar frá API þegar leikir eru sóttir
+ */
 type AdminMatchesResponse = {
   matches: MatchRow[];
 };
 
+/**
+ * Gögn um bónus spurningu
+ * Hver leikur getur haft eina bónus spurningu
+ */
 type BonusRow = {
-  id: string;
-  match_id: string;
-  title: string;
-  type: BonusType;
-  points: number;
-  closes_at: string;
-  choice_options?: string[] | null;
+  id: string;                    // Einstakt auðkenni bónus spurningar
+  match_id: string;              // Auðkenni leiks sem bónus spurningin tengist
+  title: string;                 // Spurningin sjálf (t.d. "Hver skorar flest mörk?")
+  type: BonusType;               // Tegund bónus spurningar
+  points: number;                // Stig sem gefin eru fyrir rétt svar
+  closes_at: string;             // ISO dagsetning/tími þegar spurningin lokar (venjulega sama og leikur byrjar)
+  choice_options?: string[] | null; // Valmöguleikar fyrir "choice" tegund (t.d. ["Iceland", "Sweden", "Draw"])
 
-  // ✅ correct fields (admin can set)
-  correct_number?: number | null;
-  correct_choice?: string | null;
-  correct_player_id?: string | null;
+  // ✅ Rétt svar sem admin getur sett (valfrjálst)
+  correct_number?: number | null;      // Rétt tala fyrir "number" tegund
+  correct_choice?: string | null;      // Rétt val fyrir "choice" tegund
+  correct_player_id?: string | null;   // Rétt leikmaður fyrir "player" tegund
 };
 
+/**
+ * Leikur með tengdri bónus spurningu (ef einhver er)
+ */
 type MatchWithBonus = MatchRow & { bonus: BonusRow | null };
+
+/**
+ * Svar frá API þegar bónus listi er sóttur
+ */
 type AdminBonusListResponse = { matches: MatchWithBonus[] };
 
+/**
+ * Flipar á stjórnborðinu
+ * - "create": Stofna nýja leiki
+ * - "results": Setja úrslit og stjórna bónus spurningum
+ * - "settings": Stillingar fyrir stigagjöf og samstilling
+ * - "tournaments": Stjórnun keppna
+ */
 type Tab = "create" | "results" | "settings" | "tournaments";
 
+/**
+ * Aðalkomponenti fyrir admin stjórnborðið
+ * 
+ * Sér um allar aðgerðir sem stjórnendur geta framkvæmt:
+ * - Innskráning með admin lykilorði
+ * - Stofnun leikja (stakir eða margir í einu)
+ * - Setja úrslit leikja
+ * - Stjórnun bónus spurninga
+ * - Stjórnun keppna
+ * - Stillingar og samstilling
+ * - Push notifications
+ */
 export default function AdminPage() {
+  // ============================================
+  // FLIPAR OG GRUNNSTILLINGAR
+  // ============================================
+  
+  /**
+   * Núverandi flipi sem er valinn á stjórnborðinu
+   * Sjálfgefið er "results" (úrslit + bónus)
+   */
   const [tab, setTab] = useState<Tab>("results");
 
-  // Authentication state
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null); // null = checking
+  // ============================================
+  // INNSKRÁNING OG ÖRYGGI
+  // ============================================
+  
+  /**
+   * Staða innskráningar
+   * - null: Er að athuga hvort notandi sé innskráður
+   * - true: Notandi er innskráður
+   * - false: Notandi er ekki innskráður eða innskráning mistókst
+   */
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  
+  /**
+   * Lykilorð sem notandi slær inn í innskráningarformi
+   */
   const [loginPassword, setLoginPassword] = useState("");
+  
+  /**
+   * Er innskráning í gangi? (til að sýna loading state)
+   */
   const [loggingIn, setLoggingIn] = useState(false);
 
-  // Global message/error
+  // ============================================
+  // SKILABOÐ OG VILLUR
+  // ============================================
+  
+  /**
+   * Skilaboð sem birtast til notanda (t.d. "Leikur búinn til ✅")
+   * Hreinsast sjálfkrafa eftir 2.5 sekúndur
+   */
   const [msg, setMsg] = useState<string | null>(null);
+  
+  /**
+   * Villuskilaboð sem birtast til notanda (t.d. "Villa í bulk texta.")
+   */
   const [err, setErr] = useState<string | null>(null);
 
+  /**
+   * Birtir skilaboð til notanda í 2.5 sekúndur
+   * Notað til að staðfesta aðgerðir (t.d. "Leikur búinn til ✅")
+   * 
+   * @param message - Skilaboðin sem á að birta
+   */
   function flash(message: string) {
     setMsg(message);
     setTimeout(() => setMsg(null), 2500);
   }
+  
+  /**
+   * Hreinsar allar skilaboð og villur
+   * Notað áður en ný aðgerð er framkvæmd
+   */
   function clearAlerts() {
     setErr(null);
     setMsg(null);
   }
 
-  // Check authentication on mount
+  /**
+   * Athugar hvort notandi sé innskráður við upphaf
+   * Keyrir sjálfkrafa þegar síðan hleðst
+   */
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -81,17 +192,23 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
-  // Login handler
+  /**
+   * Meðhöndlar innskráningu með admin lykilorði
+   * 
+   * @param e - Form submit event
+   */
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     clearAlerts();
 
+    // Athuga hvort lykilorð sé til staðar
     if (!loginPassword.trim()) {
       return setErr("Admin lykilorð vantar.");
     }
 
     setLoggingIn(true);
     try {
+      // Senda innskráningu á API
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,6 +220,7 @@ export default function AdminPage() {
         return setErr(json?.error || "Rangt admin lykilorð.");
       }
 
+      // Innskráning tókst
       setAuthenticated(true);
       setLoginPassword("");
       flash("Innskráning tókst ✅");
@@ -113,20 +231,33 @@ export default function AdminPage() {
     }
   }
 
-  // Logout handler
+  /**
+   * Meðhöndlar útskráningu
+   * Hreinsar session og skilar notanda á innskráningarsíðu
+   */
   async function handleLogout() {
     try {
       await fetch("/api/admin/logout", { method: "POST" });
       setAuthenticated(false);
       flash("Útskráning tókst ✅");
     } catch {
-      // Ignore errors on logout
+      // Hunsa villur við útskráningu
     }
   }
 
-  // -----------------------------
-  // TOURNAMENTS
-  // -----------------------------
+  // ============================================
+  // KEPPNIR (TOURNAMENTS)
+  // ============================================
+  
+  /**
+   * Listi yfir allar keppnir í kerfinu
+   * Hver keppni hefur:
+   * - id: Einstakt auðkenni
+   * - slug: Kóði sem notaður er í URL (t.d. "premier-league-2024-25")
+   * - name: Nafn sem birtist á síðunni (t.d. "Enska deildin í fótbolta 2024/25")
+   * - is_active: Er keppnin virk? (aðeins virkar keppnir eru sýndar notendum)
+   * - created_at: Dagsetning þegar keppnin var búin til
+   */
   const [tournaments, setTournaments] = useState<Array<{
     id: string;
     slug: string;
@@ -134,24 +265,62 @@ export default function AdminPage() {
     is_active: boolean;
     created_at: string;
   }>>([]);
+  
+  /**
+   * Er að sækja keppnir? (loading state)
+   */
   const [loadingTournaments, setLoadingTournaments] = useState(false);
+  
+  /**
+   * Slug fyrir nýja keppni sem er verið að búa til
+   */
   const [tournamentSlug, setTournamentSlug] = useState("");
+  
+  /**
+   * Nafn fyrir nýja keppni sem er verið að búa til
+   */
   const [tournamentName, setTournamentName] = useState("");
+  
+  /**
+   * Er að búa til keppni? (loading state)
+   */
   const [creatingTournament, setCreatingTournament] = useState(false);
 
-  // Selected tournament for match/bonus operations
+  /**
+   * Valin keppni fyrir aðgerðir með leikjum og bónus spurningum
+   * Notað í "create" og "results" flipum
+   */
   const [selectedTournamentForOperations, setSelectedTournamentForOperations] = useState<string>("");
   
-  // Selected tournament for settings
+  /**
+   * Valin keppni fyrir stillingar
+   * Notað í "settings" flipa til að setja stigagjöf fyrir tiltekna keppni
+   */
   const [selectedTournamentForSettings, setSelectedTournamentForSettings] = useState<string>("");
 
-  // Statistics
+  // ============================================
+  // TÖLFRÆÐI
+  // ============================================
+  
+  /**
+   * Tölfræði um kerfið
+   * - totalUsers: Heildarfjöldi notenda (meðlima) í öllum deildum
+   * - totalRooms: Heildarfjöldi deilda (rooms) í kerfinu
+   */
   const [statistics, setStatistics] = useState<{
     totalUsers: number;
     totalRooms: number;
   } | null>(null);
+  
+  /**
+   * Er að sækja tölfræði? (loading state)
+   */
   const [loadingStatistics, setLoadingStatistics] = useState(false);
 
+  /**
+   * Sækir tölfræði um kerfið frá API
+   * Birtir heildarfjölda notenda og deilda
+   */
   async function loadStatistics() {
     setLoadingStatistics(true);
     try {
@@ -172,6 +341,10 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Sækir allar keppnir frá API
+   * Notað til að uppfæra lista yfir keppnir
+   */
   async function loadTournaments() {
     setLoadingTournaments(true);
     try {
@@ -189,7 +362,10 @@ export default function AdminPage() {
     }
   }
 
-  // Load tournaments and statistics when authenticated
+  /**
+   * Sækir keppnir og tölfræði þegar notandi er innskráður
+   * Keyrir sjálfkrafa eftir innskráningu
+   */
   useEffect(() => {
     if (authenticated) {
       loadTournaments();
@@ -197,8 +373,13 @@ export default function AdminPage() {
     }
   }, [authenticated]);
 
-  // Set default tournament when tournaments load
+  /**
+   * Setur sjálfgefið val á keppni þegar keppnir eru sóttar
+   * Velur virka keppni ef hún er til staðar, annars fyrstu keppnina
+   * Gerir þetta fyrir bæði "operations" (leikir/bónus) og "settings"
+   */
   useEffect(() => {
+    // Setja sjálfgefið fyrir leikja/bónus aðgerðir
     if (tournaments.length > 0 && !selectedTournamentForOperations) {
       const activeTournament = tournaments.find(t => t.is_active);
       if (activeTournament) {
@@ -207,7 +388,7 @@ export default function AdminPage() {
         setSelectedTournamentForOperations(tournaments[0].slug);
       }
     }
-    // Set default tournament for settings
+    // Setja sjálfgefið fyrir stillingar
     if (tournaments.length > 0 && !selectedTournamentForSettings) {
       const activeTournament = tournaments.find(t => t.is_active);
       if (activeTournament) {
@@ -218,28 +399,36 @@ export default function AdminPage() {
     }
   }, [tournaments, selectedTournamentForOperations, selectedTournamentForSettings]);
 
+  /**
+   * Býr til nýja keppni
+   * 
+   * @param e - Form submit event
+   */
   async function createTournament(e: React.FormEvent) {
     e.preventDefault();
     clearAlerts();
 
+    // Athuga hvort slug og nafn séu til staðar
     if (!tournamentSlug.trim()) return setErr("Slug vantar");
     if (!tournamentName.trim()) return setErr("Nafn vantar");
 
     setCreatingTournament(true);
     try {
+      // Senda beiðni um að búa til keppni
       const res = await fetch("/api/admin/tournaments/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug: tournamentSlug.trim().toLowerCase(),
+          slug: tournamentSlug.trim().toLowerCase(), // Slug verður alltaf lágstafir
           name: tournamentName.trim(),
-          isActive: true,
+          isActive: true, // Ný keppni er sjálfkrafa virk
         }),
       });
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að búa til keppni");
 
+      // Hreinsa form og uppfæra lista
       setTournamentSlug("");
       setTournamentName("");
       flash("Keppni búin til ✅");
@@ -251,6 +440,13 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Virkjar eða óvirkjar keppni
+   * Aðeins virkar keppnir eru sýndar notendum
+   * 
+   * @param tournamentId - Auðkenni keppninnar
+   * @param currentActive - Núverandi stöðu (virk eða óvirk)
+   */
   async function toggleTournamentActive(tournamentId: string, currentActive: boolean) {
     try {
       const res = await fetch("/api/admin/tournaments/set-active", {
@@ -258,7 +454,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tournamentId,
-          isActive: !currentActive,
+          isActive: !currentActive, // Snúa við stöðu
         }),
       });
 
@@ -269,27 +465,57 @@ export default function AdminPage() {
       }
 
       flash(currentActive ? "Keppni gerð óvirk ✅" : "Keppni gerð virk ✅");
-      loadTournaments();
+      loadTournaments(); // Uppfæra lista
     } catch {
       setErr("Tenging klikkaði.");
     }
   }
 
-  // Edit tournament state
+  // ============================================
+  // BREYTA OG EYÐA KEPPNUM
+  // ============================================
+  
+  /**
+   * Auðkenni keppninnar sem er verið að breyta (null ef engin er í breytingu)
+   */
   const [editingTournamentId, setEditingTournamentId] = useState<string | null>(null);
+  
+  /**
+   * Nýtt nafn keppninnar sem er verið að breyta
+   */
   const [editingTournamentName, setEditingTournamentName] = useState<string>("");
+  
+  /**
+   * Er að uppfæra keppni? (loading state)
+   */
   const [updatingTournament, setUpdatingTournament] = useState(false);
 
+  /**
+   * Byrjar að breyta keppni
+   * Setur keppnina í "edit mode" og fyllir formið með núverandi gögnum
+   * 
+   * @param tournament - Keppnin sem á að breyta
+   */
   function startEditingTournament(tournament: { id: string; name: string }) {
     setEditingTournamentId(tournament.id);
     setEditingTournamentName(tournament.name);
   }
 
+  /**
+   * Hættir við að breyta keppni
+   * Hreinsar edit mode og skilar í venjulega sýn
+   */
   function cancelEditingTournament() {
     setEditingTournamentId(null);
     setEditingTournamentName("");
   }
 
+  /**
+   * Uppfærir nafn keppninnar
+   * Athugaðu: Slug er ekki hægt að breyta (er notaður sem kóði)
+   * 
+   * @param tournamentId - Auðkenni keppninnar sem á að uppfæra
+   */
   async function updateTournament(tournamentId: string) {
     if (!editingTournamentName.trim()) {
       setErr("Nafn vantar");
@@ -323,6 +549,13 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Eyðir keppni
+   * Aðeins hægt ef keppnin er ekki með deildir eða leiki
+   * 
+   * @param tournamentId - Auðkenni keppninnar sem á að eyða
+   * @param tournamentName - Nafn keppninnar (til að sýna í staðfestingu)
+   */
   async function deleteTournament(tournamentId: string, tournamentName: string) {
     const ok = confirm(`Ertu viss um að eyða keppni "${tournamentName}"?\n\nAth: Aðeins hægt ef keppnin er ekki með deildir eða leiki.`);
     if (!ok) return;
@@ -347,8 +580,23 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Auðkenni keppninnar sem er verið að eyða leikjum úr (null ef ekkert er í gangi)
+   */
   const [deletingMatches, setDeletingMatches] = useState<string | null>(null);
 
+  /**
+   * Eyðir ÖLLUM leikjum úr keppni
+   * 
+   * ⚠️ VARÚÐ: Þessi aðgerð eyðir einnig:
+   * - Öllum spám (predictions) sem tengjast leikjunum
+   * - Öllum bónus spurningum sem tengjast leikjunum
+   * 
+   * Þessi aðgerð er ÓSNUÐNINNLEG!
+   * 
+   * @param tournamentId - Auðkenni keppninnar
+   * @param tournamentName - Nafn keppninnar (til að sýna í staðfestingu)
+   */
   async function deleteAllMatches(tournamentId: string, tournamentName: string) {
     const ok = confirm(
       `Ertu viss um að eyða ÖLLUM leikjum úr keppni "${tournamentName}"?\n\n` +
@@ -381,29 +629,99 @@ export default function AdminPage() {
     }
   }
 
-  // -----------------------------
-  // SETTINGS
-  // -----------------------------
+  // ============================================
+  // STILLINGAR
+  // ============================================
+  
+  /**
+   * Stig sem gefin eru fyrir rétt 1X2 spá
+   * (1 = heimalið vinnur, X = jafntefli, 2 = útilið vinnur)
+   */
   const [pointsPer1x2, setPointsPer1x2] = useState<number>(1);
+  
+  /**
+   * Stig sem gefin eru fyrir rétt X spá
+   * null = nota sama stig og 1X2
+   * Tala = nota þetta stig fyrir X (t.d. ef X er meira verðmætt)
+   */
   const [pointsPerX, setPointsPerX] = useState<number | null>(null);
+  
+  /**
+   * Er að vista stillingar? (loading state)
+   */
   const [savingSettings, setSavingSettings] = useState(false);
+  
+  /**
+   * Er að samstilla spár? (loading state)
+   */
   const [syncingPredictions, setSyncingPredictions] = useState(false);
+  
+  /**
+   * Er að samstilla bónus svör? (loading state)
+   */
   const [syncingBonusAnswers, setSyncingBonusAnswers] = useState(false);
 
-  // Push notifications state
+  // ============================================
+  // PUSH NOTIFICATIONS
+  // ============================================
+  
+  /**
+   * Listi yfir notendur sem hafa push notification subscriptions
+   * Hver notandi hefur:
+   * - subscriptionId: Auðkenni subscription
+   * - memberId: Auðkenni meðlims
+   * - displayName: Nafn sem birtist
+   * - username: Notandanafn
+   * - type: Tegund (t.d. "iOS/Safari" eða "Other")
+   */
   const [pushUsers, setPushUsers] = useState<any[]>([]);
+  
+  /**
+   * Er að sækja lista yfir push notendur? (loading state)
+   */
   const [loadingPushUsers, setLoadingPushUsers] = useState(false);
+  
+  /**
+   * Titill push notification sem er verið að senda
+   */
   const [pushTitle, setPushTitle] = useState("");
+  
+  /**
+   * Skilaboð push notification sem er verið að senda
+   */
   const [pushMessage, setPushMessage] = useState("");
+  
+  /**
+   * Auðkenni meðlims sem push notification á að senda til
+   * null ef á að senda til allra
+   */
   const [selectedPushMemberId, setSelectedPushMemberId] = useState<string | null>(null);
+  
+  /**
+   * Er að senda push notification? (loading state)
+   */
   const [sendingPush, setSendingPush] = useState(false);
+  
+  /**
+   * Á push notification að sendast til allra notenda?
+   * true = senda til allra, false = senda til einstaklings
+   */
   const [sendPushToAll, setSendPushToAll] = useState(true);
 
+  /**
+   * Vista stillingar fyrir stigagjöf
+   * Stillingar eru tengdar við tiltekna keppni
+   * 
+   * @param e - Form submit event
+   */
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault();
     clearAlerts();
 
+    // Athuga hvort keppni sé valin
     if (!selectedTournamentForSettings) return setErr("Veldu keppni.");
+    
+    // Athuga hvort stig séu gild
     if (!Number.isFinite(pointsPer1x2) || pointsPer1x2 < 0) return setErr("Stig þurfa að vera 0 eða hærra.");
     if (pointsPerX != null && (!Number.isFinite(pointsPerX) || pointsPerX < 0)) {
       return setErr("X stig þurfa að vera 0 eða hærra eða tómur.");
@@ -416,7 +734,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pointsPerCorrect1x2: pointsPer1x2,
-          pointsPerCorrectX: pointsPerX === null || pointsPerX === 0 ? null : pointsPerX,
+          pointsPerCorrectX: pointsPerX === null || pointsPerX === 0 ? null : pointsPerX, // 0 eða null = nota sama og 1X2
           tournamentSlug: selectedTournamentForSettings,
         }),
       });
@@ -432,6 +750,15 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Samstillir spár fyrir alla meðlimi með sama username
+   * 
+   * Hvernig virkar:
+   * 1. Finnur alla meðlimi með sama username
+   * 2. Bætir við spám sem vantar (ekki yfirskrifar fyrirliggjandi spár)
+   * 
+   * Notað til að samstilla spár milli mismunandi deilda fyrir sama notanda
+   */
   async function syncPredictions() {
     if (!confirm("Ertu viss um að þú viljir samstilla spár fyrir alla meðlimi með sama username? Þetta bætir aðeins við spám sem vantar, ekki yfirskrifa fyrirliggjandi spár.")) {
       return;
@@ -455,6 +782,15 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Samstillir bónus svör fyrir alla meðlimi með sama username
+   * 
+   * Hvernig virkar:
+   * 1. Finnur alla meðlimi með sama username
+   * 2. Bætir við bónus svörum sem vantar (ekki yfirskrifar fyrirliggjandi svör)
+   * 
+   * Notað til að samstilla bónus svör milli mismunandi deilda fyrir sama notanda
+   */
   async function syncBonusAnswers() {
     if (!confirm("Ertu viss um að þú viljir samstilla bónus svör fyrir alla meðlimi með sama username? Þetta bætir aðeins við svörum sem vantar, ekki yfirskrifa fyrirliggjandi svör.")) {
       return;
@@ -478,7 +814,10 @@ export default function AdminPage() {
     }
   }
 
-  // Load push users function
+  /**
+   * Sækir lista yfir notendur sem hafa push notification subscriptions
+   * Notað til að sýna hverjir geta fengið push notifications
+   */
   async function loadPushUsers() {
     setLoadingPushUsers(true);
     try {
@@ -496,7 +835,10 @@ export default function AdminPage() {
     }
   }
 
-  // Load push users when settings tab opens
+  /**
+   * Sækir push notendur þegar "settings" flipi opnast
+   * Gerir þetta sjálfkrafa svo listi sé tilbúinn
+   */
   useEffect(() => {
     if (tab === "settings") {
       void loadPushUsers();
@@ -504,13 +846,25 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Send push notification
+  /**
+   * Sendir push notification til notenda
+   * 
+   * Hægt er að senda:
+   * - Til allra notenda sem hafa subscription
+   * - Til einstaklings (valið með dropdown)
+   * 
+   * Athugaðu:
+   * - iOS/Safari push notifications krefjast PWA mode (á Home Screen) og iOS 16.4+
+   * - Ef iOS push notifications mistakast, birtist viðvörun
+   */
   async function sendPushNotification() {
+    // Athuga hvort titill og skilaboð séu til staðar
     if (!pushTitle.trim() || !pushMessage.trim()) {
       setErr("Titill og skilaboð þurfa að vera til staðar");
       return;
     }
 
+    // Athuga hvort notandi sé valinn (ef ekki "send to all")
     if (!sendPushToAll && !selectedPushMemberId) {
       setErr("Veldu notanda eða veldu 'Send til allra'");
       return;
@@ -536,7 +890,7 @@ export default function AdminPage() {
         return;
       }
 
-      // Búa til detailed message
+      // Búa til detailed message með niðurstöðum
       let message = `Push notification sent! (${json.sent}/${json.total} successful)`;
       if (json.iosSubscriptions !== undefined) {
         message += `\n\niOS/Safari: ${json.iosSubscriptions} subscriptions (${json.iosFailed || 0} failed)`;
@@ -551,18 +905,19 @@ export default function AdminPage() {
 
       flash(message);
       
-      // Ef iOS failed, birtum warning
+      // Ef iOS push notifications mistókust, birtum viðvörun eftir 3 sekúndur
       if (json.iosFailed > 0) {
         setTimeout(() => {
           setErr(`iOS push notifications klikkaði fyrir ${json.iosFailed} notanda. Athugaðu að iOS þarft að vera í PWA mode (á Home Screen) og iOS 16.4+`);
         }, 3000);
       }
 
+      // Hreinsa form og uppfæra lista
       setPushTitle("");
       setPushMessage("");
       setSelectedPushMemberId(null);
       setSendPushToAll(true);
-      await loadPushUsers(); // Reload to update list
+      await loadPushUsers(); // Endurnýja lista
     } catch {
       setErr("Tenging klikkaði.");
     } finally {
@@ -570,24 +925,63 @@ export default function AdminPage() {
     }
   }
 
-  // -----------------------------
-  // CREATE MATCH (single)
-  // -----------------------------
+  // ============================================
+  // STOFNA LEIKI (STAKUR)
+  // ============================================
+  
+  /**
+   * Riðill eða stig leiks (t.d. "Riðill A", "Útsláttur")
+   */
   const [stage, setStage] = useState("Riðill A");
+  
+  /**
+   * Nafn heimaliðs
+   */
   const [homeTeam, setHomeTeam] = useState("");
+  
+  /**
+   * Nafn útiliðs
+   */
   const [awayTeam, setAwayTeam] = useState("");
-  const [startsAtLocal, setStartsAtLocal] = useState(""); // datetime-local
+  
+  /**
+   * Dagsetning og tími þegar leikur byrjar (datetime-local format)
+   * Verður breytt í ISO format áður en sent á API
+   */
+  const [startsAtLocal, setStartsAtLocal] = useState("");
+  
+  /**
+   * Er jafntefli (X) leyft í þessum leik?
+   * true = leyft (venjulegt fyrir riðla)
+   * false = ekki leyft (venjulegt fyrir útslátt)
+   */
   const [allowDraw, setAllowDraw] = useState(true);
+  
+  /**
+   * Númer leiks (valfrjálst)
+   * Hægt að nota til að raða leikjum
+   */
   const [matchNo, setMatchNo] = useState<number | "">("");
+  
+  /**
+   * Er að búa til leik? (loading state)
+   */
   const [creatingMatch, setCreatingMatch] = useState(false);
 
+  /**
+   * Býr til nýjan leik
+   * 
+   * @param e - Form submit event
+   */
   async function createMatch(e: React.FormEvent) {
     e.preventDefault();
     clearAlerts();
 
+    // Athuga hvort allar nauðsynlegar upplýsingar séu til staðar
     if (!homeTeam.trim() || !awayTeam.trim()) return setErr("Vantar lið.");
     if (!startsAtLocal) return setErr("Vantar dagsetningu/tíma.");
 
+    // Breyta datetime-local í ISO format (UTC)
     const iso = new Date(startsAtLocal).toISOString();
 
     setCreatingMatch(true);
@@ -596,19 +990,20 @@ export default function AdminPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          stage: stage.trim() || null,
+          stage: stage.trim() || null, // Ef tómur, setja null
           homeTeam: homeTeam.trim(),
           awayTeam: awayTeam.trim(),
-          startsAt: iso,
+          startsAt: iso, // ISO format (UTC)
           allowDraw,
-          matchNo: matchNo === "" ? null : matchNo,
-          tournamentSlug: selectedTournamentForOperations || undefined,
+          matchNo: matchNo === "" ? null : matchNo, // Ef tómur, setja null
+          tournamentSlug: selectedTournamentForOperations || undefined, // Tengja við valda keppni
         }),
       });
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að búa til leik.");
 
+      // Hreinsa form eftir að leikur er búinn til
       setHomeTeam("");
       setAwayTeam("");
       setStartsAtLocal("");
@@ -622,9 +1017,15 @@ export default function AdminPage() {
     }
   }
 
-  // -----------------------------
-  // BULK INSERT
-  // -----------------------------
+  // ============================================
+  // BULK INSERT (SETJA INN MARGAR LEIKI Í EINU)
+  // ============================================
+  
+  /**
+   * Texti með leikjum sem á að setja inn
+   * Snið: "Riðill | Heimalið | Útilið | YYYY-MM-DD HH:mm | draw/nodraw | matchNo?"
+   * Einn leikur per lína
+   */
   const [bulkText, setBulkText] = useState(
     [
       "Riðill A | Ísland | Svíþjóð | 2026-01-16 15:00 | draw | 1",
@@ -632,9 +1033,27 @@ export default function AdminPage() {
       "Útsláttur | Ísland | Finnland | 2026-01-22 15:23 | nodraw | 3",
     ].join("\n")
   );
+  
+  /**
+   * Er að setja inn leiki? (loading state)
+   */
   const [bulkLoading, setBulkLoading] = useState(false);
 
+  /**
+   * Parsar bulk texta og breytir í lista af leikjum
+   * 
+   * Snið fyrir hverja línu:
+   * "Riðill | Heimalið | Útilið | YYYY-MM-DD HH:mm | draw/nodraw | matchNo?"
+   * 
+   * Dæmi:
+   * "Riðill A | Ísland | Svíþjóð | 2026-01-16 15:00 | draw | 1"
+   * 
+   * @param text - Bulk texti með leikjum (einn per lína)
+   * @returns Listi af leikjum sem hægt er að setja inn
+   * @throws Error ef lína er ólögleg
+   */
   function parseBulkLines(text: string) {
+    // Skipta í línur og hreinsa
     const lines = text
       .split("\n")
       .map((l) => l.trim())
@@ -647,25 +1066,31 @@ export default function AdminPage() {
       startsAtIso: string;
       allowDraw: boolean;
       matchNo: number | null;
-      raw: string;
+      raw: string; // Upprunaleg lína (til að sýna í villuskilaboðum)
     }> = [];
 
     for (const raw of lines) {
+      // Skipta í dálka (aðskilnaður með |)
       const parts = raw.split("|").map((p) => p.trim());
       if (parts.length < 5) throw new Error(`Lína ólögleg (vantar dálka): "${raw}"`);
 
       const [st, home, away, dt, drawFlag, maybeNo] = parts;
 
+      // Athuga hvort lið séu til staðar
       if (!home || !away) throw new Error(`Lína ólögleg (vantar lið): "${raw}"`);
 
+      // Breyta dagsetningu í ISO format
+      // Stuðst við bæði "YYYY-MM-DD HH:mm" og "YYYY-MM-DDTHH:mm"
       const normalized = dt.includes("T") ? dt : dt.replace(" ", "T");
       const d = new Date(normalized);
       if (Number.isNaN(d.getTime())) throw new Error(`Lína ólögleg (tími): "${raw}"`);
 
+      // Parse draw/nodraw flag
       const flag = drawFlag.toLowerCase();
       const allow = flag === "draw" ? true : flag === "nodraw" ? false : null;
       if (allow === null) throw new Error(`Lína ólögleg (draw/nodraw): "${raw}"`);
 
+      // Parse match number (valfrjálst)
       const no = maybeNo ? Number(maybeNo) : null;
       const matchNo = maybeNo ? (Number.isFinite(no) ? no : null) : null;
 
@@ -673,19 +1098,28 @@ export default function AdminPage() {
         stage: st ? st : null,
         homeTeam: home,
         awayTeam: away,
-        startsAtIso: d.toISOString(),
+        startsAtIso: d.toISOString(), // Breyta í ISO format (UTC)
         allowDraw: allow,
         matchNo,
-        raw,
+        raw, // Vista upprunalegu línuna til að sýna í villuskilaboðum
       });
     }
 
     return rows;
   }
 
+  /**
+   * Setur inn marga leiki í einu úr bulk texta
+   * 
+   * Hvernig virkar:
+   * 1. Parsar bulk texta í lista af leikjum
+   * 2. Setur inn hvern leik í röð
+   * 3. Sýnir niðurstöður (hversu margir tókust, hverjir mistókust)
+   */
   async function bulkCreate() {
     clearAlerts();
 
+    // Parse bulk texta
     let rows: ReturnType<typeof parseBulkLines>;
     try {
       rows = parseBulkLines(bulkText);
@@ -701,6 +1135,7 @@ export default function AdminPage() {
       let ok = 0;
       const failed: string[] = [];
 
+      // Setja inn hvern leik í röð
       for (const r of rows) {
         const res = await fetch("/api/admin/match/create", {
           method: "POST",
@@ -718,11 +1153,13 @@ export default function AdminPage() {
 
         if (res.ok) ok += 1;
         else {
+          // Vista villu með upprunalegu línunni
           const j = await res.json().catch(() => ({}));
           failed.push(`${r.raw}  →  ${j?.error || "unknown error"}`);
         }
       }
 
+      // Sýna niðurstöður
       if (failed.length) setErr(`Setti inn ${ok}/${rows.length}. Villur:\n- ` + failed.join("\n- "));
       else flash(`Setti inn ${ok} leiki ✅`);
     } catch {
@@ -732,27 +1169,47 @@ export default function AdminPage() {
     }
   }
 
-  // -----------------------------
-  // RESULTS + DELETE
-  // -----------------------------
+  // ============================================
+  // ÚRSLIT OG EYÐA LEIKJUM
+  // ============================================
+  
+  /**
+   * Listi yfir allar leiki í valinni keppni
+   */
   const [matches, setMatches] = useState<MatchRow[]>([]);
+  
+  /**
+   * Er að sækja leiki? (loading state)
+   */
   const [loadingMatches, setLoadingMatches] = useState(false);
+  
+  /**
+   * Er dropdown með búnum leikjum opið?
+   * Notað til að fela/sýna búna leiki
+   */
   const [showCompletedMatches, setShowCompletedMatches] = useState(false);
 
+  /**
+   * Sækir leiki frá API
+   * 
+   * @param silent - Ef true, sýnir ekki skilaboð (notað fyrir sjálfvirkar uppfærslur)
+   */
   async function loadMatches(silent?: boolean) {
     if (!silent) clearAlerts();
     setLoadingMatches(true);
     try {
+      // Búa til URL með tournament slug ef keppni er valin
       const url = selectedTournamentForOperations 
         ? `/api/admin/matches?tournamentSlug=${encodeURIComponent(selectedTournamentForOperations)}`
         : "/api/admin/matches";
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { cache: "no-store" }); // No cache til að fá ferskustu gögnin
       const json = (await res.json()) as Partial<AdminMatchesResponse> & { error?: string };
 
       if (!res.ok) return setErr(json?.error || "Ekki tókst að sækja leiki.");
 
       const list = json.matches || [];
       setMatches(list);
+      // Setja sjálfgefið val á fyrsta leikinn í bónus formi (ef ekkert er valið)
       setBonusMatchId((prev) => prev || (list[0]?.id ?? ""));
 
       if (!silent) flash("Leikir uppfærðir ✅");
@@ -763,6 +1220,14 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Setur úrslit leiks
+   * 
+   * @param matchId - Auðkenni leiks
+   * @param result - Úrslit: "1" (heimalið), "X" (jafntefli), "2" (útilið), eða null (hreinsa)
+   * @param homeScore - Mörk heimaliðs (valfrjálst)
+   * @param awayScore - Mörk útiliðs (valfrjálst)
+   */
   async function setResult(matchId: string, result: "1" | "X" | "2" | null, homeScore?: number | null, awayScore?: number | null) {
     clearAlerts();
 
@@ -776,6 +1241,7 @@ export default function AdminPage() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að vista úrslit.");
 
+      // Uppfæra leik í state
       setMatches((prev) => prev.map((m) => 
         (m.id === matchId ? { ...m, result, home_score: homeScore ?? null, away_score: awayScore ?? null } : m)
       ));
@@ -785,6 +1251,14 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Setur underdog fyrir leik
+   * Underdog gefur aukastig (margfaldari)
+   * 
+   * @param matchId - Auðkenni leiks
+   * @param underdogTeam - Hvort lið er underdog: "1" (heimalið), "2" (útilið), eða null (hreinsa)
+   * @param underdogMultiplier - Margfaldari fyrir underdog (t.d. 3.0 = 3x stig)
+   */
   async function setUnderdog(matchId: string, underdogTeam: "1" | "2" | null, underdogMultiplier: number | null) {
     clearAlerts();
 
@@ -798,6 +1272,7 @@ export default function AdminPage() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að vista underdog.");
 
+      // Uppfæra leik í state
       setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, underdog_team: underdogTeam, underdog_multiplier: underdogMultiplier } : m)));
       flash(underdogTeam ? `Underdog settur (${underdogMultiplier}x stig) ✅` : "Underdog hreinsaður ✅");
     } catch {
@@ -805,9 +1280,19 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Eyðir leik
+   * 
+   * ⚠️ VARÚÐ: Þetta eyðir einnig:
+   * - Öllum spám (predictions) sem tengjast leiknum
+   * - Bónus spurningu sem tengist leiknum
+   * 
+   * @param matchId - Auðkenni leiks sem á að eyða
+   */
   async function deleteMatch(matchId: string) {
     clearAlerts();
 
+    // Finna leikinn til að sýna í staðfestingu
     const m = matches.find((x) => x.id === matchId);
     const ok = confirm(
       `Eyða leik?\n\n${m ? `${m.home_team} vs ${m.away_team}\n${new Date(m.starts_at).toLocaleString()}` : matchId}`
@@ -824,6 +1309,7 @@ export default function AdminPage() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(json?.error || "Ekki tókst að eyða leik.");
 
+      // Fjarlægja leik úr state
       setMatches((prev) => prev.filter((x) => x.id !== matchId));
       setMatchesWithBonus((prev) => prev.filter((x) => x.id !== matchId));
       flash("Leik eytt ✅");
@@ -832,9 +1318,15 @@ export default function AdminPage() {
     }
   }
 
+  /**
+   * Eyðir bónus spurningu
+   * 
+   * @param bonusId - Auðkenni bónus spurningar sem á að eyða
+   */
   async function deleteBonus(bonusId: string) {
     clearAlerts();
 
+    // Finna bónus spurningu og leikinn til að sýna í staðfestingu
     const matchWithBonus = matchesWithBonus.find((x) => x.bonus?.id === bonusId);
     const bonus = matchWithBonus?.bonus;
     const match = matchWithBonus;
@@ -864,20 +1356,35 @@ export default function AdminPage() {
     }
   }
 
-  // -----------------------------
-  // BONUS LIST
-  // -----------------------------
+  // ============================================
+  // BÓNUS LISTI
+  // ============================================
+  
+  /**
+   * Listi yfir leiki með tengdum bónus spurningum
+   * Hver leikur getur haft eina bónus spurningu (eða enga)
+   */
   const [matchesWithBonus, setMatchesWithBonus] = useState<MatchWithBonus[]>([]);
+  
+  /**
+   * Er að sækja bónus lista? (loading state)
+   */
   const [loadingBonusList, setLoadingBonusList] = useState(false);
 
+  /**
+   * Sækir bónus lista frá API
+   * 
+   * @param silent - Ef true, sýnir ekki skilaboð (notað fyrir sjálfvirkar uppfærslur)
+   */
   async function loadBonusList(silent?: boolean) {
     if (!silent) clearAlerts();
     setLoadingBonusList(true);
     try {
+      // Búa til URL með tournament slug ef keppni er valin
       const url = selectedTournamentForOperations 
         ? `/api/admin/bonus/list?tournamentSlug=${encodeURIComponent(selectedTournamentForOperations)}`
         : "/api/admin/bonus/list";
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { cache: "no-store" }); // No cache til að fá ferskustu gögnin
       const json = (await res.json()) as Partial<AdminBonusListResponse> & { error?: string };
 
       if (!res.ok) return setErr(json?.error || "Ekki tókst að sækja bónus lista.");
@@ -891,31 +1398,46 @@ export default function AdminPage() {
     }
   }
 
-  // ✅ FIX: editing mode so dropdown doesn't overwrite title, and Edit always fills everything
+  // ============================================
+  // BÓNUS FORM (STOFNUN OG BREYTA)
+  // ============================================
+  
+  /**
+   * Auðkenni bónus spurningar sem er verið að breyta (null ef ný er verið að búa til)
+   * Notað til að greina á milli "búa til" og "breyta" mode
+   */
   const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
 
+  /**
+   * Fyllir bónus formið með gögnum úr fyrirliggjandi bónus spurningu
+   * Notað þegar admin vill breyta bónus spurningu
+   * 
+   * @param row - Leikur með bónus spurningu sem á að breyta
+   */
   function prefillBonusFromRow(row: MatchWithBonus) {
     const q = row?.bonus;
     if (!q) return;
 
     clearAlerts();
 
+    // Setja í "edit mode"
     setEditingBonusId(q.id);
     setBonusMatchId(row.id);
 
+    // Fylla inn grunngögn
     setBonusTitle(q.title || `Bónus: ${row.home_team} vs ${row.away_team}`);
     setBonusType(q.type);
     setBonusPoints(q.points ?? 5);
 
-    // choice options
+    // Fylla inn valmöguleika fyrir "choice" tegund
     if (q.type === "choice") setBonusOptionsText((q.choice_options || []).join("\n"));
     else setBonusOptionsText("");
 
-    // correct fields
+    // Fylla inn rétt svar
     setCorrectNumber(q.correct_number != null ? String(q.correct_number) : "");
     setCorrectChoice(q.correct_choice || "");
     
-    // Player options from JSON
+    // Fylla inn leikmenn fyrir "player" tegund
     if (q.type === "player") {
       const playerOpts = (q as any).player_options;
       if (playerOpts && Array.isArray(playerOpts)) {
@@ -925,7 +1447,7 @@ export default function AdminPage() {
         setPlayerOptionsJson("");
         setParsedPlayerOptions([]);
       }
-      // Set correct player name (from correct_choice for player type)
+      // Setja réttan leikmann (getur verið í correct_choice eða correct_player_name)
       if (q.correct_choice) {
         setCorrectPlayerName(q.correct_choice);
       } else if ((q as any).correct_player_name) {
@@ -971,38 +1493,105 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, selectedTournamentForOperations]);
 
-  // -----------------------------
-  // BONUS FORM
-  // -----------------------------
+  // ============================================
+  // BÓNUS FORM STATE
+  // ============================================
+  
+  /**
+   * Er bónus formið sýnt? (collapsible section)
+   */
   const [showBonusForm, setShowBonusForm] = useState<boolean>(false);
+  
+  /**
+   * Auðkenni leiks sem bónus spurningin tengist
+   */
   const [bonusMatchId, setBonusMatchId] = useState<string>("");
+  
+  /**
+   * Titill/spurning bónus spurningarinnar
+   */
   const [bonusTitle, setBonusTitle] = useState<string>("");
+  
+  /**
+   * Tegund bónus spurningar: "number", "choice", eða "player"
+   */
   const [bonusType, setBonusType] = useState<BonusType>("number");
+  
+  /**
+   * Stig sem gefin eru fyrir rétt svar
+   */
   const [bonusPoints, setBonusPoints] = useState<number>(5);
+  
+  /**
+   * Valmöguleikar fyrir "choice" tegund (einn per lína í textarea)
+   */
   const [bonusOptionsText, setBonusOptionsText] = useState<string>("");
+  
+  /**
+   * JSON með leikmönnum fyrir "player" tegund
+   * Snið: [{"name": "Atli", "team": "Iceland"}, ...]
+   */
   const [playerOptionsJson, setPlayerOptionsJson] = useState<string>("");
 
-  // ✅ correct answer inputs
+  // ============================================
+  // RÉTT SVAR (VALFRJÁLT - ADMIN GETUR SETT)
+  // ============================================
+  
+  /**
+   * Rétt tala fyrir "number" tegund
+   */
   const [correctNumber, setCorrectNumber] = useState<string>("");
+  
+  /**
+   * Rétt val fyrir "choice" tegund
+   */
   const [correctChoice, setCorrectChoice] = useState<string>("");
+  
+  /**
+   * Réttur leikmaður fyrir "player" tegund
+   */
   const [correctPlayerName, setCorrectPlayerName] = useState<string>("");
 
-  // Players state (from JSON)
+  // ============================================
+  // PARSED DATA (ÚTREIKNUÐ ÚR INPUT)
+  // ============================================
+  
+  /**
+   * Leikmenn sem eru greindir úr playerOptionsJson
+   * Notað til að sýna lista og velja réttan leikmann
+   */
   const [parsedPlayerOptions, setParsedPlayerOptions] = useState<Array<{ name: string; team?: string }>>([]);
 
+  /**
+   * Er að vista bónus spurningu? (loading state)
+   */
   const [savingBonus, setSavingBonus] = useState(false);
 
-  // Parse player options JSON
+  /**
+   * Villa í JSON parsing (ef einhver)
+   */
   const [jsonError, setJsonError] = useState<string | null>(null);
+  
+  /**
+   * Parsar playerOptionsJson og greinir leikmenn
+   * Keyrir sjálfkrafa þegar bonusType eða playerOptionsJson breytist
+   * 
+   * Hvernig virkar:
+   * 1. Athugar hvort bonusType sé "player" og JSON sé til staðar
+   * 2. Parsar JSON og athugar hvort það sé array
+   * 3. Sía út ógilda leikmenn (verða að hafa "name" field)
+   * 4. Vista greinda leikmenn í parsedPlayerOptions
+   */
   useEffect(() => {
     if (bonusType === "player" && playerOptionsJson.trim()) {
       try {
         const parsed = JSON.parse(playerOptionsJson);
         if (Array.isArray(parsed)) {
+          // Sía út aðeins gilda leikmenn (verða að hafa "name" field)
           const valid = parsed.filter((p: any) => p && typeof p.name === "string");
           setParsedPlayerOptions(valid);
           setJsonError(null);
-          // Warn if some entries were invalid
+          // Viðvörun ef sumir leikmenn voru ógildir
           if (valid.length !== parsed.length) {
             setJsonError(`${parsed.length - valid.length} ógild(ur) leikmaður(ir) í listanum`);
           }
@@ -1015,6 +1604,7 @@ export default function AdminPage() {
         setJsonError(e instanceof Error ? e.message : "Ógildur JSON");
       }
     } else {
+      // Hreinsa ef ekki "player" tegund
       setParsedPlayerOptions([]);
       setJsonError(null);
     }
@@ -1075,50 +1665,84 @@ export default function AdminPage() {
     setPlayerOptionsJson("");
   }
 
+  /**
+   * Vista eða uppfæra bónus spurningu
+   * 
+   * Hvernig virkar:
+   * 1. Athugar allar nauðsynlegar upplýsingar
+   * 2. Valíðar gögn eftir tegund bónus spurningar
+   * 3. Sendir á API (upsert - bætir við ef ný, uppfærir ef til)
+   * 
+   * @param e - Form submit event
+   */
   async function saveBonus(e: React.FormEvent) {
     e.preventDefault();
     clearAlerts();
 
+    // ============================================
+    // GRUNNATHUGUN
+    // ============================================
+    
+    // Athuga hvort leikur sé valinn
     if (!bonusMatchId) return setErr("Veldu leik.");
+    
+    // Athuga hvort spurning sé til staðar
     if (!bonusTitle.trim()) return setErr("Bónus spurning vantar.");
+    
+    // Athuga hvort stig séu gild
     if (!Number.isFinite(bonusPoints) || bonusPoints <= 0) return setErr("Points þarf að vera > 0.");
 
+    // ============================================
+    // VALÍÐA GÖGN EFTIR TEGUND
+    // ============================================
+    
     let options: string[] = [];
     if (bonusType === "choice") {
       options = parsedChoiceOptions;
 
-      // Debug: sýna hvað er í raun í textarea
+      // Debug: sýna hvað er í raun í textarea (til að hjálpa við debugging)
       const rawLines = bonusOptionsText.split("\n");
       const trimmedLines = rawLines.map((x) => x.trim()).filter(Boolean);
 
+      // Athuga hvort fjöldi valmöguleika sé gildur (2-6)
       if (options.length < 2 || options.length > 6) {
         return setErr(
           `Valmöguleikar þurfa að vera 2–6 línur (1 per línu).\n\nNúverandi: ${options.length} línur\nRá línur í textarea: ${rawLines.length}\nLínur eftir trim: ${trimmedLines.length}\n\nLínur sem eru taldar: ${options.length > 0 ? options.map((o, i) => `${i + 1}. "${o}"`).join(", ") : "engar"}`
         );
       }
+      
+      // Athuga hvort valmöguleikar séu tvíteknir (case-insensitive)
       const norm = options.map((x) => x.toLowerCase());
       if (new Set(norm).size !== options.length) {
         const duplicates = options.filter((opt, idx) => norm.indexOf(opt.toLowerCase()) !== idx);
         return setErr(`Valmöguleikar mega ekki vera tvíteknir. Tvíteknir: ${duplicates.join(", ")}`);
       }
 
+      // Athuga hvort rétt val sé í valmöguleikum
       if (correctChoice && !options.includes(correctChoice)) return setErr("Rétt val er ekki í valmöguleikum.");
     }
 
+    // Athuga hvort rétt tala sé gild (fyrir "number" tegund)
     if (bonusType === "number" && correctNumber.trim()) {
       const n = Number(correctNumber);
       if (!Number.isFinite(n)) return setErr("Rétt tala er ógild.");
     }
 
+    // Athuga player options og réttan leikmann (fyrir "player" tegund)
     if (bonusType === "player") {
+      // Athuga hvort JSON sé til staðar
       if (!playerOptionsJson.trim()) {
         return setErr("Skrifaðu inn leikmenn í JSON field.");
       }
+      
+      // Parse og valíða JSON
       try {
         const parsed = JSON.parse(playerOptionsJson);
         if (!Array.isArray(parsed) || parsed.length === 0) {
           return setErr("player_options verður að vera array með að minnsta kosti einum leikmanni.");
         }
+        
+        // Athuga hvort allir leikmenn hafi "name" field
         for (const p of parsed) {
           if (!p || typeof p.name !== "string" || !p.name.trim()) {
             return setErr("Hver leikmaður verður að hafa 'name' field.");
@@ -1127,10 +1751,13 @@ export default function AdminPage() {
       } catch (e) {
         return setErr(`Ógildur JSON: ${e instanceof Error ? e.message : String(e)}`);
       }
+      
+      // Athuga hvort réttur leikmaður sé valinn
       if (!correctPlayerName.trim()) {
         return setErr("Skrifaðu inn nafn rétts leikmanns.");
       }
-      // Verify correct player name is in options
+      
+      // Athuga hvort réttur leikmaður sé í player_options listanum
       const parsed = JSON.parse(playerOptionsJson);
       const playerNames = parsed.map((p: any) => p.name.trim().toLowerCase());
       if (!playerNames.includes(correctPlayerName.trim().toLowerCase())) {
@@ -1138,16 +1765,21 @@ export default function AdminPage() {
       }
     }
 
+    // ============================================
+    // SEND Á API
+    // ============================================
+    
     setSavingBonus(true);
     try {
+      // Búa til payload með gögnum
       const payload: any = {
         matchId: bonusMatchId,
         title: bonusTitle.trim(),
         type: bonusType,
         points: bonusPoints,
-        options: bonusType === "choice" ? options : [],
+        options: bonusType === "choice" ? options : [], // Aðeins fyrir "choice" tegund
 
-        // correct fields (optional)
+        // Rétt svar (valfrjálst - admin getur sett eftir að leikur er búinn)
         correctNumber: bonusType === "number" && correctNumber.trim() ? Number(correctNumber) : null,
         correctChoice: bonusType === "choice" && correctChoice ? correctChoice : null,
         correctPlayerName: bonusType === "player" && correctPlayerName ? correctPlayerName.trim() : null,
@@ -1163,16 +1795,19 @@ export default function AdminPage() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         const errorMsg = json?.error || "Ekki tókst að vista bónus.";
-        // Check if it's the enum error and provide helpful message
+        
+        // Sérstök viðvörun ef "player" tegund er ekki í enum í gagnagrunninum
         if (errorMsg.includes("invalid input value for enum bonus_type") || errorMsg.includes("player")) {
           return setErr("Villa: 'player' er ekki í bonus_type enum í gagnagrunninum.\n\nKeyrðu MIGRATION_add_player_bonus_type.sql í Supabase SQL Editor.\n\n" + errorMsg);
         }
         return setErr(errorMsg);
       }
 
+      // Tókst! Sýna skilaboð og hreinsa edit mode
       flash(editingBonusId ? "Bónus uppfærð ✅" : "Bónus vistuð ✅");
       setEditingBonusId(null);
 
+      // Uppfæra listana (silent = ekki sýna skilaboð)
       await loadMatches(true);
       await loadBonusList(true);
     } catch {
@@ -2696,6 +3331,18 @@ export default function AdminPage() {
   );
 }
 
+// ============================================
+// HELPER COMPONENTS
+// ============================================
+
+/**
+ * Flipi (tab) takki fyrir stjórnborðið
+ * Notaður til að skipta á milli "create", "results", "settings", og "tournaments"
+ * 
+ * @param active - Er flipinn virkur? (sýnir öðruvísi stíl)
+ * @param onClick - Fall sem keyrir þegar flipi er smellt á
+ * @param children - Innihald flipans (texti)
+ */
 function TabButton({
   active,
   onClick,
@@ -2720,6 +3367,16 @@ function TabButton({
   );
 }
 
+/**
+ * Kort (card) komponenti sem notaður er um allt stjórnborðið
+ * Sér um að sýna efni í fallegu korti með titli og undirtitli
+ * 
+ * @param id - Auðkenni fyrir kortið (valfrjálst, notað fyrir scroll-to)
+ * @param title - Titill kortsins
+ * @param subtitle - Undirtitill/leiðbeiningar (valfrjálst)
+ * @param right - Efni sem á að sýna hægra megin við titil (valfrjálst)
+ * @param children - Aðalefni kortsins
+ */
 function Card({
   id,
   title,
@@ -2748,6 +3405,14 @@ function Card({
   );
 }
 
+/**
+ * Takki fyrir úrslit leiks (1, X, 2)
+ * Notaður til að setja úrslit leiks
+ * 
+ * @param selected - Er þetta úrslit valið? (sýnir öðruvísi stíl)
+ * @param onClick - Fall sem keyrir þegar takki er smellt á
+ * @param children - Texti á takka (venjulega "1", "X", eða "2")
+ */
 function ResultButton({
   selected,
   onClick,

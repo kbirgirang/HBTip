@@ -5,6 +5,75 @@ import { useParams } from "next/navigation";
 import { getTeamFlag, getTeamCountryCode } from "@/lib/teamFlags";
 import FlagIcon from "@/components/FlagIcon";
 
+// Component for large background flag
+function LargeBackgroundFlag({ countryCode, flagEmoji }: { countryCode: string | null; flagEmoji: string | null }) {
+  const [flagError, setFlagError] = useState(false);
+  const [flagUrlIndex, setFlagUrlIndex] = useState(0);
+  
+  const flagUrls = countryCode ? [
+    `https://flagcdn.com/w1280/${countryCode.toLowerCase()}.png`,
+    `https://flagcdn.com/w1280/${countryCode.toLowerCase()}.svg`,
+    `https://flagicons.lipis.dev/flags/4x3/${countryCode.toLowerCase()}.svg`
+  ] : [];
+  
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden rounded-xl" style={{ zIndex: 0 }}>
+      {countryCode && !flagError && flagUrls.length > 0 ? (
+        <img
+          key={`large-flag-${countryCode}-${flagUrlIndex}`}
+          src={flagUrls[flagUrlIndex]}
+          alt="Flag"
+          className="absolute"
+          style={{ 
+            width: "200%",
+            height: "200%",
+            objectFit: "cover",
+            transform: "scale(2) rotate(-30deg)",
+            top: "50%",
+            left: "50%",
+            marginTop: "-100%",
+            marginLeft: "-100%",
+            zIndex: 0,
+            opacity: 0.3,
+            display: "block"
+          }}
+          onError={(e) => {
+            // Try next fallback CDN
+            const target = e.currentTarget;
+            const nextIndex = flagUrlIndex + 1;
+            if (nextIndex < flagUrls.length) {
+              setFlagUrlIndex(nextIndex);
+              target.src = flagUrls[nextIndex];
+            } else {
+              // All CDNs failed, show emoji
+              setFlagError(true);
+              target.style.display = "none";
+            }
+          }}
+          onLoad={(e) => {
+            // Hide emoji fallback if image loads successfully
+            const target = e.currentTarget;
+            const fallback = target.parentElement?.querySelector("span.flag-emoji") as HTMLElement;
+            if (fallback) fallback.style.display = "none";
+          }}
+        />
+      ) : null}
+      {flagEmoji && (flagError || !countryCode) && (
+        <span 
+          className="text-[30rem] leading-none scale-[2] -rotate-[30deg] flag-emoji absolute"
+          style={{ 
+            display: "block",
+            zIndex: 0,
+            opacity: 0.3
+          }}
+        >
+          {flagEmoji}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // Athuga hvort Ísland sé í leiknum
 function isIcelandPlaying(homeTeam: string, awayTeam: string): boolean {
   const icelandNames = ["Ísland", "Iceland"];
@@ -938,64 +1007,12 @@ export default function RoomPage() {
                                     ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
-                      {isIceland && (() => {
-                        const icelandCode = getTeamCountryCode("Ísland");
-                        const flagEmoji = getTeamFlag("Ísland");
-                        return (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl" style={{ zIndex: 0 }}>
-                            {icelandCode ? (
-                              <img
-                                key={`iceland-flag-${icelandCode}`}
-                                src={`https://flagcdn.com/w1280/${icelandCode.toLowerCase()}.svg`}
-                                alt="Ísland flag"
-                                className="absolute"
-                                style={{ 
-                                  width: "200%",
-                                  height: "200%",
-                                  objectFit: "cover",
-                                  transform: "scale(2) rotate(-30deg)",
-                                  top: "50%",
-                                  left: "50%",
-                                  marginTop: "-100%",
-                                  marginLeft: "-100%",
-                                  zIndex: 0,
-                                  opacity: 0.25,
-                                  display: "block"
-                                }}
-                                onError={(e) => {
-                                  // Try fallback CDN
-                                  const target = e.currentTarget;
-                                  if (target.src.includes("flagcdn.com")) {
-                                    target.src = `https://flagicons.lipis.dev/flags/4x3/${icelandCode.toLowerCase()}.svg`;
-                                  } else {
-                                    // All CDNs failed, show emoji
-                                    target.style.display = "none";
-                                    const fallback = target.parentElement?.querySelector("span.flag-emoji") as HTMLElement;
-                                    if (fallback) fallback.style.display = "block";
-                                  }
-                                }}
-                                onLoad={(e) => {
-                                  // Hide emoji fallback if SVG loads successfully
-                                  const target = e.currentTarget;
-                                  const fallback = target.parentElement?.querySelector("span.flag-emoji") as HTMLElement;
-                                  if (fallback) fallback.style.display = "none";
-                                }}
-                              />
-                            ) : null}
-                            {flagEmoji && (
-                              <span 
-                                className="text-[30rem] leading-none scale-[2] -rotate-[30deg] flag-emoji absolute"
-                                style={{ 
-                                  display: icelandCode ? "none" : "block",
-                                  zIndex: 0
-                                }}
-                              >
-                                {flagEmoji}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
+                      {isIceland && (
+                        <LargeBackgroundFlag 
+                          countryCode={getTeamCountryCode("Ísland")} 
+                          flagEmoji={getTeamFlag("Ísland")} 
+                        />
+                      )}
                       <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                         {m.stage ? `${m.stage} · ` : ""}
                         {new Date(m.starts_at).toLocaleString()}
@@ -1274,49 +1291,12 @@ export default function RoomPage() {
                                     ? "border-blue-400 bg-gradient-to-br from-blue-50/80 to-red-50/80 dark:border-blue-500 dark:from-blue-950/40 dark:to-red-950/40" 
                                     : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950/40"
                                 }`}>
-                                  {isIceland && (() => {
-                                    const icelandCode = getTeamCountryCode("Ísland");
-                                    const flagEmoji = getTeamFlag("Ísland");
-                                    return (
-                                      <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none overflow-hidden rounded-xl z-0">
-                                        {icelandCode ? (
-                                          <img
-                                            src={`https://flagcdn.com/w1280/${icelandCode.toLowerCase()}.svg`}
-                                            alt="Ísland flag"
-                                            className="absolute"
-                                            style={{ 
-                                              width: "200%",
-                                              height: "200%",
-                                              objectFit: "cover",
-                                              transform: "scale(2) rotate(-30deg)",
-                                              top: "50%",
-                                              left: "50%",
-                                              marginTop: "-100%",
-                                              marginLeft: "-100%",
-                                              zIndex: 0
-                                            }}
-                                            onError={(e) => {
-                                              // Fallback to emoji if SVG fails
-                                              e.currentTarget.style.display = "none";
-                                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                              if (fallback) fallback.style.display = "block";
-                                            }}
-                                          />
-                                        ) : null}
-                                        {flagEmoji && (
-                                          <span 
-                                            className="text-[30rem] leading-none scale-[2] -rotate-[30deg] flag-emoji absolute"
-                                            style={{ 
-                                              display: icelandCode ? "none" : "block",
-                                              zIndex: 0
-                                            }}
-                                          >
-                                            {flagEmoji}
-                                          </span>
-                                        )}
-                                      </div>
-                                    );
-                                  })()}
+                                  {isIceland && (
+                                    <LargeBackgroundFlag 
+                                      countryCode={getTeamCountryCode("Ísland")} 
+                                      flagEmoji={getTeamFlag("Ísland")} 
+                                    />
+                                  )}
                                   <div className="relative mb-3 text-xs text-slate-500 dark:text-neutral-400">
                                     {m.stage ? `${m.stage} · ` : ""}
                                     {new Date(m.starts_at).toLocaleString()}

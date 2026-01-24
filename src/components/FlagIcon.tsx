@@ -22,10 +22,8 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     /Google Inc/.test(navigator.vendor) &&
     /Windows/.test(navigator.platform);
   
-  const useEmoji = !isChromeOnWindows;
-  
-  // Always prefer SVG if we have country code (works in all browsers)
-  if (countryCode && !imageError) {
+  // Always use SVG if we have country code (works in all browsers)
+  if (countryCode) {
     const flagUrls = [
       `https://flagcdn.com/w${size}/${countryCode.toLowerCase()}.svg`,
       `https://flagicons.lipis.dev/flags/4x3/${countryCode.toLowerCase()}.svg`,
@@ -43,7 +41,7 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
           if (currentUrlIndex < flagUrls.length - 1) {
             setCurrentUrlIndex(currentUrlIndex + 1);
           } else {
-            // All SVG URLs failed, try emoji only if not in Chrome on Windows
+            // All SVG URLs failed
             setImageError(true);
           }
         }}
@@ -51,8 +49,8 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     );
   }
   
-  // Fallback to emoji only if SVG failed and we're not in Chrome on Windows
-  if (flagEmoji && useEmoji && imageError) {
+  // Fallback to emoji only if no country code found AND not in Chrome on Windows
+  if (flagEmoji && !isChromeOnWindows && !countryCode) {
     return (
       <span 
         className={`inline-block align-middle flag-emoji ${className}`} 
@@ -63,17 +61,6 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     );
   }
   
-  // If no country code, try emoji
-  if (flagEmoji && useEmoji && !countryCode) {
-    return (
-      <span 
-        className={`inline-block align-middle flag-emoji ${className}`} 
-        style={{ fontSize: `${size}px`, lineHeight: 1 }}
-      >
-        {flagEmoji}
-      </span>
-    );
-  }
-  
+  // In Chrome on Windows, don't show emoji fallback (it shows as "IS" text)
   return null;
 }

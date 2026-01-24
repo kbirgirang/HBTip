@@ -22,8 +22,11 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     /Google Inc/.test(navigator.vendor) &&
     /Windows/.test(navigator.platform);
   
-  // Always use SVG/PNG if we have country code (works in all browsers)
-  if (countryCode) {
+  // Add extra margin-right in Chrome to prevent cropping
+  const isChrome = typeof window !== 'undefined' && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+  
+  // Always try SVG/PNG first if we have country code
+  if (countryCode && !imageError) {
     // Try multiple CDN options
     const flagUrls = [
       `https://flagcdn.com/w${size}/${countryCode.toLowerCase()}.svg`,
@@ -31,9 +34,6 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
       `https://flagicons.lipis.dev/flags/4x3/${countryCode.toLowerCase()}.svg`,
       `https://purecatamphetamine.github.io/country-flag-icons/3x2/${countryCode.toUpperCase()}.svg`
     ];
-    
-    // Add extra margin-right in Chrome to prevent cropping
-    const isChrome = typeof window !== 'undefined' && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
     
     return (
       <span 
@@ -72,9 +72,8 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
               setCurrentUrlIndex(nextIndex);
               target.src = flagUrls[nextIndex];
             } else {
-              // All URLs failed
+              // All URLs failed - fallback to emoji
               setImageError(true);
-              target.style.display = "none";
             }
           }}
           onLoad={() => {
@@ -86,8 +85,11 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     );
   }
   
-  // Fallback to emoji only if no country code found AND not in Chrome on Windows
-  if (flagEmoji && !isChromeOnWindows && !countryCode) {
+  // Fallback to emoji if:
+  // 1. No country code found, OR
+  // 2. All image URLs failed, OR  
+  // 3. Not Chrome on Windows (where emojis show as "IS" text)
+  if (flagEmoji && (!countryCode || imageError || !isChromeOnWindows)) {
     return (
       <span 
         className={`inline-block align-middle flag-emoji ${className}`} 
@@ -98,6 +100,6 @@ export default function FlagIcon({ teamName, className = "", size = 20 }: FlagIc
     );
   }
   
-  // In Chrome on Windows, don't show emoji fallback (it shows as "IS" text)
+  // In Chrome on Windows with no emoji fallback, show nothing
   return null;
 }

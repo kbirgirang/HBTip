@@ -379,16 +379,36 @@ export default function RoomPage() {
     setData(json as ViewData);
   }
 
+  /** Létt sókn á stigatöflum – uppfærir bara leaderboard, ekki alla view. */
+  async function loadLeaderboard() {
+    const res = await fetch("/api/room/leaderboard", { cache: "no-store" });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return;
+    const lb = json as { allRooms?: Array<{ room: { code: string }; leaderboard: RoomData["leaderboard"] }> };
+    if (!Array.isArray(lb.allRooms)) return;
+    setData((prev) => {
+      if (!prev) return prev;
+      const allRooms = prev.allRooms || [prev];
+      const updated = allRooms.map((r) => {
+        const from = lb.allRooms!.find((x) => x.room.code === r.room.code);
+        return from ? { ...r, leaderboard: from.leaderboard } : r;
+      });
+      return { ...prev, allRooms: updated };
+    });
+  }
+
   useEffect(() => {
     void load();
-    
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(() => {
-      void load();
-    }, 10000);
-    
+    const interval = setInterval(() => void load(), 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (tab !== "leaderboard") return;
+    void loadLeaderboard();
+    const interval = setInterval(() => void loadLeaderboard(), 5000);
+    return () => clearInterval(interval);
+  }, [tab]);
 
   async function handleLogout() {
     if (!confirm("Ertu viss um að þú viljir skrá þig út?")) return;
@@ -1873,6 +1893,18 @@ export default function RoomPage() {
 
           {data && tab === "leaderboard" && (
             <>
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <p className="text-sm text-slate-500 dark:text-neutral-400">
+                  Stigatöflur uppfærast sjálfkrafa á 5 sekúndum fresti.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void load()}
+                  className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                >
+                  Uppfæra
+                </button>
+              </div>
               {(() => {
                 const allRooms = data.allRooms || [data];
                 // Raða deildum eftir stafrófsröð (eftir nafni)

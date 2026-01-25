@@ -58,16 +58,14 @@ export async function GET() {
 
   if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
 
-  // ✅ Sækja allar spár fyrir ALLA meðlimi í öllum deildunum (ekki bara notandans)
-  // Fyrst sækjum við alla meðlimi í öllum deildunum
+  // ✅ Sækja alla meðlimi í öllum deildunum (eitt kall – nota fyrir spár og leaderboard)
   const { data: allRoomMembers, error: allMemErr } = await supabaseServer
     .from("room_members")
-    .select("id, room_id")
+    .select("id, room_id, display_name, username")
     .in("room_id", roomIds);
 
   if (allMemErr) return NextResponse.json({ error: allMemErr.message }, { status: 500 });
 
-  const allMemberIds = (allMyMembers ?? []).map((m: any) => m.id);
   const allRoomMemberIds = (allRoomMembers ?? []).map((m: any) => m.id);
   
   // Sækja spár fyrir ALLA meðlimi í deildunum
@@ -84,9 +82,9 @@ export async function GET() {
     .select("tournament_id, points_per_correct_1x2, points_per_correct_x")
     .in("tournament_id", tournamentIds);
 
-  // ✅ Sækja bonus svör fyrir ALLA meðlimi í öllum deildunum (ekki bara notandans)
+  // ✅ Sækja öll bonus svör fyrir ALLA meðlimi í öllum deildunum (eitt kall – nota fyrir bæði „mín" og leaderboard)
   const allQIds = (allBonusQs ?? []).map((q: any) => q.id);
-  let allMyBonusAnswers: any[] = [];
+  let allBonusAnswersByRoom: Map<string, any[]> = new Map();
   if (allQIds.length > 0 && allRoomMemberIds.length > 0) {
     const { data: ans, error: aErr } = await supabaseServer
       .from("bonus_answers")
@@ -94,7 +92,12 @@ export async function GET() {
       .in("member_id", allRoomMemberIds)
       .in("question_id", allQIds);
     if (aErr) return NextResponse.json({ error: aErr.message }, { status: 500 });
-    allMyBonusAnswers = ans ?? [];
+    const list = ans ?? [];
+    for (const a of list) {
+      const rid = (a as any).room_id;
+      if (!allBonusAnswersByRoom.has(rid)) allBonusAnswersByRoom.set(rid, []);
+      allBonusAnswersByRoom.get(rid)!.push(a);
+    }
   }
 
   // ✅ Sækja player nöfn
@@ -102,8 +105,10 @@ export async function GET() {
   for (const q of allBonusQs ?? []) {
     if (q.correct_player_id) playerIds.add(q.correct_player_id);
   }
-  for (const a of allMyBonusAnswers) {
-    if (a.answer_player_id) playerIds.add(a.answer_player_id);
+  for (const arr of allBonusAnswersByRoom.values()) {
+    for (const a of arr) {
+      if ((a as any).answer_player_id) playerIds.add((a as any).answer_player_id);
+    }
   }
 
   let playersMap = new Map<string, { id: string; full_name: string }>();
@@ -137,8 +142,9 @@ export async function GET() {
       const roomBonusQs = (allBonusQs ?? []).filter((q: any) => q.tournament_id === room.tournament_id);
       const roomQIds = roomBonusQs.map((q: any) => q.id);
 
-      // Bonus svör fyrir þessa deild
-      const roomBonusAnswers = allMyBonusAnswers.filter((a: any) => a.room_id === room.id && a.member_id === roomMember.id);
+      // Bonus svör fyrir þessa deild (mín + öll fyrir leaderboard)
+      const roomAllBonusAnswers = allBonusAnswersByRoom.get(room.id) ?? [];
+      const roomBonusAnswers = roomAllBonusAnswers.filter((a: any) => a.member_id === roomMember.id);
       const myAnswerByQid = new Map<string, any>();
       for (const a of roomBonusAnswers) myAnswerByQid.set(a.question_id, a);
 
@@ -181,18 +187,13 @@ export async function GET() {
         if (pr.member_id === roomMember.id) myPicks.set(pr.match_id, pr.pick as Pick);
       }
 
-      // Members fyrir þessa deild
-      const { data: roomMembers, error: memErr } = await supabaseServer
-        .from("room_members")
-        .select("id, display_name, username")
-        .eq("room_id", room.id);
-
-      if (memErr) return null;
+      // Members fyrir þessa deild (úr sameinuðu sækingu)
+      const roomMembers = (allRoomMembers ?? []).filter((m: any) => m.room_id === room.id);
 
       // ✅ Búa til map af spám allra meðlima fyrir hvern leik
       const picksByMatchId = new Map<string, Array<{ memberId: string; displayName: string; pick: Pick }>>();
       for (const pr of roomPreds) {
-        const member = (roomMembers ?? []).find((m: any) => m.id === pr.member_id);
+        const member = roomMembers.find((m: any) => m.id === pr.member_id);
         if (!member) continue;
         
         if (!picksByMatchId.has(pr.match_id)) {
@@ -205,43 +206,11 @@ export async function GET() {
         });
       }
 
-      // Leaderboard fyrir þessa deild
+      // Leaderboard fyrir þessa deild (notum roomAllBonusAnswers – engin aukaleg fyrirspurn)
       const matchById = new Map(roomMatches.map((x: any) => [x.id, x]));
+      const allRoomBonusAnswers = roomAllBonusAnswers;
 
-      // All bonus answers fyrir þessa deild (fyrir leaderboard)
-      let allRoomBonusAnswers: any[] = [];
-      if (roomQIds.length > 0) {
-        const { data: allAns, error: allAErr } = await supabaseServer
-          .from("bonus_answers")
-          .select("member_id, question_id, answer_number, answer_choice, answer_player_id")
-          .eq("room_id", room.id)
-          .in("question_id", roomQIds);
-
-        if (!allAErr && allAns) {
-          allRoomBonusAnswers = allAns;
-
-          // Add player IDs to playersMap
-          for (const a of allRoomBonusAnswers) {
-            if (a.answer_player_id) playerIds.add(a.answer_player_id);
-          }
-
-          // Fetch additional players if needed
-          const additionalPlayerIds = Array.from(playerIds).filter((id) => !playersMap.has(id));
-          if (additionalPlayerIds.length > 0) {
-            const { data: additionalPlayers, error: addPErr } = await supabaseServer
-              .from("players")
-              .select("id, full_name")
-              .in("id", additionalPlayerIds);
-            if (!addPErr && additionalPlayers) {
-              for (const p of additionalPlayers) {
-                playersMap.set(p.id, p);
-              }
-            }
-          }
-        }
-      }
-
-      const leaderboard = (roomMembers ?? []).map((m: any) => {
+      const leaderboard = roomMembers.map((m: any) => {
         let correct1x2 = 0;
         let points1x2 = 0;
         let points = 0;

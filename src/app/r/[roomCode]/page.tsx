@@ -843,7 +843,7 @@ export default function RoomPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowIntermediateStandings(false)}>
             <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 p-6 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-neutral-100">Milliriðilastöða</h3>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-neutral-100">Milliriðilar</h3>
                 <button
                   onClick={() => setShowIntermediateStandings(false)}
                   className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-800"

@@ -799,7 +799,7 @@ export default function RoomPage() {
             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
             title="Milliriðilastöða"
           >
-            📊 Milliriðil
+            Milliriðil
           </button>
         </div>
 
@@ -866,11 +866,11 @@ export default function RoomPage() {
                             <thead>
                               <tr className="border-b border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
                                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-neutral-300">Lið</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">GP</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Win</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Draw</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Lose</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">DP</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Leikir</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Sigur</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Jafntefla</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Tap</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">+/-</th>
                                 <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Stig</th>
                               </tr>
                             </thead>
@@ -904,11 +904,11 @@ export default function RoomPage() {
                             <thead>
                               <tr className="border-b border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
                                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-neutral-300">Lið</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">GP</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Win</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Draw</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Lose</th>
-                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">DP</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Leikir</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Sigur</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Jafntefla</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Tap</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">+/-</th>
                                 <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Stig</th>
                               </tr>
                             </thead>

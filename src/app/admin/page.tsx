@@ -1951,6 +1951,99 @@ export default function AdminPage() {
   }
 
   /**
+   * Færir lið úr einum milliriðli yfir í annan
+   */
+  function moveTeamBetweenRounds(fromRound: 1 | 2, toRound: 1 | 2, index: number) {
+    if (fromRound === toRound) return;
+
+    const team = fromRound === 1 
+      ? intermediateStandings.round1[index]
+      : intermediateStandings.round2[index];
+
+    if (!team) return;
+
+    // Fjarlægja úr upprunalega milliriðlinum
+    if (fromRound === 1) {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round1: prev.round1.filter((_, i) => i !== index),
+      }));
+    } else {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round2: prev.round2.filter((_, i) => i !== index),
+      }));
+    }
+
+    // Bæta við í nýja milliriðlinum
+    if (toRound === 1) {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round1: [...prev.round1, team],
+      }));
+    } else {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round2: [...prev.round2, team],
+      }));
+    }
+  }
+
+  /**
+   * Uppfærir eitt lið í milliriðilastöðu
+   */
+  async function updateSingleTeam(roundNumber: 1 | 2, index: number) {
+    if (!selectedTournamentForOperations) {
+      return setErr("Veldu keppni.");
+    }
+
+    const tournament = tournaments.find((t) => t.slug === selectedTournamentForOperations);
+    if (!tournament) {
+      return setErr("Keppni fannst ekki.");
+    }
+
+    const team = roundNumber === 1 
+      ? intermediateStandings.round1[index]
+      : intermediateStandings.round2[index];
+
+    if (!team || !team.team.trim()) {
+      return setErr("Lið verður að hafa nafn.");
+    }
+
+    if (team.gp < 0 || team.win < 0 || team.draw < 0 || team.lose < 0 || team.points < 0) {
+      return setErr("Öll tölugildi verða að vera jákvæð eða 0.");
+    }
+
+    setSavingIntermediateStandings(true);
+    clearAlerts();
+
+    try {
+      const res = await fetch("/api/admin/intermediate-round-standings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tournamentId: tournament.id,
+          roundNumber,
+          standings: [team], // Bara eitt lið
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return setErr(json?.error || "Ekki tókst að uppfæra lið.");
+      }
+
+      flash(`${team.team} uppfært í Milliriðil ${roundNumber} ✅`);
+      // Endurlesa stöðu til að fá nýjustu gögnin
+      await loadIntermediateStandings();
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSavingIntermediateStandings(false);
+    }
+  }
+
+  /**
    * Vista milliriðilastöðu
    */
   async function saveIntermediateStandings(roundNumber: 1 | 2) {
@@ -3295,12 +3388,30 @@ export default function AdminPage() {
                                   />
                                 </td>
                                 <td className="px-3 py-2">
-                                  <button
-                                    onClick={() => removeTeamFromStandings(1, index)}
-                                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-400"
-                                  >
-                                    Eyða
-                                  </button>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => updateSingleTeam(1, index)}
+                                      disabled={savingIntermediateStandings}
+                                      className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-xs text-blue-600 hover:bg-blue-500/20 disabled:opacity-60 dark:text-blue-400"
+                                      title="Uppfæra stig"
+                                    >
+                                      ↻
+                                    </button>
+                                    <button
+                                      onClick={() => moveTeamBetweenRounds(1, 2, index)}
+                                      className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
+                                      title="Færa í Milliriðil 2"
+                                    >
+                                      →
+                                    </button>
+                                    <button
+                                      onClick={() => removeTeamFromStandings(1, index)}
+                                      className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-400"
+                                      title="Eyða"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -3417,12 +3528,30 @@ export default function AdminPage() {
                                   />
                                 </td>
                                 <td className="px-3 py-2">
-                                  <button
-                                    onClick={() => removeTeamFromStandings(2, index)}
-                                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-400"
-                                  >
-                                    Eyða
-                                  </button>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => updateSingleTeam(2, index)}
+                                      disabled={savingIntermediateStandings}
+                                      className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-xs text-blue-600 hover:bg-blue-500/20 disabled:opacity-60 dark:text-blue-400"
+                                      title="Uppfæra stig"
+                                    >
+                                      ↻
+                                    </button>
+                                    <button
+                                      onClick={() => moveTeamBetweenRounds(2, 1, index)}
+                                      className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
+                                      title="Færa í Milliriðil 1"
+                                    >
+                                      ←
+                                    </button>
+                                    <button
+                                      onClick={() => removeTeamFromStandings(2, index)}
+                                      className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-400"
+                                      title="Eyða"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}

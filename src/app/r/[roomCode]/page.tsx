@@ -797,7 +797,7 @@ export default function RoomPage() {
           <button
             onClick={openIntermediateStandings}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-            title="Milliriðilastöða"
+            title="Milliriðilar"
           >
             Milliriðil
           </button>
@@ -875,20 +875,58 @@ export default function RoomPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {intermediateStandings[1].map((team, index) => (
-                                <tr key={index} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50">
-                                  <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-neutral-100">
-                                    {getTeamFlag(team.team) && <span className="mr-2">{getTeamFlag(team.team)}</span>}
-                                    {team.team}
-                                  </td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.gp}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.win}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.draw}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.lose}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.dp > 0 ? `+${team.dp}` : team.dp}</td>
-                                  <td className="px-4 py-3 text-center text-sm font-semibold text-slate-900 dark:text-neutral-100">{team.points}</td>
-                                </tr>
-                              ))}
+                              {intermediateStandings[1].map((team, index) => {
+                                const isIceland = team.team === "Ísland" || team.team === "Iceland";
+                                return (
+                                  <tr 
+                                    key={index} 
+                                    className={`border-b ${
+                                      isIceland 
+                                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" 
+                                        : "border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50"
+                                    }`}
+                                  >
+                                    <td className={`px-4 py-3 text-sm font-medium ${
+                                      isIceland 
+                                        ? "text-blue-900 dark:text-blue-100 font-bold" 
+                                        : "text-slate-900 dark:text-neutral-100"
+                                    }`}>
+                                      {getTeamFlag(team.team) && <span className="mr-2">{getTeamFlag(team.team)}</span>}
+                                      {team.team}
+                                    </td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.gp}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.win}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.draw}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.lose}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.dp > 0 ? `+${team.dp}` : team.dp}</td>
+                                    <td className={`px-4 py-3 text-center text-sm font-semibold ${
+                                      isIceland 
+                                        ? "text-blue-900 dark:text-blue-100" 
+                                        : "text-slate-900 dark:text-neutral-100"
+                                    }`}>{team.points}</td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
@@ -913,20 +951,58 @@ export default function RoomPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {intermediateStandings[2].map((team, index) => (
-                                <tr key={index} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50">
-                                  <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-neutral-100">
-                                    {getTeamFlag(team.team) && <span className="mr-2">{getTeamFlag(team.team)}</span>}
-                                    {team.team}
-                                  </td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.gp}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.win}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.draw}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.lose}</td>
-                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.dp > 0 ? `+${team.dp}` : team.dp}</td>
-                                  <td className="px-4 py-3 text-center text-sm font-semibold text-slate-900 dark:text-neutral-100">{team.points}</td>
-                                </tr>
-                              ))}
+                              {intermediateStandings[2].map((team, index) => {
+                                const isIceland = team.team === "Ísland" || team.team === "Iceland";
+                                return (
+                                  <tr 
+                                    key={index} 
+                                    className={`border-b ${
+                                      isIceland 
+                                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" 
+                                        : "border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50"
+                                    }`}
+                                  >
+                                    <td className={`px-4 py-3 text-sm font-medium ${
+                                      isIceland 
+                                        ? "text-blue-900 dark:text-blue-100 font-bold" 
+                                        : "text-slate-900 dark:text-neutral-100"
+                                    }`}>
+                                      {getTeamFlag(team.team) && <span className="mr-2">{getTeamFlag(team.team)}</span>}
+                                      {team.team}
+                                    </td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.gp}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.win}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.draw}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.lose}</td>
+                                    <td className={`px-4 py-3 text-center text-sm ${
+                                      isIceland 
+                                        ? "text-blue-800 dark:text-blue-200" 
+                                        : "text-slate-700 dark:text-neutral-300"
+                                    }`}>{team.dp > 0 ? `+${team.dp}` : team.dp}</td>
+                                    <td className={`px-4 py-3 text-center text-sm font-semibold ${
+                                      isIceland 
+                                        ? "text-blue-900 dark:text-blue-100" 
+                                        : "text-slate-900 dark:text-neutral-100"
+                                    }`}>{team.points}</td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>

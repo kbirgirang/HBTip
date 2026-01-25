@@ -861,7 +861,7 @@ export default function RoomPage() {
                     {/* Milliriðil 1 */}
                     {intermediateStandings[1] && intermediateStandings[1].length > 0 && (
                       <div>
-                        <h4 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Milliriðil 1</h4>
+                        <h4 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Milliriðill 1</h4>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>
@@ -937,7 +937,7 @@ export default function RoomPage() {
                     {/* Milliriðil 2 */}
                     {intermediateStandings[2] && intermediateStandings[2].length > 0 && (
                       <div>
-                        <h4 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Milliriðil 2</h4>
+                        <h4 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Milliriðill 2</h4>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>

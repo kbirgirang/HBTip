@@ -1817,6 +1817,201 @@ export default function AdminPage() {
     }
   }
 
+  // ============================================
+  // MILLIRIÐILASTÖÐA (INTERMEDIATE ROUND STANDINGS)
+  // ============================================
+
+  /**
+   * Stöður fyrir milliriðil 1 og 2
+   * Hver milliriðill hefur lista af liðum með:
+   * - team: Nafn liðs
+   * - gp: Games Played
+   * - win: Fjöldi sigra
+   * - draw: Fjöldi jafntefla
+   * - lose: Fjöldi tapa
+   * - dp: Goal Difference (Differens)
+   * - points: Stig
+   */
+  const [intermediateStandings, setIntermediateStandings] = useState<{
+    round1: Array<{ team: string; gp: number; win: number; draw: number; lose: number; dp: number; points: number }>;
+    round2: Array<{ team: string; gp: number; win: number; draw: number; lose: number; dp: number; points: number }>;
+  }>({ round1: [], round2: [] });
+
+  /**
+   * Er að sækja milliriðilastöðu? (loading state)
+   */
+  const [loadingIntermediateStandings, setLoadingIntermediateStandings] = useState(false);
+
+  /**
+   * Er að vista milliriðilastöðu? (loading state)
+   */
+  const [savingIntermediateStandings, setSavingIntermediateStandings] = useState(false);
+
+  /**
+   * Er milliriðilastöðu formið sýnt? (collapsible section)
+   */
+  const [showIntermediateStandingsForm, setShowIntermediateStandingsForm] = useState<boolean>(false);
+
+  /**
+   * Sækir milliriðilastöðu fyrir valda keppni
+   */
+  async function loadIntermediateStandings() {
+    if (!selectedTournamentForOperations) return;
+
+    const tournament = tournaments.find((t) => t.slug === selectedTournamentForOperations);
+    if (!tournament) return;
+
+    setLoadingIntermediateStandings(true);
+    clearAlerts();
+
+    try {
+      // Sækja báða milliriðla
+      const [res1, res2] = await Promise.all([
+        fetch(`/api/admin/intermediate-round-standings?tournamentId=${tournament.id}&roundNumber=1`),
+        fetch(`/api/admin/intermediate-round-standings?tournamentId=${tournament.id}&roundNumber=2`),
+      ]);
+
+      const json1 = await res1.json().catch(() => ({}));
+      const json2 = await res2.json().catch(() => ({}));
+
+      if (!res1.ok || !res2.ok) {
+        return setErr("Ekki tókst að sækja milliriðilastöðu.");
+      }
+
+      setIntermediateStandings({
+        round1: json1.standings || [],
+        round2: json2.standings || [],
+      });
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoadingIntermediateStandings(false);
+    }
+  }
+
+  /**
+   * Bætir við nýju liði í milliriðilastöðu
+   */
+  function addTeamToStandings(roundNumber: 1 | 2) {
+    const newTeam = { team: "", gp: 0, win: 0, draw: 0, lose: 0, dp: 0, points: 0 };
+    if (roundNumber === 1) {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round1: [...prev.round1, newTeam],
+      }));
+    } else {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round2: [...prev.round2, newTeam],
+      }));
+    }
+  }
+
+  /**
+   * Uppfærir lið í milliriðilastöðu
+   */
+  function updateTeamInStandings(
+    roundNumber: 1 | 2,
+    index: number,
+    field: "team" | "gp" | "win" | "draw" | "lose" | "dp" | "points",
+    value: string | number
+  ) {
+    if (roundNumber === 1) {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round1: prev.round1.map((team, i) =>
+          i === index ? { ...team, [field]: field === "team" ? value : Number(value) } : team
+        ),
+      }));
+    } else {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round2: prev.round2.map((team, i) =>
+          i === index ? { ...team, [field]: field === "team" ? value : Number(value) } : team
+        ),
+      }));
+    }
+  }
+
+  /**
+   * Fjarlægir lið úr milliriðilastöðu
+   */
+  function removeTeamFromStandings(roundNumber: 1 | 2, index: number) {
+    if (roundNumber === 1) {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round1: prev.round1.filter((_, i) => i !== index),
+      }));
+    } else {
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round2: prev.round2.filter((_, i) => i !== index),
+      }));
+    }
+  }
+
+  /**
+   * Vista milliriðilastöðu
+   */
+  async function saveIntermediateStandings(roundNumber: 1 | 2) {
+    if (!selectedTournamentForOperations) {
+      return setErr("Veldu keppni.");
+    }
+
+    const tournament = tournaments.find((t) => t.slug === selectedTournamentForOperations);
+    if (!tournament) {
+      return setErr("Keppni fannst ekki.");
+    }
+
+    const standings = roundNumber === 1 ? intermediateStandings.round1 : intermediateStandings.round2;
+
+    // Validate
+    for (const team of standings) {
+      if (!team.team.trim()) {
+        return setErr("Allar lið verða að hafa nafn.");
+      }
+      if (team.gp < 0 || team.win < 0 || team.draw < 0 || team.lose < 0 || team.points < 0) {
+        return setErr("Öll tölugildi verða að vera jákvæð eða 0.");
+      }
+    }
+
+    setSavingIntermediateStandings(true);
+    clearAlerts();
+
+    try {
+      const res = await fetch("/api/admin/intermediate-round-standings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tournamentId: tournament.id,
+          roundNumber,
+          standings,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return setErr(json?.error || "Ekki tókst að vista milliriðilastöðu.");
+      }
+
+      flash(`Milliriðil ${roundNumber} stöða vistuð ✅`);
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setSavingIntermediateStandings(false);
+    }
+  }
+
+  /**
+   * Sækir milliriðilastöðu þegar keppni er valin
+   */
+  useEffect(() => {
+    if (selectedTournamentForOperations && tournaments.length > 0) {
+      loadIntermediateStandings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTournamentForOperations, tournaments.length]);
+
   // Inline theme toggle state
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
@@ -2961,6 +3156,291 @@ export default function AdminPage() {
                 );
               })()}
             </Card>
+            </div>
+
+            {/* Milliriðilastöða */}
+            <div className="mt-6 rounded-3xl border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/30">
+              <button
+                onClick={() => {
+                  setShowIntermediateStandingsForm(!showIntermediateStandingsForm);
+                  if (!showIntermediateStandingsForm) {
+                    loadIntermediateStandings();
+                  }
+                }}
+                className="flex w-full items-center justify-between p-6 text-left"
+              >
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-neutral-100">
+                    Milliriðilastöða
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-neutral-400">
+                    Setja inn stöðu fyrir Milliriðil 1 og Milliriðil 2
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      loadIntermediateStandings();
+                    }}
+                    disabled={loadingIntermediateStandings}
+                    className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 hover:bg-neutral-900/60 disabled:opacity-60"
+                  >
+                    {loadingIntermediateStandings ? "Hleð..." : "Endurlesa"}
+                  </button>
+                  <span className={`transform transition-transform ${showIntermediateStandingsForm ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </div>
+              </button>
+
+              {showIntermediateStandingsForm && (
+                <div className="border-t border-slate-200 dark:border-neutral-800 p-6 space-y-6">
+                  {/* Milliriðil 1 */}
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-neutral-100">
+                        Milliriðil 1
+                      </h3>
+                      <button
+                        onClick={() => addTeamToStandings(1)}
+                        className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-500/20 dark:text-blue-400"
+                      >
+                        + Bæta við liði
+                      </button>
+                    </div>
+
+                    {intermediateStandings.round1.length === 0 ? (
+                      <p className="text-sm text-slate-600 dark:text-neutral-400">
+                        Engin lið í Milliriðil 1. Smelltu á "Bæta við liði" til að byrja.
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-neutral-700">
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300">Lið</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">GP</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Win</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Draw</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Lose</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">DP</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Stig</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {intermediateStandings.round1.map((team, index) => (
+                              <tr key={index} className="border-b border-slate-100 dark:border-neutral-800">
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="text"
+                                    value={team.team}
+                                    onChange={(e) => updateTeamInStandings(1, index, "team", e.target.value)}
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                    placeholder="Nafn liðs"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.gp}
+                                    onChange={(e) => updateTeamInStandings(1, index, "gp", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.win}
+                                    onChange={(e) => updateTeamInStandings(1, index, "win", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.draw}
+                                    onChange={(e) => updateTeamInStandings(1, index, "draw", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.lose}
+                                    onChange={(e) => updateTeamInStandings(1, index, "lose", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    value={team.dp}
+                                    onChange={(e) => updateTeamInStandings(1, index, "dp", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.points}
+                                    onChange={(e) => updateTeamInStandings(1, index, "points", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <button
+                                    onClick={() => removeTeamFromStandings(1, index)}
+                                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-400"
+                                  >
+                                    Eyða
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => saveIntermediateStandings(1)}
+                      disabled={savingIntermediateStandings}
+                      className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                    >
+                      {savingIntermediateStandings ? "Vista..." : "Vista Milliriðil 1"}
+                    </button>
+                  </div>
+
+                  {/* Milliriðil 2 */}
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-neutral-100">
+                        Milliriðil 2
+                      </h3>
+                      <button
+                        onClick={() => addTeamToStandings(2)}
+                        className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-500/20 dark:text-blue-400"
+                      >
+                        + Bæta við liði
+                      </button>
+                    </div>
+
+                    {intermediateStandings.round2.length === 0 ? (
+                      <p className="text-sm text-slate-600 dark:text-neutral-400">
+                        Engin lið í Milliriðil 2. Smelltu á "Bæta við liði" til að byrja.
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-neutral-700">
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300">Lið</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">GP</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Win</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Draw</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Lose</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">DP</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300">Stig</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-700 dark:text-neutral-300"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {intermediateStandings.round2.map((team, index) => (
+                              <tr key={index} className="border-b border-slate-100 dark:border-neutral-800">
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="text"
+                                    value={team.team}
+                                    onChange={(e) => updateTeamInStandings(2, index, "team", e.target.value)}
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                    placeholder="Nafn liðs"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.gp}
+                                    onChange={(e) => updateTeamInStandings(2, index, "gp", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.win}
+                                    onChange={(e) => updateTeamInStandings(2, index, "win", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.draw}
+                                    onChange={(e) => updateTeamInStandings(2, index, "draw", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.lose}
+                                    onChange={(e) => updateTeamInStandings(2, index, "lose", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    value={team.dp}
+                                    onChange={(e) => updateTeamInStandings(2, index, "dp", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={team.points}
+                                    onChange={(e) => updateTeamInStandings(2, index, "points", e.target.value)}
+                                    className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <button
+                                    onClick={() => removeTeamFromStandings(2, index)}
+                                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20 dark:text-red-400"
+                                  >
+                                    Eyða
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => saveIntermediateStandings(2)}
+                      disabled={savingIntermediateStandings}
+                      className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                    >
+                      {savingIntermediateStandings ? "Vista..." : "Vista Milliriðil 2"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

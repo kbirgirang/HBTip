@@ -114,6 +114,51 @@ export default function RoomPage() {
   // State fyrir info popup
   const [showInfoPopup, setShowInfoPopup] = useState(false);
 
+  // State fyrir milliriðilastöðu
+  const [showIntermediateStandings, setShowIntermediateStandings] = useState(false);
+  const [intermediateStandings, setIntermediateStandings] = useState<{
+    [key: number]: Array<{
+      team: string;
+      gp: number;
+      win: number;
+      draw: number;
+      lose: number;
+      dp: number;
+      points: number;
+    }>;
+  } | null>(null);
+  const [loadingIntermediateStandings, setLoadingIntermediateStandings] = useState(false);
+
+  /**
+   * Sækir milliriðilastöðu
+   */
+  async function loadIntermediateStandings() {
+    setLoadingIntermediateStandings(true);
+    try {
+      const res = await fetch("/api/intermediate-round-standings");
+      const json = await res.json();
+      if (!res.ok) {
+        setErr(json?.error || "Ekki tókst að sækja milliriðilastöðu.");
+        return;
+      }
+      setIntermediateStandings(json.standings || null);
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setLoadingIntermediateStandings(false);
+    }
+  }
+
+  /**
+   * Opnar milliriðilastöðu modal og sækir gögn
+   */
+  function openIntermediateStandings() {
+    setShowIntermediateStandings(true);
+    if (!intermediateStandings) {
+      loadIntermediateStandings();
+    }
+  }
+
   // Theme toggle state
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
@@ -749,6 +794,13 @@ export default function RoomPage() {
           >
             ℹ️
           </button>
+          <button
+            onClick={openIntermediateStandings}
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            title="Milliriðilastöða"
+          >
+            📊 Milliriðil
+          </button>
         </div>
 
         {/* Info Popup */}
@@ -780,6 +832,108 @@ export default function RoomPage() {
                     <li>Samþykkja notification permission þegar beðið er um það.</li>
                   </ul>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Milliriðilastöða Modal */}
+        {showIntermediateStandings && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowIntermediateStandings(false)}>
+            <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 p-6 flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-neutral-100">Milliriðilastöða</h3>
+                <button
+                  onClick={() => setShowIntermediateStandings(false)}
+                  className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                {loadingIntermediateStandings ? (
+                  <p className="text-center text-slate-600 dark:text-neutral-400">Hleð...</p>
+                ) : !intermediateStandings || (Object.keys(intermediateStandings).length === 0) ? (
+                  <p className="text-center text-slate-600 dark:text-neutral-400">Engin milliriðilastöða tiltæk.</p>
+                ) : (
+                  <>
+                    {/* Milliriðil 1 */}
+                    {intermediateStandings[1] && intermediateStandings[1].length > 0 && (
+                      <div>
+                        <h4 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Milliriðil 1</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr className="border-b border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-neutral-300">Lið</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">GP</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Win</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Draw</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Lose</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">DP</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Stig</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {intermediateStandings[1].map((team, index) => (
+                                <tr key={index} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                                  <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-neutral-100">
+                                    {getTeamFlag(team.team) && <span className="mr-2">{getTeamFlag(team.team)}</span>}
+                                    {team.team}
+                                  </td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.gp}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.win}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.draw}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.lose}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.dp > 0 ? `+${team.dp}` : team.dp}</td>
+                                  <td className="px-4 py-3 text-center text-sm font-semibold text-slate-900 dark:text-neutral-100">{team.points}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Milliriðil 2 */}
+                    {intermediateStandings[2] && intermediateStandings[2].length > 0 && (
+                      <div>
+                        <h4 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Milliriðil 2</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr className="border-b border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-neutral-300">Lið</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">GP</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Win</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Draw</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Lose</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">DP</th>
+                                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 dark:text-neutral-300">Stig</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {intermediateStandings[2].map((team, index) => (
+                                <tr key={index} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                                  <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-neutral-100">
+                                    {getTeamFlag(team.team) && <span className="mr-2">{getTeamFlag(team.team)}</span>}
+                                    {team.team}
+                                  </td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.gp}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.win}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.draw}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.lose}</td>
+                                  <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-neutral-300">{team.dp > 0 ? `+${team.dp}` : team.dp}</td>
+                                  <td className="px-4 py-3 text-center text-sm font-semibold text-slate-900 dark:text-neutral-100">{team.points}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>

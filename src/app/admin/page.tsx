@@ -1951,6 +1951,35 @@ export default function AdminPage() {
   }
 
   /**
+   * Færir lið upp eða niður í röðinni
+   */
+  function moveTeamUpDown(roundNumber: 1 | 2, index: number, direction: "up" | "down") {
+    if (roundNumber === 1) {
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= intermediateStandings.round1.length) return;
+
+      const newRound1 = [...intermediateStandings.round1];
+      [newRound1[index], newRound1[newIndex]] = [newRound1[newIndex], newRound1[index]];
+      
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round1: newRound1,
+      }));
+    } else {
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= intermediateStandings.round2.length) return;
+
+      const newRound2 = [...intermediateStandings.round2];
+      [newRound2[index], newRound2[newIndex]] = [newRound2[newIndex], newRound2[index]];
+      
+      setIntermediateStandings((prev) => ({
+        ...prev,
+        round2: newRound2,
+      }));
+    }
+  }
+
+  /**
    * Færir lið úr einum milliriðli yfir í annan
    */
   function moveTeamBetweenRounds(fromRound: 1 | 2, toRound: 1 | 2, index: number) {
@@ -3390,6 +3419,22 @@ export default function AdminPage() {
                                 <td className="px-3 py-2">
                                   <div className="flex items-center gap-1">
                                     <button
+                                      onClick={() => moveTeamUpDown(1, index, "up")}
+                                      disabled={index === 0}
+                                      className="rounded-lg border border-slate-500/40 bg-slate-500/10 px-2 py-1 text-xs text-slate-600 hover:bg-slate-500/20 disabled:opacity-40 disabled:cursor-not-allowed dark:text-slate-400"
+                                      title="Færa upp"
+                                    >
+                                      ↑
+                                    </button>
+                                    <button
+                                      onClick={() => moveTeamUpDown(1, index, "down")}
+                                      disabled={index === intermediateStandings.round1.length - 1}
+                                      className="rounded-lg border border-slate-500/40 bg-slate-500/10 px-2 py-1 text-xs text-slate-600 hover:bg-slate-500/20 disabled:opacity-40 disabled:cursor-not-allowed dark:text-slate-400"
+                                      title="Færa niður"
+                                    >
+                                      ↓
+                                    </button>
+                                    <button
                                       onClick={() => updateSingleTeam(1, index)}
                                       disabled={savingIntermediateStandings}
                                       className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-xs text-blue-600 hover:bg-blue-500/20 disabled:opacity-60 dark:text-blue-400"
@@ -3529,6 +3574,22 @@ export default function AdminPage() {
                                 </td>
                                 <td className="px-3 py-2">
                                   <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => moveTeamUpDown(2, index, "up")}
+                                      disabled={index === 0}
+                                      className="rounded-lg border border-slate-500/40 bg-slate-500/10 px-2 py-1 text-xs text-slate-600 hover:bg-slate-500/20 disabled:opacity-40 disabled:cursor-not-allowed dark:text-slate-400"
+                                      title="Færa upp"
+                                    >
+                                      ↑
+                                    </button>
+                                    <button
+                                      onClick={() => moveTeamUpDown(2, index, "down")}
+                                      disabled={index === intermediateStandings.round2.length - 1}
+                                      className="rounded-lg border border-slate-500/40 bg-slate-500/10 px-2 py-1 text-xs text-slate-600 hover:bg-slate-500/20 disabled:opacity-40 disabled:cursor-not-allowed dark:text-slate-400"
+                                      title="Færa niður"
+                                    >
+                                      ↓
+                                    </button>
                                     <button
                                       onClick={() => updateSingleTeam(2, index)}
                                       disabled={savingIntermediateStandings}

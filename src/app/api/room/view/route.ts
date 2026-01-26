@@ -230,17 +230,32 @@ export async function GET() {
       const matchById = new Map(roomMatches.map((x: any) => [x.id, x]));
       const allRoomBonusAnswers = roomAllBonusAnswers;
 
+      // Búa til map af username -> member_ids í ÖLLUM deildunum (fyrir fallback)
+      // Þetta gerir okkur kleift að finna spár hjá öllum members með sama username
+      const usernameToMemberIds = new Map<string, string[]>();
+      for (const m of allRoomMembers ?? []) {
+        const uname = (m.username as string).toLowerCase();
+        if (!usernameToMemberIds.has(uname)) {
+          usernameToMemberIds.set(uname, []);
+        }
+        usernameToMemberIds.get(uname)!.push(m.id);
+      }
+
       const leaderboard = roomMembers.map((m: any) => {
         let correct1x2 = 0;
         let points1x2 = 0;
         let points = 0;
 
-        // 1X2 stig
+        // Búa til set af match_ids sem við höfum þegar reiknað (til að forðast duplicate stig)
+        const processedMatches = new Set<string>();
+
+        // 1X2 stig - fyrst reyna að finna spár fyrir réttan member_id
         for (const pr of roomPreds) {
           if (pr.member_id !== m.id) continue;
           const match = matchById.get(pr.match_id);
           if (!match?.result) continue;
           if (pr.pick === match.result) {
+            processedMatches.add(pr.match_id);
             correct1x2 += 1;
             let pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
 
@@ -250,6 +265,35 @@ export async function GET() {
 
             points1x2 += pointsForThis;
             points += pointsForThis;
+          }
+        }
+
+        // Fallback: ef leikur er með úrslit en spá finnst ekki fyrir þennan member_id,
+        // leita að spá hjá öllum members með sama username (í öllum deildum)
+        const memberUsername = (m.username as string).toLowerCase();
+        const allMemberIdsWithSameUsername = usernameToMemberIds.get(memberUsername) ?? [];
+        for (const match of roomMatches) {
+          if (!match.result || processedMatches.has(match.id)) continue;
+          
+          // Leita að spá hjá öllum members með sama username
+          for (const pr of allPreds ?? []) {
+            if (pr.match_id !== match.id) continue;
+            if (!allMemberIdsWithSameUsername.includes(pr.member_id)) continue;
+            
+            // Nota fyrstu spá sem finnst
+            if (pr.pick === match.result) {
+              processedMatches.add(match.id);
+              correct1x2 += 1;
+              let pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
+
+              if (match.underdog_team && match.underdog_multiplier && pr.pick === match.underdog_team && match.result === match.underdog_team) {
+                pointsForThis = Math.round(pointsForThis * match.underdog_multiplier);
+              }
+
+              points1x2 += pointsForThis;
+              points += pointsForThis;
+            }
+            break; // Nota fyrstu spá sem finnst
           }
         }
 

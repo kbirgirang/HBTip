@@ -1918,17 +1918,10 @@ export default function RoomPage() {
 
           {data && tab === "leaderboard" && (
             <>
-              <div className="mb-4 flex items-center justify-between gap-2">
+              <div className="mb-4">
                 <p className="text-sm text-slate-500 dark:text-neutral-400">
                   Stigatöflur uppfærast sjálfkrafa á 5 sekúndum fresti.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => void load()}
-                  className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                >
-                  Uppfæra
-                </button>
               </div>
               {(() => {
                 const allRooms = data.allRooms || [data];

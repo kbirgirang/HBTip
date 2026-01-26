@@ -121,15 +121,20 @@ export async function GET() {
 
     const matchById = new Map(roomMatches.map((x: any) => [x.id, x]));
 
-    // Búa til map af username -> member_ids í ÖLLUM deildunum (fyrir fallback)
-    // Þetta gerir okkur kleift að finna spár hjá öllum members með sama username
+    // Búa til map af username -> member_ids í SÖMU keppni (fyrir fallback)
+    // Þetta gerir okkur kleift að finna spár hjá öllum members með sama username í sömu keppni
+    // ATHUGIÐ: Ekki leita í öllum deildum, bara í sömu keppni (tournament_id)
     const usernameToMemberIds = new Map<string, string[]>();
     for (const m of allRoomMembers ?? []) {
-      const uname = (m.username as string).toLowerCase();
-      if (!usernameToMemberIds.has(uname)) {
-        usernameToMemberIds.set(uname, []);
+      // Aðeins bæta við members sem eru í sömu keppni
+      const memberRoom = rooms.find((r: any) => r.id === m.room_id);
+      if (memberRoom && memberRoom.tournament_id === room.tournament_id) {
+        const uname = (m.username as string).toLowerCase();
+        if (!usernameToMemberIds.has(uname)) {
+          usernameToMemberIds.set(uname, []);
+        }
+        usernameToMemberIds.get(uname)!.push(m.id);
       }
-      usernameToMemberIds.get(uname)!.push(m.id);
     }
 
     const leaderboard = roomMembers.map((m: any) => {

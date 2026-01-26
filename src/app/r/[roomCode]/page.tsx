@@ -1918,11 +1918,7 @@ export default function RoomPage() {
 
           {data && tab === "leaderboard" && (
             <>
-              <div className="mb-4">
-                <p className="text-sm text-slate-500 dark:text-neutral-400">
-                  Stigatöflur uppfærast sjálfkrafa á 5 sekúndum fresti.
-                </p>
-              </div>
+
               {(() => {
                 const allRooms = data.allRooms || [data];
                 // Raða deildum eftir stafrófsröð (eftir nafni)

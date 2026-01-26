@@ -121,7 +121,7 @@ export async function GET(req: Request) {
     }
 
     // Búa til gögn fyrir hverja deild
-    const roomsData = await Promise.all((rooms ?? []).map(async (room) => {
+    const roomsDataPromise = Promise.all((rooms ?? []).map(async (room) => {
       const member = members.find((m) => m.room_id === room.id);
       if (!member) return null;
 
@@ -263,7 +263,10 @@ export async function GET(req: Request) {
           };
         }),
       };
-    }).filter((r) => r !== null);
+    }));
+
+    const roomsData = await roomsDataPromise;
+    const validRoomsData = roomsData.filter((r) => r !== null);
 
     return NextResponse.json({
       ok: true,

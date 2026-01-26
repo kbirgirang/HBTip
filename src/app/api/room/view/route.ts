@@ -85,7 +85,6 @@ export async function GET() {
   // ✅ Sækja öll bonus svör fyrir ALLA meðlimi í öllum deildunum (eitt kall – nota fyrir bæði „mín" og leaderboard)
   const allQIds = (allBonusQs ?? []).map((q: any) => q.id);
   let allBonusAnswersByRoom: Map<string, any[]> = new Map();
-  let allBonusAnswers: any[] = []; // Geyma öll bonus svör fyrir fallback
   if (allQIds.length > 0 && allRoomMemberIds.length > 0) {
     const { data: ans, error: aErr } = await supabaseServer
       .from("bonus_answers")
@@ -94,7 +93,6 @@ export async function GET() {
       .in("question_id", allQIds);
     if (aErr) return NextResponse.json({ error: aErr.message }, { status: 500 });
     const list = ans ?? [];
-    allBonusAnswers = list; // Geyma öll bonus svör
     for (const a of list) {
       const rid = (a as any).room_id;
       if (!allBonusAnswersByRoom.has(rid)) allBonusAnswersByRoom.set(rid, []);
@@ -232,56 +230,21 @@ export async function GET() {
       const matchById = new Map(roomMatches.map((x: any) => [x.id, x]));
       const allRoomBonusAnswers = roomAllBonusAnswers;
 
-      // Búa til map af username -> member_ids í SÖMU keppni (fyrir fallback)
-      // Þetta gerir okkur kleift að finna spár hjá öllum members með sama username í sömu keppni
-      // ATHUGIÐ: Ekki leita í öllum deildum, bara í sömu keppni (tournament_id)
-      const usernameToMemberIds = new Map<string, string[]>();
-      for (const m of allRoomMembers ?? []) {
-        // Aðeins bæta við members sem eru í sömu keppni
-        const memberRoom = rooms.find((r: any) => r.id === m.room_id);
-        if (memberRoom && memberRoom.tournament_id === room.tournament_id) {
-          const uname = (m.username as string).toLowerCase();
-          if (!usernameToMemberIds.has(uname)) {
-            usernameToMemberIds.set(uname, []);
-          }
-          usernameToMemberIds.get(uname)!.push(m.id);
-        }
-      }
-
       const leaderboard = roomMembers.map((m: any) => {
         let correct1x2 = 0;
         let points1x2 = 0;
         let points = 0;
 
-        // Búa til set af match_ids sem við höfum þegar reiknað (til að forðast duplicate stig)
-        const processedMatches = new Set<string>();
-        const memberUsername = (m.username as string).toLowerCase();
-        const allMemberIdsWithSameUsername = usernameToMemberIds.get(memberUsername) ?? [];
-
-        // 1X2 stig - leita að spá fyrir hvern leik
-        for (const match of roomMatches) {
-          if (!match.result || processedMatches.has(match.id)) continue;
-          
-          // Fyrst: reyna að finna spá með réttum member_id í þessari deild
-          let foundPred = roomPreds.find((pr: any) => pr.member_id === m.id && pr.match_id === match.id);
-          let usedFallback = false;
-          
-          // Fallback: ef spá finnst ekki, leita að spá hjá öllum members með sama username
-          if (!foundPred && allMemberIdsWithSameUsername.length > 0) {
-            foundPred = (allPreds ?? []).find((pr: any) => 
-              pr.match_id === match.id && 
-              allMemberIdsWithSameUsername.includes(pr.member_id)
-            );
-            if (foundPred) usedFallback = true;
-          }
-          
-          // Ef spá fannst og hún er rétt, reikna stig
-          if (foundPred && foundPred.pick === match.result) {
-            processedMatches.add(match.id);
+        // 1X2 stig
+        for (const pr of roomPreds) {
+          if (pr.member_id !== m.id) continue;
+          const match = matchById.get(pr.match_id);
+          if (!match?.result) continue;
+          if (pr.pick === match.result) {
             correct1x2 += 1;
-            let pointsForThis = (foundPred.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
+            let pointsForThis = (pr.pick === "X" && pointsPerX != null) ? pointsPerX : pointsPer;
 
-            if (match.underdog_team && match.underdog_multiplier && foundPred.pick === match.underdog_team && match.result === match.underdog_team) {
+            if (match.underdog_team && match.underdog_multiplier && pr.pick === match.underdog_team && match.result === match.underdog_team) {
               pointsForThis = Math.round(pointsForThis * match.underdog_multiplier);
             }
 
@@ -290,10 +253,8 @@ export async function GET() {
           }
         }
 
-        // Bónus stig - fyrst reyna að finna bonus svör með réttum member_id
+        // Bónus stig
         let bonusPoints = 0;
-        const processedBonusQuestions = new Set<string>();
-        
         for (const ans of allRoomBonusAnswers ?? []) {
           if (ans.member_id !== m.id) continue;
           const question = bonusById.get(ans.question_id);
@@ -301,8 +262,6 @@ export async function GET() {
 
           const match = matchById.get(question.match_id);
           if (!match || !match.result) continue;
-          
-          processedBonusQuestions.add(ans.question_id);
 
           let isCorrect = false;
           if (question.type === "number" && question.correct_number != null) {
@@ -316,37 +275,6 @@ export async function GET() {
           if (isCorrect) {
             bonusPoints += question.points;
             points += question.points;
-          }
-        }
-        
-        // Fallback: ef bonus spurning finnst ekki með réttum member_id,
-        // leita að bonus svari hjá öllum members með sama username
-        for (const question of roomBonusQs) {
-          if (processedBonusQuestions.has(question.id)) continue;
-          const match = matchById.get(question.match_id);
-          if (!match || !match.result) continue;
-          
-          // Leita að bonus svari hjá öllum members með sama username
-          const foundAns = (allBonusAnswers ?? []).find((ans: any) => 
-            ans.question_id === question.id && 
-            allMemberIdsWithSameUsername.includes(ans.member_id)
-          );
-          
-          if (foundAns) {
-            processedBonusQuestions.add(question.id);
-            let isCorrect = false;
-            if (question.type === "number" && question.correct_number != null) {
-              isCorrect = foundAns.answer_number === question.correct_number;
-            } else if (question.type === "choice" && question.correct_choice != null) {
-              isCorrect = foundAns.answer_choice === question.correct_choice;
-            } else if (question.type === "player" && question.correct_choice != null) {
-              isCorrect = foundAns.answer_choice === question.correct_choice;
-            }
-            
-            if (isCorrect) {
-              bonusPoints += question.points;
-              points += question.points;
-            }
           }
         }
 

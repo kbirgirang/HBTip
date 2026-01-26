@@ -2024,16 +2024,19 @@ export default function RoomPage() {
       {/* Popup modal fyrir spár meðlims */}
       {data && selectedMemberId && (() => {
         const allRooms = data.allRooms || [data];
-        const selectedRoomData = allRooms.find((r) => 
+        // Finna allar deildir sem meðlimurinn er í
+        const memberRooms = allRooms.filter((r) => 
           r.leaderboard.some((l) => l.memberId === selectedMemberId)
         );
         
-        if (!selectedRoomData) return null;
+        if (memberRooms.length === 0) return null;
         
+        // Nota fyrstu deild sem fallback, en senda allar deildir til að leita að spám
         return (
           <MemberPicksModal 
             memberId={selectedMemberId} 
-            roomData={selectedRoomData} 
+            roomData={memberRooms[0]} 
+            allRooms={memberRooms}
             now={now}
             onClose={() => setSelectedMemberId(null)}
           />
@@ -2060,32 +2063,58 @@ export default function RoomPage() {
 function MemberPicksModal({ 
   memberId, 
   roomData,
+  allRooms,
   now,
   onClose
 }: { 
   memberId: string; 
   roomData: RoomData;
+  allRooms?: RoomData[];
   now: number;
   onClose: () => void;
 }) {
+  // Sameina allar leikir úr öllum deildum sem meðlimurinn er í
+  const allMemberMatches = new Map<string, typeof roomData.matches[0]>();
+  const roomsToSearch = allRooms || [roomData];
+  
+  for (const room of roomsToSearch) {
+    for (const match of room.matches) {
+      if (!allMemberMatches.has(match.id)) {
+        allMemberMatches.set(match.id, match);
+      } else {
+        // Ef match er þegar til, bæta við memberPicks úr þessari deild
+        const existing = allMemberMatches.get(match.id)!;
+        const newPicks = match.memberPicks || [];
+        const existingPicks = existing.memberPicks || [];
+        // Sameina memberPicks úr báðum deildum (ekki duplicate)
+        const combinedPicks = [...existingPicks];
+        for (const newPick of newPicks) {
+          if (!combinedPicks.some((ep) => ep.memberId === newPick.memberId)) {
+            combinedPicks.push(newPick);
+          }
+        }
+        existing.memberPicks = combinedPicks;
+      }
+    }
+  }
+
   // Finna síðustu 8 lokaðu leikina - aðeins leiki sem eru með result EÐA hafa byrjað
-  // Tryggja að leikir sem eru í gangi séu alltaf með
-  const allClosedMatches = roomData.matches.filter((match) => {
+  const allClosedMatches = Array.from(allMemberMatches.values()).filter((match) => {
     const matchStarted = new Date(match.starts_at).getTime() <= now;
-    return match.result != null || matchStarted; // Aðeins leiki sem eru með úrslit eða hafa byrjað
+    return match.result != null || matchStarted;
   });
 
   // Aðskilja leiki sem eru í gangi og loknir
   const inProgressMatches = allClosedMatches
     .filter((match) => {
       const matchStarted = new Date(match.starts_at).getTime() <= now;
-      return matchStarted && match.result == null; // Í gangi = hefur byrjað en engin úrslit
+      return matchStarted && match.result == null;
     })
-    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()); // Nýjast fyrst
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
   const finishedMatchesWithResults = allClosedMatches
-    .filter((match) => match.result != null) // Loknir leikir með úrslit
-    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()); // Nýjast fyrst
+    .filter((match) => match.result != null)
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
   // Kombina: Fyrst leikir í gangi, síðan loknir leikir - hámark 8 samtals
   const finishedMatches = [
@@ -2093,14 +2122,30 @@ function MemberPicksModal({
     ...finishedMatchesWithResults
   ].slice(0, 8);
 
-  // Finna spár valins meðlims í þessum leikjum - sýna ALLA lokaða leiki
+  // Finna spár valins meðlims í þessum leikjum - leita í ALLUM deildum
   const matchesWithPicks = finishedMatches.map((match) => {
     const memberPicks = match.memberPicks || [];
-    const memberPick = memberPicks.find((mp) => mp.memberId === memberId);
+    // Leita að spá hjá meðlimi í öllum deildum
+    let memberPick = memberPicks.find((mp) => mp.memberId === memberId);
+    
+    // Fallback: ef spá finnst ekki, leita í öllum deildum sem meðlimurinn er í
+    if (!memberPick && allRooms && allRooms.length > 1) {
+      for (const room of allRooms) {
+        const roomMatch = room.matches.find((m) => m.id === match.id);
+        if (roomMatch) {
+          const roomMemberPicks = roomMatch.memberPicks || [];
+          const found = roomMemberPicks.find((mp) => mp.memberId === memberId);
+          if (found) {
+            memberPick = found;
+            break;
+          }
+        }
+      }
+    }
+    
     const matchStarted = new Date(match.starts_at).getTime() <= now;
     const isFinished = match.result != null;
     const isInProgress = matchStarted && !isFinished;
-    
     
     return {
       ...match,

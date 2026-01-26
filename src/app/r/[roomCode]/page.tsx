@@ -2122,22 +2122,44 @@ function MemberPicksModal({
     ...finishedMatchesWithResults
   ].slice(0, 8);
 
+  // Finna username fyrir valinn member (fyrir fallback)
+  const selectedMember = roomData.leaderboard.find(l => l.memberId === memberId);
+  const selectedMemberUsername = selectedMember?.username?.toLowerCase();
+
+  // Finna allar memberIds með sama username í öllum deildunum (fyrir fallback)
+  const allMemberIdsWithSameUsername = new Set<string>();
+  if (selectedMemberUsername) {
+    for (const room of roomsToSearch) {
+      for (const member of room.leaderboard) {
+        if (member.username?.toLowerCase() === selectedMemberUsername) {
+          allMemberIdsWithSameUsername.add(member.memberId);
+        }
+      }
+    }
+  }
+
   // Finna spár valins meðlims í þessum leikjum - leita í ALLUM deildum
   const matchesWithPicks = finishedMatches.map((match) => {
     const memberPicks = match.memberPicks || [];
-    // Leita að spá hjá meðlimi í öllum deildum
+    // Fyrst: Leita að spá hjá meðlimi með réttum memberId
     let memberPick = memberPicks.find((mp) => mp.memberId === memberId);
     
-    // Fallback: ef spá finnst ekki, leita í öllum deildum sem meðlimurinn er í
-    if (!memberPick && allRooms && allRooms.length > 1) {
-      for (const room of allRooms) {
-        const roomMatch = room.matches.find((m) => m.id === match.id);
-        if (roomMatch) {
-          const roomMemberPicks = roomMatch.memberPicks || [];
-          const found = roomMemberPicks.find((mp) => mp.memberId === memberId);
-          if (found) {
-            memberPick = found;
-            break;
+    // Fallback: ef spá finnst ekki, leita að spá hjá öllum members með sama username
+    if (!memberPick && allMemberIdsWithSameUsername.size > 0) {
+      // Leita í memberPicks fyrir þennan match
+      memberPick = memberPicks.find((mp) => allMemberIdsWithSameUsername.has(mp.memberId));
+      
+      // Ef ekki fundið, leita í öllum deildum
+      if (!memberPick && allRooms && allRooms.length > 1) {
+        for (const room of allRooms) {
+          const roomMatch = room.matches.find((m) => m.id === match.id);
+          if (roomMatch) {
+            const roomMemberPicks = roomMatch.memberPicks || [];
+            const found = roomMemberPicks.find((mp) => allMemberIdsWithSameUsername.has(mp.memberId));
+            if (found) {
+              memberPick = found;
+              break;
+            }
           }
         }
       }

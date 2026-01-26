@@ -183,8 +183,28 @@ export async function GET() {
       // Spár fyrir þessa deild
       const roomPreds = (allPreds ?? []).filter((pr: any) => pr.room_id === room.id);
       const myPicks = new Map<string, Pick>();
+      
+      // Fyrst: reyna að finna spár fyrir réttan member í þessari deild
       for (const pr of roomPreds) {
-        if (pr.member_id === roomMember.id) myPicks.set(pr.match_id, pr.pick as Pick);
+        if (pr.member_id === roomMember.id) {
+          myPicks.set(pr.match_id, pr.pick as Pick);
+        }
+      }
+      
+      // Fallback: ef leikur er í þessari keppni en spá finnst ekki fyrir þennan member,
+      // reyna að finna spá hjá öðrum member með sama username (fyrir sama match_id)
+      // Þetta gerist ef notandi er í mörgum deildum í sömu keppni og spáin er geymd fyrir aðra deild
+      const allMyMemberIds = (allMyMembers ?? []).map((m: any) => m.id);
+      for (const match of roomMatches) {
+        if (!myPicks.has(match.id)) {
+          // Leita að spá hjá öllum members með sama username (í öllum deildum)
+          for (const pr of allPreds ?? []) {
+            if (pr.match_id === match.id && allMyMemberIds.includes(pr.member_id)) {
+              myPicks.set(match.id, pr.pick as Pick);
+              break; // Nota fyrstu spá sem finnst
+            }
+          }
+        }
       }
 
       // Members fyrir þessa deild (úr sameinuðu sækingu)

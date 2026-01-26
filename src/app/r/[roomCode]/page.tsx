@@ -1059,7 +1059,8 @@ export default function RoomPage() {
                     } else {
                       // Ef match er þegar til, uppfæra myPick og bonus my_answer ef þau eru til
                       const existing = allMatchesMap.get(match.id)!;
-                      if (match.myPick && !existing.myPick) {
+                      // ✅ Mikilvægt: Uppfæra myPick ef hann finnst í þessari deild (jafnvel ef hann var null áður)
+                      if (match.myPick) {
                         existing.myPick = match.myPick;
                       }
                       // Uppfæra bonus my_answer ef það er til í þessari deild

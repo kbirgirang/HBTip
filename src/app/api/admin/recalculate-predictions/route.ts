@@ -62,12 +62,13 @@ export async function POST(req: Request) {
     // Fyrir hverja spá, finna alla meðlimi með sama username og búa til spár fyrir þá
     // ✅ ÖRYGGISVÖRN: Yfirskrifum EKKI ef spá er þegar til og er SÖMU
     // ✅ Yfirskrifum AÐEINS ef spá er mismunandi (bugg sem þarf að laga)
-    const predictionsToSync: Array<{
+    // ✅ Nota Map til að forðast duplicates (sama member_id + match_id tvisvar)
+    const predictionsToSyncMap = new Map<string, {
       room_id: string;
       member_id: string;
       match_id: string;
       pick: string;
-    }> = [];
+    }>();
 
     // Fyrir hverja spá sem er til staðar
     for (const pred of allPredictions ?? []) {
@@ -79,13 +80,18 @@ export async function POST(req: Request) {
       // Búa til spá fyrir ALLA meðlimi með sama username
       for (const otherMember of membersWithSameUsername) {
         const key = `${otherMember.id}:${pred.match_id}`;
+        
+        // ✅ Forðast að búa til duplicate - ef key er þegar í Map, sleppa
+        if (predictionsToSyncMap.has(key)) continue;
+        
         const existingPick = existingPredictions.get(key);
         
         // AÐEINS bæta við ef:
         // 1. Spá er ekki til staðar, EÐA
         // 2. Spá er til staðar en er MISMUNANDI (bugg sem þarf að laga)
         if (!existingPick || existingPick !== pred.pick) {
-          predictionsToSync.push({
+          // Nota key sem unique identifier til að forðast duplicates
+          predictionsToSyncMap.set(key, {
             room_id: otherMember.room_id,
             member_id: otherMember.id,
             match_id: pred.match_id,
@@ -95,6 +101,9 @@ export async function POST(req: Request) {
       }
     }
 
+    // Breyta Map í array
+    const predictionsToSync = Array.from(predictionsToSyncMap.values());
+
     if (predictionsToSync.length === 0) {
       return NextResponse.json({ 
         ok: true, 
@@ -103,26 +112,39 @@ export async function POST(req: Request) {
       });
     }
 
-    // ✅ Vista allar spár (yfirskrifar ef þær eru til staðar)
-    // Nota upsert með ignoreDuplicates: false til að yfirskrifa
-    const { error: syncErr } = await supabaseServer
-      .from("predictions")
-      .upsert(predictionsToSync, {
-        onConflict: "member_id,match_id",
-        ignoreDuplicates: false, // ✅ Yfirskrifa fyrirliggjandi spár
-      });
+    // ✅ Vista allar spár í batch (yfirskrifar ef þær eru til staðar)
+    // Nota batch upsert til að forðast "cannot affect row a second time" villu
+    // Batch size: 1000 (Supabase takmarkar stærð)
+    const BATCH_SIZE = 1000;
+    let totalSynced = 0;
+    
+    for (let i = 0; i < predictionsToSync.length; i += BATCH_SIZE) {
+      const batch = predictionsToSync.slice(i, i + BATCH_SIZE);
+      
+      const { error: syncErr } = await supabaseServer
+        .from("predictions")
+        .upsert(batch, {
+          onConflict: "member_id,match_id",
+          ignoreDuplicates: false, // ✅ Yfirskrifa fyrirliggjandi spár
+        });
 
-    if (syncErr) {
-      console.error("Error recalculating predictions:", syncErr);
-      return NextResponse.json({ error: syncErr.message }, { status: 500 });
+      if (syncErr) {
+        console.error(`Error recalculating predictions (batch ${i / BATCH_SIZE + 1}):`, syncErr);
+        return NextResponse.json({ 
+          error: `Villa við að vista spár (batch ${i / BATCH_SIZE + 1}): ${syncErr.message}` 
+        }, { status: 500 });
+      }
+      
+      totalSynced += batch.length;
     }
 
     return NextResponse.json({
       ok: true,
-      message: `Endurreiknaði og samstillti ${predictionsToSync.length} spár fyrir alla meðlimi með sama username`,
-      predictionsSynced: predictionsToSync.length,
+      message: `Endurreiknaði og samstillti ${totalSynced} spár fyrir alla meðlimi með sama username`,
+      predictionsSynced: totalSynced,
       totalPredictions: allPredictions?.length || 0,
       totalMembers: allMembers?.length || 0,
+      batchesProcessed: Math.ceil(predictionsToSync.length / BATCH_SIZE),
     });
   } catch (error: any) {
     console.error("Unexpected error in recalculate-predictions:", error);

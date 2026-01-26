@@ -53,8 +53,15 @@ export async function POST(req: Request) {
       memberIdToUsername.set(member.id, (member.username as string).toLowerCase());
     }
 
+    // Búa til map af fyrirliggjandi spám: (member_id, match_id) -> pick
+    const existingPredictions = new Map<string, string>();
+    for (const pred of allPredictions ?? []) {
+      existingPredictions.set(`${pred.member_id}:${pred.match_id}`, pred.pick);
+    }
+
     // Fyrir hverja spá, finna alla meðlimi með sama username og búa til spár fyrir þá
-    // ✅ ÞETTA YFIRSKRIFAR fyrirliggjandi spár ef þær eru til staðar
+    // ✅ ÖRYGGISVÖRN: Yfirskrifum EKKI ef spá er þegar til og er SÖMU
+    // ✅ Yfirskrifum AÐEINS ef spá er mismunandi (bugg sem þarf að laga)
     const predictionsToSync: Array<{
       room_id: string;
       member_id: string;
@@ -71,12 +78,20 @@ export async function POST(req: Request) {
 
       // Búa til spá fyrir ALLA meðlimi með sama username
       for (const otherMember of membersWithSameUsername) {
-        predictionsToSync.push({
-          room_id: otherMember.room_id,
-          member_id: otherMember.id,
-          match_id: pred.match_id,
-          pick: pred.pick,
-        });
+        const key = `${otherMember.id}:${pred.match_id}`;
+        const existingPick = existingPredictions.get(key);
+        
+        // AÐEINS bæta við ef:
+        // 1. Spá er ekki til staðar, EÐA
+        // 2. Spá er til staðar en er MISMUNANDI (bugg sem þarf að laga)
+        if (!existingPick || existingPick !== pred.pick) {
+          predictionsToSync.push({
+            room_id: otherMember.room_id,
+            member_id: otherMember.id,
+            match_id: pred.match_id,
+            pick: pred.pick,
+          });
+        }
       }
     }
 

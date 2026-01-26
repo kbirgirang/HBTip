@@ -259,13 +259,15 @@ export async function GET() {
           
           // Fyrst: reyna að finna spá með réttum member_id í þessari deild
           let foundPred = roomPreds.find((pr: any) => pr.member_id === m.id && pr.match_id === match.id);
+          let usedFallback = false;
           
           // Fallback: ef spá finnst ekki, leita að spá hjá öllum members með sama username
-          if (!foundPred) {
+          if (!foundPred && allMemberIdsWithSameUsername.length > 0) {
             foundPred = (allPreds ?? []).find((pr: any) => 
               pr.match_id === match.id && 
               allMemberIdsWithSameUsername.includes(pr.member_id)
             );
+            if (foundPred) usedFallback = true;
           }
           
           // Ef spá fannst og hún er rétt, reikna stig

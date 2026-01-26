@@ -824,7 +824,7 @@ export default function AdminPage() {
    * Þetta yfirskrifar fyrirliggjandi spár og getur tekið tíma.
    */
   async function recalculatePredictions() {
-    if (!confirm("Ertu viss um að þú viljir endurreikna spár? Þetta getur tekið nokkrar sekúndur. Bætir við spám sem vantar og lagar bugga (mismunandi spár fyrir sama notanda). Yfirskrifar EKKI spár sem eru þegar réttar.")) {
+    if (!confirm("Ertu viss um að þú viljir endurreikna spár? Þetta getur tekið nokkrar sekúndur. Bætir AÐEINS við spám sem vantar. Yfirskrifar EKKI fyrirliggjandi spár (öruggt fyrir stig).")) {
       return;
     }
 
@@ -3897,7 +3897,7 @@ export default function AdminPage() {
                     {recalculatingPredictions ? "Endurreikna..." : "Endurreikna allar spár"}
                   </button>
                   <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">
-                    <strong>Endurreiknar og samstillir spár</strong> fyrir alla meðlimi með sama username. Bætir við spám sem vantar. Yfirskrifar aðeins ef spá er mismunandi (lagar bugga). Getur tekið nokkrar sekúndur.
+                    <strong>Endurreiknar og samstillir spár</strong> fyrir alla meðlimi með sama username. <strong>Bætir AÐEINS við spám sem vantar</strong>. Yfirskrifar EKKI fyrirliggjandi spár (öruggt fyrir stig). Getur tekið nokkrar sekúndur.
                   </p>
                 </div>
 

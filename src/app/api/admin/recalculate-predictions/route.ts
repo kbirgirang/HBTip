@@ -60,8 +60,8 @@ export async function POST(req: Request) {
     }
 
     // Fyrir hverja spá, finna alla meðlimi með sama username og búa til spár fyrir þá
-    // ✅ ÖRYGGISVÖRN: Yfirskrifum EKKI ef spá er þegar til og er SÖMU
-    // ✅ Yfirskrifum AÐEINS ef spá er mismunandi (bugg sem þarf að laga)
+    // ✅ ÖRYGGISVÖRN: Bætum AÐEINS við spám sem VANTAR
+    // ✅ Yfirskrifum EKKI fyrirliggjandi spár (jafnvel ef þær eru mismunandi)
     // ✅ Nota Map til að forðast duplicates (sama member_id + match_id tvisvar)
     const predictionsToSyncMap = new Map<string, {
       room_id: string;
@@ -86,10 +86,10 @@ export async function POST(req: Request) {
         
         const existingPick = existingPredictions.get(key);
         
-        // AÐEINS bæta við ef:
-        // 1. Spá er ekki til staðar, EÐA
-        // 2. Spá er til staðar en er MISMUNANDI (bugg sem þarf að laga)
-        if (!existingPick || existingPick !== pred.pick) {
+        // ✅ AÐEINS bæta við ef spá er EKKI til staðar
+        // ✅ Yfirskrifum EKKI fyrirliggjandi spár (jafnvel ef þær eru mismunandi)
+        // Þetta tryggir að við breytum ekki stigum sem eru þegar rétt
+        if (!existingPick) {
           // Nota key sem unique identifier til að forðast duplicates
           predictionsToSyncMap.set(key, {
             room_id: otherMember.room_id,

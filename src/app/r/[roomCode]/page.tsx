@@ -422,13 +422,15 @@ export default function RoomPage() {
   useEffect(() => {
     if (tab !== "leaderboard") return;
     // Bíða smá áður en við byrjum polling til að forðast race condition við fyrsta load()
+    let intervalId: NodeJS.Timeout | null = null;
     const timeout = setTimeout(() => {
       void loadLeaderboard();
+      // Byrja polling eftir fyrstu hleðslu
+      intervalId = setInterval(() => void loadLeaderboard(), 5000);
     }, 1000);
-    const interval = setInterval(() => void loadLeaderboard(), 5000);
     return () => {
       clearTimeout(timeout);
-      clearInterval(interval);
+      if (intervalId) clearInterval(intervalId);
     };
   }, [tab]);
 

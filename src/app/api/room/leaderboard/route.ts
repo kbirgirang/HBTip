@@ -64,33 +64,14 @@ export async function GET() {
 
   const allRoomMemberIds = (allRoomMembers ?? []).map((m: any) => m.id);
 
-  // Sækja spár fyrir alla members með sama username (fyrir fallback)
+  // Sækja spár fyrir alla members með sama username (fyrir fallback) - samhliða með öðrum fyrirspurnum
   // Þetta tryggir að við finnum spár hjá öllum members með sama username, ekki bara í deildunum sem notandi er í
   const currentUsername = currentMember.username.toLowerCase();
-  let allPredsForFallback: any[] = [];
   
-  // Sækja alla members með sama username í öllum deildunum (ekki bara deildir sem notandi er í)
-  const { data: allMembersWithSameUsername, error: sameUserErr } = await supabaseServer
-    .from("room_members")
-    .select("id, room_id")
-    .ilike("username", currentUsername);
-  
-  if (!sameUserErr && allMembersWithSameUsername) {
-    const allMemberIdsForFallback = allMembersWithSameUsername.map((m: any) => m.id);
-    // Sækja spár fyrir alla members með sama username
-    const { data: fallbackPreds, error: fallbackErr } = await supabaseServer
-      .from("predictions")
-      .select("member_id, match_id, pick, room_id")
-      .in("member_id", allMemberIdsForFallback);
-    
-    if (!fallbackErr && fallbackPreds) {
-      allPredsForFallback = fallbackPreds;
-    }
-  }
-
   const [
     { data: allPreds, error: pErr },
     { data: allSettings, error: settingsErr },
+    { data: allMembersWithSameUsername, error: sameUserErr },
   ] = await Promise.all([
     supabaseServer
       .from("predictions")
@@ -100,7 +81,47 @@ export async function GET() {
       .from("admin_settings")
       .select("tournament_id, points_per_correct_1x2, points_per_correct_x")
       .in("tournament_id", tournamentIds),
+    // Sækja alla members með sama username í öllum deildunum (ekki bara deildir sem notandi er í)
+    supabaseServer
+      .from("room_members")
+      .select("id, room_id")
+      .ilike("username", currentUsername),
   ]);
+
+  // Sækja spár fyrir alla members með sama username (ef þeir eru fleiri en í deildunum sem notandi er í)
+  let allPredsForFallback: any[] = [];
+  if (!sameUserErr && allMembersWithSameUsername) {
+    const allMemberIdsForFallback = allMembersWithSameUsername.map((m: any) => m.id);
+    // Aðeins sækja ef það eru fleiri members með sama username en í deildunum sem notandi er í
+    const hasExtraMembers = allMemberIdsForFallback.length > allRoomMemberIds.length;
+    if (hasExtraMembers) {
+      // Sækja aðeins spár fyrir members sem eru EKKI í allRoomMemberIds
+      const extraMemberIds = allMemberIdsForFallback.filter((id: string) => !allRoomMemberIds.includes(id));
+      if (extraMemberIds.length > 0) {
+        const { data: fallbackPreds, error: fallbackErr } = await supabaseServer
+          .from("predictions")
+          .select("member_id, match_id, pick, room_id")
+          .in("member_id", extraMemberIds);
+        
+        if (!fallbackErr && fallbackPreds) {
+          // Sameina með allPreds sem er þegar sótt
+          allPredsForFallback = [...(allPreds ?? []), ...fallbackPreds];
+        } else {
+          // Ef fallback failar, nota allPreds sem er þegar sótt
+          allPredsForFallback = allPreds ?? [];
+        }
+      } else {
+        // Ef engir extra members, nota allPreds sem er þegar sótt
+        allPredsForFallback = allPreds ?? [];
+      }
+    } else {
+      // Ef engir extra members, nota allPreds sem er þegar sótt
+      allPredsForFallback = allPreds ?? [];
+    }
+  } else {
+    // Ef ekki tókst að sækja allMembersWithSameUsername, nota allPreds sem er þegar sótt
+    allPredsForFallback = allPreds ?? [];
+  }
 
   if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
   if (settingsErr) return NextResponse.json({ error: settingsErr.message }, { status: 500 });

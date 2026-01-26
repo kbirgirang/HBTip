@@ -68,13 +68,60 @@ export async function GET() {
 
   const allRoomMemberIds = (allRoomMembers ?? []).map((m: any) => m.id);
   
-  // Sækja spár fyrir ALLA meðlimi í deildunum
-  const { data: allPreds, error: pErr } = await supabaseServer
-    .from("predictions")
-    .select("member_id, match_id, pick, room_id")
-    .in("member_id", allRoomMemberIds);
+  // Sækja spár fyrir alla members með sama username (fyrir fallback) - samhliða með öðrum fyrirspurnum
+  const currentUsername = currentMember.username.toLowerCase();
+  
+  const [
+    { data: allPreds, error: pErr },
+    { data: allMembersWithSameUsername, error: sameUserErr },
+  ] = await Promise.all([
+    supabaseServer
+      .from("predictions")
+      .select("member_id, match_id, pick, room_id")
+      .in("member_id", allRoomMemberIds),
+    // Sækja alla members með sama username í öllum deildunum (ekki bara deildir sem notandi er í)
+    supabaseServer
+      .from("room_members")
+      .select("id, room_id")
+      .ilike("username", currentUsername),
+  ]);
 
   if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
+
+  // Sækja spár fyrir alla members með sama username (ef þeir eru fleiri en í deildunum sem notandi er í)
+  let allPredsForFallback: any[] = [];
+  if (!sameUserErr && allMembersWithSameUsername) {
+    const allMemberIdsForFallback = allMembersWithSameUsername.map((m: any) => m.id);
+    // Aðeins sækja ef það eru fleiri members með sama username en í deildunum sem notandi er í
+    const hasExtraMembers = allMemberIdsForFallback.length > allRoomMemberIds.length;
+    if (hasExtraMembers) {
+      // Sækja aðeins spár fyrir members sem eru EKKI í allRoomMemberIds
+      const extraMemberIds = allMemberIdsForFallback.filter((id: string) => !allRoomMemberIds.includes(id));
+      if (extraMemberIds.length > 0) {
+        const { data: fallbackPreds, error: fallbackErr } = await supabaseServer
+          .from("predictions")
+          .select("member_id, match_id, pick, room_id")
+          .in("member_id", extraMemberIds);
+        
+        if (!fallbackErr && fallbackPreds) {
+          // Sameina með allPreds sem er þegar sótt
+          allPredsForFallback = [...(allPreds ?? []), ...fallbackPreds];
+        } else {
+          // Ef fallback failar, nota allPreds sem er þegar sótt
+          allPredsForFallback = allPreds ?? [];
+        }
+      } else {
+        // Ef engir extra members, nota allPreds sem er þegar sótt
+        allPredsForFallback = allPreds ?? [];
+      }
+    } else {
+      // Ef engir extra members, nota allPreds sem er þegar sótt
+      allPredsForFallback = allPreds ?? [];
+    }
+  } else {
+    // Ef ekki tókst að sækja allMembersWithSameUsername, nota allPreds sem er þegar sótt
+    allPredsForFallback = allPreds ?? [];
+  }
 
   // ✅ Sækja allar settings fyrir allar keppnir
   const { data: allSettings, error: settingsErr } = await supabaseServer
@@ -266,10 +313,18 @@ export async function GET() {
           
           // Fallback: ef spá finnst ekki, leita að spá hjá öllum members með sama username í sömu keppni
           if (!foundPred && allMemberIdsWithSameUsername.length > 0) {
+            // Leita fyrst í allPreds (spár fyrir members í deildunum sem notandi er í)
             foundPred = (allPreds ?? []).find((pr: any) => 
               pr.match_id === match.id && 
               allMemberIdsWithSameUsername.includes(pr.member_id)
             );
+            // Ef ekki fundið, leita í allPredsForFallback (spár fyrir alla members með sama username)
+            if (!foundPred) {
+              foundPred = (allPredsForFallback ?? []).find((pr: any) => 
+                pr.match_id === match.id && 
+                allMemberIdsWithSameUsername.includes(pr.member_id)
+              );
+            }
           }
           
           // Ef spá fannst og hún er rétt, reikna stig

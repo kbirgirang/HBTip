@@ -389,12 +389,23 @@ export default function RoomPage() {
     setData((prev) => {
       if (!prev) return prev;
       const allRooms = prev.allRooms || [prev];
-      // Aðeins uppfæra leaderboard ef nýju gögnin eru til staðar
+      // Aðeins uppfæra leaderboard ef nýju gögnin eru til staðar og líta út fyrir að vera rétt
       const updated = allRooms.map((r) => {
         const from = lb.allRooms!.find((x) => x.room.code === r.room.code);
         // Aðeins uppfæra ef nýju gögnin eru til staðar og ekki tóm
         if (from && from.leaderboard && from.leaderboard.length > 0) {
-          return { ...r, leaderboard: from.leaderboard };
+          // Athuga hvort nýju gögnin líta út fyrir að vera rétt (meira stig en núverandi)
+          // Ef nýju gögnin hafa minna stig en núverandi, geyma núverandi (fallback virkar ekki)
+          const currentTotal = r.leaderboard.reduce((sum, m) => sum + m.points, 0);
+          const newTotal = from.leaderboard.reduce((sum, m) => sum + m.points, 0);
+          
+          // Aðeins uppfæra ef nýju gögnin hafa meira eða sama stig (fallback virkar)
+          // Eða ef nýju gögnin hafa fleiri members (betri gögn)
+          if (newTotal >= currentTotal || from.leaderboard.length > r.leaderboard.length) {
+            return { ...r, leaderboard: from.leaderboard };
+          }
+          // Ef nýju gögnin hafa minna stig, geyma núverandi (fallback virkar ekki)
+          return r;
         }
         return r;
       });

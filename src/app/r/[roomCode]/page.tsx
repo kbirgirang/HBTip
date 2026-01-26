@@ -389,9 +389,14 @@ export default function RoomPage() {
     setData((prev) => {
       if (!prev) return prev;
       const allRooms = prev.allRooms || [prev];
+      // Aðeins uppfæra leaderboard ef nýju gögnin eru til staðar
       const updated = allRooms.map((r) => {
         const from = lb.allRooms!.find((x) => x.room.code === r.room.code);
-        return from ? { ...r, leaderboard: from.leaderboard } : r;
+        // Aðeins uppfæra ef nýju gögnin eru til staðar og ekki tóm
+        if (from && from.leaderboard && from.leaderboard.length > 0) {
+          return { ...r, leaderboard: from.leaderboard };
+        }
+        return r;
       });
       return { ...prev, allRooms: updated };
     });
@@ -405,9 +410,15 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (tab !== "leaderboard") return;
-    void loadLeaderboard();
+    // Bíða smá áður en við byrjum polling til að forðast race condition við fyrsta load()
+    const timeout = setTimeout(() => {
+      void loadLeaderboard();
+    }, 1000);
     const interval = setInterval(() => void loadLeaderboard(), 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
   }, [tab]);
 
   async function handleLogout() {

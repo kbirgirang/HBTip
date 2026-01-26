@@ -64,6 +64,30 @@ export async function GET() {
 
   const allRoomMemberIds = (allRoomMembers ?? []).map((m: any) => m.id);
 
+  // Sækja spár fyrir alla members með sama username (fyrir fallback)
+  // Þetta tryggir að við finnum spár hjá öllum members með sama username, ekki bara í deildunum sem notandi er í
+  const currentUsername = currentMember.username.toLowerCase();
+  let allPredsForFallback: any[] = [];
+  
+  // Sækja alla members með sama username í öllum deildunum (ekki bara deildir sem notandi er í)
+  const { data: allMembersWithSameUsername, error: sameUserErr } = await supabaseServer
+    .from("room_members")
+    .select("id, room_id")
+    .ilike("username", currentUsername);
+  
+  if (!sameUserErr && allMembersWithSameUsername) {
+    const allMemberIdsForFallback = allMembersWithSameUsername.map((m: any) => m.id);
+    // Sækja spár fyrir alla members með sama username
+    const { data: fallbackPreds, error: fallbackErr } = await supabaseServer
+      .from("predictions")
+      .select("member_id, match_id, pick, room_id")
+      .in("member_id", allMemberIdsForFallback);
+    
+    if (!fallbackErr && fallbackPreds) {
+      allPredsForFallback = fallbackPreds;
+    }
+  }
+
   const [
     { data: allPreds, error: pErr },
     { data: allSettings, error: settingsErr },
@@ -155,10 +179,18 @@ export async function GET() {
         
         // Fallback: ef spá finnst ekki, leita að spá hjá öllum members með sama username í sömu keppni
         if (!foundPred && allMemberIdsWithSameUsername.length > 0) {
+          // Leita fyrst í allPreds (spár fyrir members í deildunum sem notandi er í)
           foundPred = (allPreds ?? []).find((pr: any) => 
             pr.match_id === match.id && 
             allMemberIdsWithSameUsername.includes(pr.member_id)
           );
+          // Ef ekki fundið, leita í allPredsForFallback (spár fyrir alla members með sama username)
+          if (!foundPred) {
+            foundPred = (allPredsForFallback ?? []).find((pr: any) => 
+              pr.match_id === match.id && 
+              allMemberIdsWithSameUsername.includes(pr.member_id)
+            );
+          }
         }
         
         // Ef spá fannst og hún er rétt, reikna stig

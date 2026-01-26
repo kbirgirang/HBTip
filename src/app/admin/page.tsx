@@ -655,11 +655,16 @@ export default function AdminPage() {
    * Er að samstilla spár? (loading state)
    */
   const [syncingPredictions, setSyncingPredictions] = useState(false);
-  
+
   /**
    * Er að samstilla bónus svör? (loading state)
    */
   const [syncingBonusAnswers, setSyncingBonusAnswers] = useState(false);
+
+  /**
+   * Er að endurreikna spár? (loading state)
+   */
+  const [recalculatingPredictions, setRecalculatingPredictions] = useState(false);
 
   // ============================================
   // PUSH NOTIFICATIONS
@@ -811,6 +816,33 @@ export default function AdminPage() {
       setErr("Tenging klikkaði.");
     } finally {
       setSyncingBonusAnswers(false);
+    }
+  }
+
+  /**
+   * Endurreiknar og samstillir ALLAR spár fyrir ALLA notendur.
+   * Þetta yfirskrifar fyrirliggjandi spár og getur tekið tíma.
+   */
+  async function recalculatePredictions() {
+    if (!confirm("Ertu viss um að þú viljir endurreikna ALLAR spár? Þetta getur tekið nokkrar sekúndur og yfirskrifar fyrirliggjandi spár fyrir alla meðlimi með sama username.")) {
+      return;
+    }
+
+    clearAlerts();
+    setRecalculatingPredictions(true);
+    try {
+      const res = await fetch("/api/admin/recalculate-predictions", {
+        method: "POST",
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(json?.error || "Ekki tókst að endurreikna spár.");
+
+      flash(json.message || `Endurreiknaði ${json.predictionsSynced || 0} spár ✅`);
+    } catch {
+      setErr("Tenging klikkaði.");
+    } finally {
+      setRecalculatingPredictions(false);
     }
   }
 
@@ -3846,13 +3878,26 @@ export default function AdminPage() {
                 <div>
                   <button
                     onClick={syncPredictions}
-                    disabled={syncingPredictions}
+                    disabled={syncingPredictions || recalculatingPredictions}
                     className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
                   >
                     {syncingPredictions ? "Samstilla..." : "Samstilla spár"}
                   </button>
                   <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">
                     Finnur alla meðlimi með sama username og bætir við spám sem vantar. Fyrirliggjandi spár verða ekki breyttar.
+                  </p>
+                </div>
+
+                <div className="border-t border-slate-200 pt-4 dark:border-neutral-700">
+                  <button
+                    onClick={recalculatePredictions}
+                    disabled={syncingPredictions || recalculatingPredictions}
+                    className="w-full rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60 dark:bg-amber-500 dark:hover:bg-amber-600"
+                  >
+                    {recalculatingPredictions ? "Endurreikna..." : "Endurreikna allar spár"}
+                  </button>
+                  <p className="mt-2 text-xs text-slate-500 dark:text-neutral-500">
+                    <strong>Endurreiknar ALLAR spár</strong> fyrir alla meðlimi með sama username. Yfirskrifar fyrirliggjandi spár. Getur tekið nokkrar sekúndur.
                   </p>
                 </div>
 

@@ -667,6 +667,14 @@ export default function AdminPage() {
   const [recalculatingPredictions, setRecalculatingPredictions] = useState(false);
 
   // ============================================
+  // USER LOOKUP
+  // ============================================
+  const [userLookupUsername, setUserLookupUsername] = useState("");
+  const [userLookupResult, setUserLookupResult] = useState<any>(null);
+  const [userLookupLoading, setUserLookupLoading] = useState(false);
+  const [userLookupError, setUserLookupError] = useState<string | null>(null);
+
+  // ============================================
   // PUSH NOTIFICATIONS
   // ============================================
   
@@ -816,6 +824,36 @@ export default function AdminPage() {
       setErr("Tenging klikkaði.");
     } finally {
       setSyncingBonusAnswers(false);
+    }
+  }
+
+  /**
+   * Sækir notanda eftir username og sýnir stöðu í öllum deildum.
+   */
+  async function lookupUser() {
+    if (!userLookupUsername.trim()) {
+      setUserLookupError("Skrifaðu inn username");
+      return;
+    }
+
+    setUserLookupLoading(true);
+    setUserLookupError(null);
+    setUserLookupResult(null);
+
+    try {
+      const res = await fetch(`/api/admin/user-lookup?username=${encodeURIComponent(userLookupUsername.trim())}`);
+      const json = await res.json();
+
+      if (!res.ok) {
+        setUserLookupError(json.error || "Ekki tókst að sækja notanda");
+        return;
+      }
+
+      setUserLookupResult(json);
+    } catch {
+      setUserLookupError("Tenging klikkaði");
+    } finally {
+      setUserLookupLoading(false);
     }
   }
 
@@ -3913,6 +3951,163 @@ export default function AdminPage() {
                     Finnur alla meðlimi með sama username og bætir við bónus svörum sem vantar. Fyrirliggjandi svör verða ekki breytt.
                   </p>
                 </div>
+              </div>
+            </Card>
+
+            <Card
+              title="Notendaleit"
+              subtitle="Flettu upp notanda eftir username og sjáðu stöðu í öllum deildum sem hann er í."
+            >
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={userLookupUsername}
+                    onChange={(e) => setUserLookupUsername(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void lookupUser();
+                      }
+                    }}
+                    placeholder="Username..."
+                    className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-neutral-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={lookupUser}
+                    disabled={userLookupLoading || !userLookupUsername.trim()}
+                    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                  >
+                    {userLookupLoading ? "Leita..." : "Leita"}
+                  </button>
+                </div>
+
+                {userLookupError && (
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                    {userLookupError}
+                  </div>
+                )}
+
+                {userLookupResult && (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                        {userLookupResult.displayName || userLookupResult.username}
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-neutral-400">
+                        Username: {userLookupResult.username}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-neutral-400">
+                        Í {userLookupResult.rooms?.length || 0} deild{userLookupResult.rooms?.length !== 1 ? "um" : ""}
+                      </p>
+                    </div>
+
+                    {userLookupResult.rooms && userLookupResult.rooms.length > 0 && (
+                      <div className="space-y-4">
+                        {userLookupResult.rooms.map((roomData: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="rounded-xl border border-slate-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950/40"
+                          >
+                            <div className="mb-3 flex items-center justify-between">
+                              <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-neutral-100">
+                                  {roomData.room.name} ({roomData.room.code})
+                                </h4>
+                                {roomData.tournament && (
+                                  <p className="text-xs text-slate-500 dark:text-neutral-400">
+                                    {roomData.tournament.name}
+                                  </p>
+                                )}
+                                {roomData.member.isOwner && (
+                                  <span className="mt-1 inline-block rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-300">
+                                    Stjórnandi
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                  #{roomData.stats.rank}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">Sæti</div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                              <div>
+                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                                  {roomData.stats.totalPoints}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">Stig samtals</div>
+                              </div>
+                              <div>
+                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                                  {roomData.stats.points1x2}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">1X2 stig</div>
+                              </div>
+                              <div>
+                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                                  {roomData.stats.bonusPoints}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">Bónus stig</div>
+                              </div>
+                              <div>
+                                <div className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+                                  {roomData.stats.correct1x2} / {roomData.stats.matchesWithResult}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400">Rétt 1X2</div>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 border-t border-slate-200 pt-3 dark:border-neutral-700">
+                              <div className="text-xs text-slate-500 dark:text-neutral-400">
+                                {roomData.stats.predictionsMade} spár af {roomData.stats.totalMatches} leikjum
+                                {roomData.stats.bonusAnswersMade > 0 && ` · ${roomData.stats.bonusAnswersMade} bónus svör`}
+                              </div>
+                            </div>
+
+                            {roomData.predictions && roomData.predictions.length > 0 && (
+                              <details className="mt-3">
+                                <summary className="cursor-pointer text-sm font-medium text-slate-700 dark:text-neutral-300">
+                                  Skoða spár ({roomData.predictions.length})
+                                </summary>
+                                <div className="mt-2 max-h-60 space-y-1 overflow-y-auto">
+                                  {roomData.predictions
+                                    .sort((a: any, b: any) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime())
+                                    .map((pred: any, pIdx: number) => (
+                                      <div
+                                        key={pIdx}
+                                        className="rounded border border-slate-200 bg-slate-50 p-2 text-xs dark:border-neutral-700 dark:bg-neutral-900/40"
+                                      >
+                                        <div className="flex items-center justify-between">
+                                          <span>
+                                            {pred.homeTeam} vs {pred.awayTeam}
+                                            {pred.matchNo && ` (#${pred.matchNo})`}
+                                          </span>
+                                          <span className="font-semibold">
+                                            {pred.pick}
+                                            {pred.isCorrect === true && " ✅"}
+                                            {pred.isCorrect === false && " ❌"}
+                                          </span>
+                                        </div>
+                                        {pred.result && (
+                                          <div className="mt-1 text-slate-500 dark:text-neutral-400">
+                                            Úrslit: {pred.result}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                </div>
+                              </details>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </Card>
 

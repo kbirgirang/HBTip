@@ -183,20 +183,61 @@ function MatchCard({
 }
 
 export default function TournamentBracket({ matches }: TournamentBracketProps) {
-  // Filter matches by stage
-  const semifinals = matches.filter(m => 
-    m.stage && (m.stage.toLowerCase().includes("semifinal") || m.stage.toLowerCase().includes("undanúrslit"))
-  );
-  const final = matches.filter(m => 
-    m.stage && (m.stage.toLowerCase().includes("final") || m.stage.toLowerCase().includes("úrslit"))
-  );
-  const thirdPlace = matches.filter(m => 
-    m.stage && (m.stage.toLowerCase().includes("3rd") || m.stage.toLowerCase().includes("3.") || m.stage.toLowerCase().includes("þriðja"))
-  );
+  // Filter matches by stage - stuðningur fyrir bæði íslensk og ensk nöfn
+  const semifinals = matches.filter(m => {
+    if (!m.stage) return false;
+    const stageLower = m.stage.toLowerCase();
+    return (
+      stageLower.includes("semifinal") || 
+      stageLower.includes("undanúrslit") ||
+      stageLower.includes("undan úrslit") ||
+      stageLower === "sf1" ||
+      stageLower === "sf2" ||
+      stageLower === "semifinal 1" ||
+      stageLower === "semifinal 2" ||
+      stageLower === "undanúrslit 1" ||
+      stageLower === "undanúrslit 2"
+    );
+  });
+  
+  const final = matches.filter(m => {
+    if (!m.stage) return false;
+    const stageLower = m.stage.toLowerCase();
+    return (
+      stageLower.includes("final") || 
+      stageLower.includes("úrslit") ||
+      stageLower === "final" ||
+      stageLower === "úrslit"
+    );
+  });
+  
+  const thirdPlace = matches.filter(m => {
+    if (!m.stage) return false;
+    const stageLower = m.stage.toLowerCase();
+    return (
+      stageLower.includes("3rd") || 
+      stageLower.includes("3.") || 
+      stageLower.includes("þriðja") ||
+      stageLower.includes("3. sæti") ||
+      stageLower.includes("third place") ||
+      stageLower.includes("staða")
+    );
+  });
 
-  // Get semifinal matches
-  const sf1 = semifinals[0] || null;
-  const sf2 = semifinals[1] || null;
+  // Get semifinal matches - raða eftir númeri ef til staðar
+  const sortedSemifinals = [...semifinals].sort((a, b) => {
+    // Ef stage inniheldur númer (1, 2), nota það
+    const aNum = a.stage?.match(/\d+/)?.[0];
+    const bNum = b.stage?.match(/\d+/)?.[0];
+    if (aNum && bNum) {
+      return parseInt(aNum) - parseInt(bNum);
+    }
+    // Annars raða eftir dagsetningu
+    return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+  });
+  
+  const sf1 = sortedSemifinals[0] || null;
+  const sf2 = sortedSemifinals[1] || null;
 
   // Get final match
   const finalMatch = final[0] || null;
@@ -281,10 +322,44 @@ export default function TournamentBracket({ matches }: TournamentBracketProps) {
 
   if (!hasKnockoutMatches) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-800/50">
-        <p className="text-slate-600 dark:text-neutral-400">
-          Engir útsláttarleikir tiltækir ennþá.
-        </p>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 dark:border-neutral-700 dark:bg-neutral-800/50">
+        <div className="text-center">
+          <p className="mb-4 text-slate-600 dark:text-neutral-400">
+            Engir útsláttarleikir tiltækir ennþá.
+          </p>
+          <div className="mx-auto max-w-2xl rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-neutral-700 dark:bg-neutral-900/40">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-neutral-100">
+              Hvernig set ég inn útsláttarleiki?
+            </h3>
+            <ol className="mb-4 space-y-2 text-xs text-slate-600 dark:text-neutral-400">
+              <li className="flex gap-2">
+                <span className="font-semibold">1.</span>
+                <span>Farðu í <strong>Stjórnandi</strong> tabinn (ef þú ert stjórnandi)</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-semibold">2.</span>
+                <span>Veldu <strong>Búa til leik</strong> og fylltu út:</span>
+              </li>
+            </ol>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs dark:border-neutral-700 dark:bg-neutral-800/50">
+              <div className="mb-2 font-semibold text-slate-900 dark:text-neutral-100">Dæmi fyrir útsláttarleiki:</div>
+              <div className="space-y-1.5 font-mono text-slate-700 dark:text-neutral-300">
+                <div><strong>Riðill:</strong> Undanúrslit 1</div>
+                <div><strong>Riðill:</strong> Undanúrslit 2</div>
+                <div><strong>Riðill:</strong> Úrslit</div>
+                <div><strong>Riðill:</strong> 3. sæti</div>
+              </div>
+              <div className="mt-3 text-slate-600 dark:text-neutral-400">
+                <strong>Ath:</strong> Braketta-sýnin leitar að leikjum með stage sem inniheldur:
+                <ul className="mt-1.5 ml-4 list-disc space-y-0.5">
+                  <li>"undanúrslit" eða "semifinal" fyrir undanúrslit</li>
+                  <li>"úrslit" eða "final" fyrir úrslit</li>
+                  <li>"3." eða "3rd" eða "þriðja" fyrir 3. sæti</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

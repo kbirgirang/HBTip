@@ -2415,161 +2415,160 @@ function TournamentBracket({ activeTab }: { activeTab: "knockout" | "placement" 
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
-        <div className="relative flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          {/* Semifinals */}
-          <div className="relative flex-1">
-            <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
-              Undanúrslitaleikir
-            </h3>
-            <div className="relative space-y-4">
-              {knockoutStage.semifinals.map((match, idx) => {
-                // Calculate position for connecting lines
-                // First match (idx 0) connects at ~25% from top, second (idx 1) at ~75% from top
-                const topPercent = idx === 0 ? "25%" : "75%";
-                
-                return (
-                <div
-                  key={idx}
-                  className="relative rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40"
-                >
-                  {/* Connecting line to final (right side) - horizontal line extending right from center of match */}
-                  <div className="absolute -right-8 top-1/2 hidden h-0.5 w-8 -translate-y-1/2 bg-slate-400 dark:bg-neutral-600 md:block"></div>
-                  
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex-1 space-y-2">
-                      {/* Home Team */}
-                      <div className="flex items-center gap-2">
-                        {"homeTeam" in match ? (
-                          <>
-                            <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
-                              {match.homeTeam}
-                            </span>
-                            {getTeamFlag(match.homeTeam) && (
-                              <span className="text-lg">{getTeamFlag(match.homeTeam)}</span>
-                            )}
-                          </>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                              {match.homePlaceholder}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      {/* Away Team */}
-                      <div className="flex items-center gap-2">
-                        {"awayTeam" in match ? (
-                          <>
-                            <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
-                              {match.awayTeam}
-                            </span>
-                            {getTeamFlag(match.awayTeam) && (
-                              <span className="text-lg">{getTeamFlag(match.awayTeam)}</span>
-                            )}
-                          </>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                              {match.awayPlaceholder}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 text-xs text-slate-500 dark:text-neutral-400">
-                    {match.date} · {match.time}
-                  </div>
-                </div>
-              );
-              })}
-            </div>
-          </div>
-
-          {/* Final */}
-          <div className="relative flex-1 mt-8 md:mt-0 md:pl-8 md:pt-12">
-            <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
-              Úrslitaleikur
-            </h3>
-            <div className="relative">
-              {/* Connecting lines from semifinals - using SVG for precise control */}
-              <svg 
-                className="absolute -left-8 top-0 hidden h-full w-8 md:block" 
-                style={{ pointerEvents: 'none' }}
-                viewBox="0 0 32 100"
-                preserveAspectRatio="none"
-              >
-                {/* Path from top semifinal: horizontal right, then down, then horizontal to final */}
-                <path 
-                  d="M 0 25 L 16 25 L 16 50 L 32 50" 
-                  fill="none" 
-                  stroke="rgb(148 163 184)" 
-                  strokeWidth="2"
-                  className="dark:stroke-neutral-600"
-                />
-                {/* Path from bottom semifinal: horizontal right, then up, then horizontal to final */}
-                <path 
-                  d="M 0 75 L 16 75 L 16 50 L 32 50" 
-                  fill="none" 
-                  stroke="rgb(148 163 184)" 
-                  strokeWidth="2"
-                  className="dark:stroke-neutral-600"
-                />
-              </svg>
+      <div className="relative flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+        {/* Semifinals */}
+        <div className="relative flex-1">
+          <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
+            Undanúrslitaleikir
+          </h3>
+          <div className="relative space-y-4">
+            {knockoutStage.semifinals.map((match, idx) => {
+              // Calculate position for connecting lines
+              // First match (idx 0) connects at ~25% from top, second (idx 1) at ~75% from top
+              const topPercent = idx === 0 ? "25%" : "75%";
               
-              <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-4 dark:border-blue-600 dark:bg-blue-950/20">
-                <div className="mb-2 space-y-2">
-                  {/* Home Team */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                      WS
+              return (
+              <div
+                key={idx}
+                className="relative rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40"
+              >
+                {/* Connecting line to final (right side) - horizontal line extending right from center of match */}
+                <div className="absolute -right-8 top-1/2 hidden h-0.5 w-8 -translate-y-1/2 bg-slate-400 dark:bg-neutral-600 md:block"></div>
+                
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex-1 space-y-2">
+                    {/* Home Team */}
+                    <div className="flex items-center gap-2">
+                      {"homeTeam" in match ? (
+                        <>
+                          <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                            {match.homeTeam}
+                          </span>
+                          {getTeamFlag(match.homeTeam) && (
+                            <span className="text-lg">{getTeamFlag(match.homeTeam)}</span>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                            {match.homePlaceholder}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
-                      {knockoutStage.final.homePlaceholder}
-                    </span>
-                  </div>
-                  {/* Away Team */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                      WS
+                    {/* Away Team */}
+                    <div className="flex items-center gap-2">
+                      {"awayTeam" in match ? (
+                        <>
+                          <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                            {match.awayTeam}
+                          </span>
+                          {getTeamFlag(match.awayTeam) && (
+                            <span className="text-lg">{getTeamFlag(match.awayTeam)}</span>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                            {match.awayPlaceholder}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
-                      {knockoutStage.final.awayPlaceholder}
-                    </span>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-xs text-slate-500 dark:text-neutral-400">
-                    {knockoutStage.final.date} · {knockoutStage.final.time}
+                <div className="mt-3 text-xs text-slate-500 dark:text-neutral-400">
+                  {match.date} · {match.time}
+                </div>
+              </div>
+            );
+            })}
+          </div>
+        </div>
+
+        {/* Final */}
+        <div className="relative flex-1 mt-8 md:mt-0 md:pl-8 md:pt-12">
+          <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
+            Úrslitaleikur
+          </h3>
+          <div className="relative">
+            {/* Connecting lines from semifinals - using SVG for precise control */}
+            <svg 
+              className="absolute -left-8 top-0 hidden h-full w-8 md:block" 
+              style={{ pointerEvents: 'none' }}
+              viewBox="0 0 32 100"
+              preserveAspectRatio="none"
+            >
+              {/* Path from top semifinal: horizontal right, then down, then horizontal to final */}
+              <path 
+                d="M 0 25 L 16 25 L 16 50 L 32 50" 
+                fill="none" 
+                stroke="rgb(148 163 184)" 
+                strokeWidth="2"
+                className="dark:stroke-neutral-600"
+              />
+              {/* Path from bottom semifinal: horizontal right, then up, then horizontal to final */}
+              <path 
+                d="M 0 75 L 16 75 L 16 50 L 32 50" 
+                fill="none" 
+                stroke="rgb(148 163 184)" 
+                strokeWidth="2"
+                className="dark:stroke-neutral-600"
+              />
+            </svg>
+            
+            <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-4 dark:border-blue-600 dark:bg-blue-950/20">
+              <div className="mb-2 space-y-2">
+                {/* Home Team */}
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                    WS
                   </div>
-                  <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white">
-                    Úrslit
+                  <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                    {knockoutStage.final.homePlaceholder}
+                  </span>
+                </div>
+                {/* Away Team */}
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                    WS
+                  </div>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                    {knockoutStage.final.awayPlaceholder}
                   </span>
                 </div>
               </div>
-              
-              {/* Trophy icon */}
-              <div className="absolute -right-12 top-1/2 hidden -translate-y-1/2 md:block">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                    <path d="M4 22h16" />
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-                  </svg>
+              <div className="mt-3 flex items-center justify-between">
+                <div className="text-xs text-slate-500 dark:text-neutral-400">
+                  {knockoutStage.final.date} · {knockoutStage.final.time}
                 </div>
+                <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white">
+                  Úrslit
+                </span>
+              </div>
+            </div>
+            
+            {/* Trophy icon */}
+            <div className="absolute -right-12 top-1/2 hidden -translate-y-1/2 md:block">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                </svg>
               </div>
             </div>
           </div>

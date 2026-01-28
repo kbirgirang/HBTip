@@ -1394,6 +1394,10 @@ export default function RoomPage() {
                           )}
                         </div>
                       )}
+                      
+                      {/* Tournament Bracket */}
+                      <TournamentBracket />
+
                       {upcomingMatches.length > 0 && (
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-4">
@@ -2272,6 +2276,277 @@ function MemberPicksModal({
 /* -----------------------------
    TEAM MATCHES MODAL COMPONENT
 ----------------------------- */
+
+/* -----------------------------
+   TOURNAMENT BRACKET
+----------------------------- */
+
+function TournamentBracket() {
+  // Hardcoded bracket data - can be updated here
+  const knockoutStage = {
+    title: "EHF Euro 2026, Knockout Stage",
+    semifinals: [
+      {
+        matchNo: 1,
+        homeTeam: "Ísland",
+        awayTeam: "Danmörk",
+        date: "30 Jan",
+        time: "16:00",
+      },
+      {
+        matchNo: 2,
+        homeTeam: "Þýskaland",
+        awayTeam: "Króatía",
+        date: "30 Jan",
+        time: "16:00",
+      },
+    ],
+    final: {
+      homePlaceholder: "Wsf1",
+      awayPlaceholder: "Wsf2",
+      date: "1 Feb",
+      time: "17:00",
+    },
+  };
+
+  const placementMatch = {
+    title: "EHF Euro 2026, Placement Match",
+    homePlaceholder: "Lsf1",
+    awayPlaceholder: "Lsf2",
+    date: "1 Feb",
+    time: "14:15",
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Knockout Stage */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+            {knockoutStage.title}
+          </h2>
+          <button className="text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="relative flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          {/* Semifinals */}
+          <div className="flex-1">
+            <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
+              Semifinals
+            </h3>
+            <div className="space-y-4">
+              {knockoutStage.semifinals.map((match, idx) => (
+                <div
+                  key={idx}
+                  className="relative rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40"
+                >
+                  {/* Connecting line to final (right side) */}
+                  {idx === 0 && (
+                    <>
+                      <div className="absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
+                      <div className="absolute -right-4 top-1/2 hidden h-1/2 w-4 -translate-y-full border-r border-slate-300 dark:border-neutral-700 md:block"></div>
+                    </>
+                  )}
+                  {idx === 1 && (
+                    <>
+                      <div className="absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
+                      <div className="absolute -right-4 top-1/2 hidden h-1/2 w-4 translate-y-full border-r border-slate-300 dark:border-neutral-700 md:block"></div>
+                    </>
+                  )}
+                  
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex-1 space-y-2">
+                      {/* Home Team */}
+                      <div className="flex items-center gap-2">
+                        {match.homeTeam ? (
+                          <>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                              {match.homeTeam}
+                            </span>
+                            {getTeamFlag(match.homeTeam) && (
+                              <span className="text-lg">{getTeamFlag(match.homeTeam)}</span>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                              {match.homePlaceholder}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {/* Away Team */}
+                      <div className="flex items-center gap-2">
+                        {match.awayTeam ? (
+                          <>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                              {match.awayTeam}
+                            </span>
+                            {getTeamFlag(match.awayTeam) && (
+                              <span className="text-lg">{getTeamFlag(match.awayTeam)}</span>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                              {match.awayPlaceholder}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs text-slate-500 dark:text-neutral-400">
+                    {match.date} · {match.time}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Final */}
+          <div className="flex-1 md:pl-8">
+            <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
+              Final
+            </h3>
+            <div className="relative">
+              {/* Connecting lines from semifinals */}
+              <div className="absolute -left-8 top-1/4 hidden h-1/2 w-8 border-l border-slate-300 dark:border-neutral-700 md:block"></div>
+              <div className="absolute -left-8 top-1/2 hidden h-px w-8 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
+              <div className="absolute -left-8 bottom-1/4 hidden h-1/2 w-8 border-l border-slate-300 dark:border-neutral-700 md:block"></div>
+              
+              <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-4 dark:border-blue-600 dark:bg-blue-950/20">
+                <div className="mb-2 space-y-2">
+                  {/* Home Team */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                      WS
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                      {knockoutStage.final.homePlaceholder}
+                    </span>
+                  </div>
+                  {/* Away Team */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                      WS
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                      {knockoutStage.final.awayPlaceholder}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="text-xs text-slate-500 dark:text-neutral-400">
+                    {knockoutStage.final.date} · {knockoutStage.final.time}
+                  </div>
+                  <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white">
+                    Final
+                  </span>
+                </div>
+              </div>
+              
+              {/* Trophy icon */}
+              <div className="absolute -right-12 top-1/2 hidden -translate-y-1/2 md:block">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                    <path d="M4 22h16" />
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Placement Match */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+            {placementMatch.title}
+          </h2>
+          <button className="text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40">
+          <div className="mb-2 space-y-2">
+            {/* Home Team */}
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                LS
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                {placementMatch.homePlaceholder}
+              </span>
+            </div>
+            {/* Away Team */}
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                LS
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                {placementMatch.awayPlaceholder}
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <div className="text-xs text-slate-500 dark:text-neutral-400">
+              {placementMatch.date} · {placementMatch.time}
+            </div>
+            <span className="rounded-full bg-slate-500 px-2 py-0.5 text-xs font-semibold text-white">
+              3rd place
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function TeamMatchesModal({
   teamName,

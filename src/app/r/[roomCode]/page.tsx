@@ -2302,7 +2302,7 @@ function TournamentBracket() {
       time: string;
     };
   } = {
-    title: "EHF Euro 2026, Knockout Stage",
+    title: "",
     semifinals: [
       {
         matchNo: 1,
@@ -2365,7 +2365,7 @@ function TournamentBracket() {
           {/* Semifinals */}
           <div className="relative flex-1">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
-              Semifinals
+              Undanúrslitaleikir
             </h3>
             <div className="relative space-y-4">
               {knockoutStage.semifinals.map((match, idx) => {
@@ -2435,47 +2435,23 @@ function TournamentBracket() {
           {/* Final */}
           <div className="relative flex-1 md:pl-8 md:pt-15">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
-              Final
+              Úrslitaleikur
             </h3>
             <div className="relative">
               {/* Connecting lines from semifinals - using SVG for precise control */}
               <svg className="absolute -left-8 top-0 hidden h-full w-8 md:block" style={{ pointerEvents: 'none' }}>
-                {/* Vertical line connecting both semifinals */}
-                <line 
-                  x1="0" 
-                  y1="25%" 
-                  x2="0" 
-                  y2="75%" 
+                {/* Path from top semifinal: horizontal right, then down, then horizontal to final */}
+                <path 
+                  d="M 0 25% L 50% 25% L 50% 50% L 100% 50%" 
+                  fill="none" 
                   stroke="rgb(203 213 225)" 
                   strokeWidth="1"
                   className="dark:stroke-neutral-700"
                 />
-                {/* Horizontal connector at top (from first semifinal) */}
-                <line 
-                  x1="0" 
-                  y1="25%" 
-                  x2="100%" 
-                  y2="25%" 
-                  stroke="rgb(203 213 225)" 
-                  strokeWidth="1"
-                  className="dark:stroke-neutral-700"
-                />
-                {/* Horizontal connector at bottom (from second semifinal) */}
-                <line 
-                  x1="0" 
-                  y1="75%" 
-                  x2="100%" 
-                  y2="75%" 
-                  stroke="rgb(203 213 225)" 
-                  strokeWidth="1"
-                  className="dark:stroke-neutral-700"
-                />
-                {/* Horizontal line connecting to final card - adjusted for lower position */}
-                <line 
-                  x1="0" 
-                  y1="50%" 
-                  x2="100%" 
-                  y2="50%" 
+                {/* Path from bottom semifinal: horizontal right, then up, then horizontal to final */}
+                <path 
+                  d="M 0 75% L 50% 75% L 50% 50% L 100% 50%" 
+                  fill="none" 
                   stroke="rgb(203 213 225)" 
                   strokeWidth="1"
                   className="dark:stroke-neutral-700"
@@ -2508,7 +2484,7 @@ function TournamentBracket() {
                     {knockoutStage.final.date} · {knockoutStage.final.time}
                   </div>
                   <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white">
-                    Final
+                    Úrslit
                   </span>
                 </div>
               </div>

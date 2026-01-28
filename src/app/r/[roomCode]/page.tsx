@@ -2302,7 +2302,7 @@ function TournamentBracket() {
       time: string;
     };
   } = {
-    title: "",
+    title: "EHF Euro 2026, Knockout Stage",
     semifinals: [
       {
         matchNo: 1,
@@ -2433,28 +2433,33 @@ function TournamentBracket() {
           </div>
 
           {/* Final */}
-          <div className="relative flex-1 md:pl-8 md:pt-15">
+          <div className="relative flex-1 md:pl-8 md:pt-12">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
               Úrslitaleikur
             </h3>
             <div className="relative">
               {/* Connecting lines from semifinals - using SVG for precise control */}
-              <svg className="absolute -left-8 top-0 hidden h-full w-8 md:block" style={{ pointerEvents: 'none' }}>
+              <svg 
+                className="absolute -left-8 top-0 hidden h-full w-8 md:block" 
+                style={{ pointerEvents: 'none' }}
+                viewBox="0 0 32 100"
+                preserveAspectRatio="none"
+              >
                 {/* Path from top semifinal: horizontal right, then down, then horizontal to final */}
                 <path 
-                  d="M 0 25% L 50% 25% L 50% 50% L 100% 50%" 
+                  d="M 0 25 L 16 25 L 16 50 L 32 50" 
                   fill="none" 
-                  stroke="rgb(203 213 225)" 
-                  strokeWidth="1"
-                  className="dark:stroke-neutral-700"
+                  stroke="rgb(148 163 184)" 
+                  strokeWidth="1.5"
+                  className="dark:stroke-neutral-600"
                 />
                 {/* Path from bottom semifinal: horizontal right, then up, then horizontal to final */}
                 <path 
-                  d="M 0 75% L 50% 75% L 50% 50% L 100% 50%" 
+                  d="M 0 75 L 16 75 L 16 50 L 32 50" 
                   fill="none" 
-                  stroke="rgb(203 213 225)" 
-                  strokeWidth="1"
-                  className="dark:stroke-neutral-700"
+                  stroke="rgb(148 163 184)" 
+                  strokeWidth="1.5"
+                  className="dark:stroke-neutral-600"
                 />
               </svg>
               

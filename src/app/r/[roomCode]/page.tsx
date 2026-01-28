@@ -2408,7 +2408,7 @@ function TournamentBracket() {
           </div>
 
           {/* Final */}
-          <div className="relative flex-1 mt-8 md:mt-0 md:pl-8 md:pt-12">
+          <div className="relative flex-1 mt-8 md:mt-0 md:pl-8 md:pt-15">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
               Úrslitaleikur
             </h3>

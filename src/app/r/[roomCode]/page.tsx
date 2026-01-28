@@ -2433,7 +2433,7 @@ function TournamentBracket() {
           </div>
 
           {/* Final */}
-          <div className="relative flex-1 md:pl-8">
+          <div className="relative flex-1 md:pl-8 md:pt-12">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
               Final
             </h3>
@@ -2470,7 +2470,7 @@ function TournamentBracket() {
                   strokeWidth="1"
                   className="dark:stroke-neutral-700"
                 />
-                {/* Horizontal line connecting to final card */}
+                {/* Horizontal line connecting to final card - adjusted for lower position */}
                 <line 
                   x1="0" 
                   y1="50%" 

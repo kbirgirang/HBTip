@@ -129,6 +129,10 @@ export default function RoomPage() {
   } | null>(null);
   const [loadingIntermediateStandings, setLoadingIntermediateStandings] = useState(false);
 
+  // State fyrir bracket
+  const [showBracket, setShowBracket] = useState(false);
+  const [bracketTab, setBracketTab] = useState<"knockout" | "placement">("knockout");
+
   /**
    * Sækir milliriðilastöðu
    */
@@ -840,6 +844,13 @@ export default function RoomPage() {
             Milliriðilar
           </button>
           <button
+            onClick={() => setShowBracket(true)}
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            title="Úrslitakeppni"
+          >
+            Úrslitakeppni
+          </button>
+          <button
             onClick={() => setShowInfoPopup(true)}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
             title="Upplýsingar"
@@ -1055,6 +1066,43 @@ export default function RoomPage() {
                     )}
                   </>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bracket Modal */}
+        {showBracket && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowBracket(false)}>
+            <div className="max-w-6xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 p-6 flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-neutral-100">Úrslitakeppni</h3>
+                <button
+                  onClick={() => setShowBracket(false)}
+                  className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-6">
+                {/* Tabs */}
+                <div className="mb-6 flex gap-2">
+                  <TabButton 
+                    active={bracketTab === "knockout"} 
+                    onClick={() => setBracketTab("knockout")}
+                  >
+                    Undanúrslitaleikir
+                  </TabButton>
+                  <TabButton 
+                    active={bracketTab === "placement"} 
+                    onClick={() => setBracketTab("placement")}
+                  >
+                    Þriðja sæti
+                  </TabButton>
+                </div>
+                
+                {/* Bracket Content */}
+                <TournamentBracket activeTab={bracketTab} />
               </div>
             </div>
           </div>
@@ -1394,10 +1442,6 @@ export default function RoomPage() {
                           )}
                         </div>
                       )}
-                      
-                      {/* Tournament Bracket */}
-                      <TournamentBracket />
-
                       {upcomingMatches.length > 0 && (
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-4">
@@ -2281,7 +2325,7 @@ function MemberPicksModal({
    TOURNAMENT BRACKET
 ----------------------------- */
 
-function TournamentBracket() {
+function TournamentBracket({ activeTab }: { activeTab: "knockout" | "placement" }) {
   // Hardcoded bracket data - can be updated here
   type SemifinalMatch = {
     matchNo: number;
@@ -2332,10 +2376,45 @@ function TournamentBracket() {
     time: "14:15",
   };
 
-  return (
-    <div className="space-y-8">
-      {/* Knockout Stage */}
+  if (activeTab === "placement") {
+    return (
       <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40">
+          <div className="mb-2 space-y-2">
+            {/* Home Team */}
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                LS
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                {placementMatch.homePlaceholder}
+              </span>
+            </div>
+            {/* Away Team */}
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                LS
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                {placementMatch.awayPlaceholder}
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <div className="text-xs text-slate-500 dark:text-neutral-400">
+              {placementMatch.date} · {placementMatch.time}
+            </div>
+            <span className="rounded-full bg-slate-500 px-2 py-0.5 text-xs font-semibold text-white">
+              Þriðja sæti
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
         <div className="relative flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           {/* Semifinals */}
           <div className="relative flex-1">
@@ -2408,7 +2487,7 @@ function TournamentBracket() {
           </div>
 
           {/* Final */}
-          <div className="relative flex-1 mt-8 md:mt-0 md:pl-8 md:pt-15">
+          <div className="relative flex-1 mt-8 md:mt-0 md:pl-8 md:pt-12">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
               Úrslitaleikur
             </h3>
@@ -2493,40 +2572,6 @@ function TournamentBracket() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Placement Match */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40">
-          <div className="mb-2 space-y-2">
-            {/* Home Team */}
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                LS
-              </div>
-              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
-                {placementMatch.homePlaceholder}
-              </span>
-            </div>
-            {/* Away Team */}
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-xs font-semibold text-slate-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                LS
-              </div>
-              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
-                {placementMatch.awayPlaceholder}
-              </span>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between">
-            <div className="text-xs text-slate-500 dark:text-neutral-400">
-              {placementMatch.date} · {placementMatch.time}
-            </div>
-            <span className="rounded-full bg-slate-500 px-2 py-0.5 text-xs font-semibold text-white">
-              Þriðja sæti
-            </span>
           </div>
         </div>
       </div>

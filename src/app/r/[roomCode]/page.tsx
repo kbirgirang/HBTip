@@ -2363,29 +2363,23 @@ function TournamentBracket() {
 
         <div className="relative flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           {/* Semifinals */}
-          <div className="flex-1">
+          <div className="relative flex-1">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
               Semifinals
             </h3>
-            <div className="space-y-4">
-              {knockoutStage.semifinals.map((match, idx) => (
+            <div className="relative space-y-4">
+              {knockoutStage.semifinals.map((match, idx) => {
+                // Calculate position for connecting lines
+                // First match (idx 0) connects at ~25% from top, second (idx 1) at ~75% from top
+                const topPercent = idx === 0 ? "25%" : "75%";
+                
+                return (
                 <div
                   key={idx}
                   className="relative rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40"
                 >
-                  {/* Connecting line to final (right side) */}
-                  {idx === 0 && (
-                    <>
-                      <div className="absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
-                      <div className="absolute -right-4 top-1/2 hidden h-1/2 w-4 -translate-y-full border-r border-slate-300 dark:border-neutral-700 md:block"></div>
-                    </>
-                  )}
-                  {idx === 1 && (
-                    <>
-                      <div className="absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
-                      <div className="absolute -right-4 top-1/2 hidden h-1/2 w-4 translate-y-full border-r border-slate-300 dark:border-neutral-700 md:block"></div>
-                    </>
-                  )}
+                  {/* Connecting line to final (right side) - horizontal line extending right from center of match */}
+                  <div className="absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
                   
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex-1 space-y-2">
@@ -2433,20 +2427,60 @@ function TournamentBracket() {
                     {match.date} · {match.time}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
 
           {/* Final */}
-          <div className="flex-1 md:pl-8">
+          <div className="relative flex-1 md:pl-8">
             <h3 className="mb-4 text-sm font-semibold text-slate-600 dark:text-neutral-400">
               Final
             </h3>
             <div className="relative">
-              {/* Connecting lines from semifinals */}
-              <div className="absolute -left-8 top-1/4 hidden h-1/2 w-8 border-l border-slate-300 dark:border-neutral-700 md:block"></div>
-              <div className="absolute -left-8 top-1/2 hidden h-px w-8 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
-              <div className="absolute -left-8 bottom-1/4 hidden h-1/2 w-8 border-l border-slate-300 dark:border-neutral-700 md:block"></div>
+              {/* Connecting lines from semifinals - using SVG for precise control */}
+              <svg className="absolute -left-8 top-0 hidden h-full w-8 md:block" style={{ pointerEvents: 'none' }}>
+                {/* Vertical line connecting both semifinals */}
+                <line 
+                  x1="0" 
+                  y1="25%" 
+                  x2="0" 
+                  y2="75%" 
+                  stroke="rgb(203 213 225)" 
+                  strokeWidth="1"
+                  className="dark:stroke-neutral-700"
+                />
+                {/* Horizontal connector at top (from first semifinal) */}
+                <line 
+                  x1="0" 
+                  y1="25%" 
+                  x2="100%" 
+                  y2="25%" 
+                  stroke="rgb(203 213 225)" 
+                  strokeWidth="1"
+                  className="dark:stroke-neutral-700"
+                />
+                {/* Horizontal connector at bottom (from second semifinal) */}
+                <line 
+                  x1="0" 
+                  y1="75%" 
+                  x2="100%" 
+                  y2="75%" 
+                  stroke="rgb(203 213 225)" 
+                  strokeWidth="1"
+                  className="dark:stroke-neutral-700"
+                />
+                {/* Horizontal line connecting to final card */}
+                <line 
+                  x1="0" 
+                  y1="50%" 
+                  x2="100%" 
+                  y2="50%" 
+                  stroke="rgb(203 213 225)" 
+                  strokeWidth="1"
+                  className="dark:stroke-neutral-700"
+                />
+              </svg>
               
               <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-4 dark:border-blue-600 dark:bg-blue-950/20">
                 <div className="mb-2 space-y-2">

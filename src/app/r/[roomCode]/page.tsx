@@ -2293,7 +2293,6 @@ function TournamentBracket() {
   );
 
   const knockoutStage: {
-    title: string;
     semifinals: SemifinalMatch[];
     final: {
       homePlaceholder: string;
@@ -2302,7 +2301,6 @@ function TournamentBracket() {
       time: string;
     };
   } = {
-    title: "EHF Euro 2026, Knockout Stage",
     semifinals: [
       {
         matchNo: 1,
@@ -2328,7 +2326,6 @@ function TournamentBracket() {
   };
 
   const placementMatch = {
-    title: "EHF Euro 2026, Placement Match",
     homePlaceholder: "Lsf1",
     awayPlaceholder: "Lsf2",
     date: "1 Feb",
@@ -2339,28 +2336,6 @@ function TournamentBracket() {
     <div className="space-y-8">
       {/* Knockout Stage */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
-            {knockoutStage.title}
-          </h2>
-          <button className="text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-          </button>
-        </div>
-
         <div className="relative flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           {/* Semifinals */}
           <div className="relative flex-1">
@@ -2379,7 +2354,7 @@ function TournamentBracket() {
                   className="relative rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40"
                 >
                   {/* Connecting line to final (right side) - horizontal line extending right from center of match */}
-                  <div className="absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-slate-300 dark:bg-neutral-700 md:block"></div>
+                  <div className="absolute -right-8 top-1/2 hidden h-0.5 w-8 -translate-y-1/2 bg-slate-400 dark:bg-neutral-600 md:block"></div>
                   
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex-1 space-y-2">
@@ -2450,7 +2425,7 @@ function TournamentBracket() {
                   d="M 0 25 L 16 25 L 16 50 L 32 50" 
                   fill="none" 
                   stroke="rgb(148 163 184)" 
-                  strokeWidth="1.5"
+                  strokeWidth="2"
                   className="dark:stroke-neutral-600"
                 />
                 {/* Path from bottom semifinal: horizontal right, then up, then horizontal to final */}
@@ -2458,7 +2433,7 @@ function TournamentBracket() {
                   d="M 0 75 L 16 75 L 16 50 L 32 50" 
                   fill="none" 
                   stroke="rgb(148 163 184)" 
-                  strokeWidth="1.5"
+                  strokeWidth="2"
                   className="dark:stroke-neutral-600"
                 />
               </svg>
@@ -2524,28 +2499,6 @@ function TournamentBracket() {
 
       {/* Placement Match */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950/40">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
-            {placementMatch.title}
-          </h2>
-          <button className="text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-          </button>
-        </div>
-
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40">
           <div className="mb-2 space-y-2">
             {/* Home Team */}
@@ -2572,7 +2525,7 @@ function TournamentBracket() {
               {placementMatch.date} · {placementMatch.time}
             </div>
             <span className="rounded-full bg-slate-500 px-2 py-0.5 text-xs font-semibold text-white">
-              3rd place
+              Þriðja sæti
             </span>
           </div>
         </div>

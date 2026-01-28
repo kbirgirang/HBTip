@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { getTeamFlag } from "@/lib/teamFlags";
-import TournamentBracket from "@/components/TournamentBracket";
 
 // Athuga hvort Ísland sé í leiknum
 function isIcelandPlaying(homeTeam: string, awayTeam: string): boolean {
@@ -72,7 +71,7 @@ export default function RoomPage() {
   const params = useParams<{ roomCode: string }>();
   const roomCode = params?.roomCode ? decodeURIComponent(params.roomCode) : "";
 
-  const [tab, setTab] = useState<"matches" | "leaderboard" | "bracket" | "owner">("matches");
+  const [tab, setTab] = useState<"matches" | "leaderboard" | "owner">("matches");
   const [data, setData] = useState<ViewData | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -822,9 +821,6 @@ export default function RoomPage() {
           </TabButton>
           <TabButton active={tab === "leaderboard"} onClick={() => setTab("leaderboard")}>
             Staða
-          </TabButton>
-          <TabButton active={tab === "bracket"} onClick={() => setTab("bracket")}>
-            Útsláttur
           </TabButton>
           {(() => {
             const allRooms = data?.allRooms || (data ? [data] : []);
@@ -1690,32 +1686,6 @@ export default function RoomPage() {
                       )}
                   </>
                 );
-              })()}
-            </div>
-          )}
-
-          {data && tab === "bracket" && (
-            <div>
-              {(() => {
-                const allRooms = data.allRooms || [data];
-                // Sameina allar leikir úr öllum deildum (unique by match id)
-                const allMatchesMap = new Map<string, typeof data.matches[0]>();
-                for (const roomData of allRooms) {
-                  for (const match of roomData.matches) {
-                    if (!allMatchesMap.has(match.id)) {
-                      allMatchesMap.set(match.id, match);
-                    } else {
-                      // Uppfæra myPick ef hann finnst í þessari deild
-                      const existing = allMatchesMap.get(match.id)!;
-                      if (match.myPick) {
-                        existing.myPick = match.myPick;
-                      }
-                    }
-                  }
-                }
-                const allMatches = Array.from(allMatchesMap.values());
-                
-                return <TournamentBracket matches={allMatches} />;
               })()}
             </div>
           )}

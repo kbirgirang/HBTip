@@ -2283,7 +2283,25 @@ function MemberPicksModal({
 
 function TournamentBracket() {
   // Hardcoded bracket data - can be updated here
-  const knockoutStage = {
+  type SemifinalMatch = {
+    matchNo: number;
+    date: string;
+    time: string;
+  } & (
+    | { homeTeam: string; awayTeam: string }
+    | { homePlaceholder: string; awayPlaceholder: string }
+  );
+
+  const knockoutStage: {
+    title: string;
+    semifinals: SemifinalMatch[];
+    final: {
+      homePlaceholder: string;
+      awayPlaceholder: string;
+      date: string;
+      time: string;
+    };
+  } = {
     title: "EHF Euro 2026, Knockout Stage",
     semifinals: [
       {
@@ -2373,7 +2391,7 @@ function TournamentBracket() {
                     <div className="flex-1 space-y-2">
                       {/* Home Team */}
                       <div className="flex items-center gap-2">
-                        {match.homeTeam ? (
+                        {"homeTeam" in match ? (
                           <>
                             <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
                               {match.homeTeam}
@@ -2392,7 +2410,7 @@ function TournamentBracket() {
                       </div>
                       {/* Away Team */}
                       <div className="flex items-center gap-2">
-                        {match.awayTeam ? (
+                        {"awayTeam" in match ? (
                           <>
                             <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
                               {match.awayTeam}
